@@ -1,102 +1,59 @@
-# Society Gatekeeper Management System
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-A web-based society management application built with Laravel 12. Enables society admins to manage residents, residents to create visitor passes, and gatekeepers to log visitor entry/exit and deliveries.
+<p align="center">
+<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+</p>
 
----
+## About Laravel
 
-## Project Objective
+Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-- Society Admin can manage flats, residents, and gatekeepers
-- Residents can create and track visitor passes and raise complaints
-- Gatekeepers can verify visitors, record entry/exit, and log deliveries
-- Admin can view live dashboard stats and generate reports
+- [Simple, fast routing engine](https://laravel.com/docs/routing).
+- [Powerful dependency injection container](https://laravel.com/docs/container).
+- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
+- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
+- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
+- [Robust background job processing](https://laravel.com/docs/queues).
+- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
----
+Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## User Roles
+## Learning Laravel
 
-| Role | Responsibilities |
-|---|---|
-| Admin | Manage residents & gatekeepers, view all reports |
-| Resident | Create visitor passes, view visitor history, raise complaints |
-| Gatekeeper | Verify & log visitor entry/exit, record deliveries |
+Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
 
----
+If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
-## Modules
+## Laravel Sponsors
 
-### Module 1 — Authentication & RBAC
+We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
 
-- Login, logout, change password, forgot password
-- Profile management
-- Role-based access control (Admin, Resident, Gatekeeper)
-- Laravel Breeze authentication scaffolding
-- Route middleware guards per role
+### Premium Partners
 
-### Module 2 — Flat & Resident Management
+- **[Vehikl](https://vehikl.com)**
+- **[Tighten Co.](https://tighten.co)**
+- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
+- **[64 Robots](https://64robots.com)**
+- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
+- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
+- **[Redberry](https://redberry.international/laravel-development)**
+- **[Active Logic](https://activelogic.com)**
 
-- Add, edit, delete flats (flat number, wing, floor)
-- Add, edit, delete residents (name, phone, email, owner/tenant)
-- Family member management per flat
-- Link resident to flat and login account
-- Resident listing with search
+## Contributing
 
-### Module 3 — Visitor Pass Management *(main module)*
+Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
-- Resident creates a visitor pass:
-  - Visitor name, mobile number, purpose, visit date, vehicle number (optional)
-- Pass status flow: `Pending → Entered → Exited → Cancelled`
-- Resident can view visitor history and cancel a pending pass
-- Gatekeeper sees all pending passes for their gate
+## Code of Conduct
 
-### Module 4 — Gate Entry & Exit
+In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-- Gatekeeper searches visitor by name, mobile, or pass ID
-- Mark Entry — records entry time and gatekeeper name
-- Mark Exit — records exit time
-- Visitor log listing for gatekeeper
+## Security Vulnerabilities
 
-### Module 5 — Delivery Management
+If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
-- Gatekeeper records incoming delivery:
-  - Flat number, resident, vendor (Amazon / Flipkart / Swiggy / Zomato / Courier), package details
-- Status: `Received → Delivered`
-- Delivery listing with flat and date filters
+## License
 
-### Module 6 — Complaint Management
-
-- Resident raises a complaint with category and description
-- Categories: Security, Cleaning, Water, Electricity, Parking
-- Status workflow: `Open → In Progress → Resolved`
-- Admin can add notes to any complaint
-
-### Module 7 — Dashboard & Reports
-
-Admin dashboard with live stat cards:
-
-- Visitors Today
-- Visitors Currently Inside
-- Deliveries Today
-- Open Complaints
-- Total Residents
-
-Report pages with date range, flat, and status filters:
-
-- Visitor Report
-- Delivery Report
-- Complaint Report
-
----
-
-## Nice-to-Have Features *(only if time allows)*
-
-- QR code on visitor pass — gatekeeper scans to auto-fill entry
-- Webcam photo capture at gate entry
-- Email notification to resident when visitor is marked as entered
-- CSV export on all report pages
-
----
-
-## Project Scope
-
-This project is a trainee assignment at **Simform Solutions**. The scope is intentionally focused — 7 modules, 8 tables — to produce a complete, working application that demonstrates core Laravel concepts: Authentication, RBAC Middleware, CRUD, Eloquent Relationships, Validation, and Reporting.
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
