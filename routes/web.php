@@ -3,6 +3,7 @@
 use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -54,11 +55,8 @@ Route::middleware(['auth', 'role:resident'])->prefix('resident')->group(function
 });
 
 Route::middleware(['auth', 'role:gatekeeper'])->group(function () {
-
-    Route::get('/gatekeeper/dashboard', function () {
-        return 'Gatekeeper Dashboard';
-    });
-
+    Route::get('/gatekeeper/dashboard', [DashboardController::class, 'gatekeeper'])
+        ->name('gatekeeper.dashboard');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
