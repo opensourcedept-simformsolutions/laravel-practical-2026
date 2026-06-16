@@ -9,6 +9,9 @@
         <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
             Users
         </a>
+        <a href="{{route('flats.index')}}" class="list-group-item list-group-item-action bg-dark text-white">
+            flats
+        </a>
 
         <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
             Residents
