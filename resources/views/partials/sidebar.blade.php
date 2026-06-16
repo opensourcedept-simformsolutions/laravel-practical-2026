@@ -18,27 +18,29 @@
 
     @endif
 
+    {{-- GATEKEEPER --}}
     @if(auth()->user()->role->name === 'gatekeeper')
 
-        <x-sidebar-link href="#">
+        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
             Visitors
         </x-sidebar-link>
 
         <x-sidebar-link href="#">
             Entry Logs
-        </x-sidebar-link>
+        </a>
 
     @endif
 
+    {{-- RESIDENT --}}
     @if(auth()->user()->role->name === 'resident')
 
-        <x-sidebar-link href="#">
+        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
             My Visitors
         </x-sidebar-link>
 
         <x-sidebar-link href="#">
             Complaints
-        </x-sidebar-link>
+        </a>
 
     @endif
 
