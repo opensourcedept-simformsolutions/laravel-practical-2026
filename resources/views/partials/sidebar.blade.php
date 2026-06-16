@@ -1,54 +1,44 @@
-<div class="list-group list-group-flush">
-
-    <a href="{{ route('admin.dashboard') }}"
-       class="list-group-item list-group-item-action bg-dark text-white">
+<div class="sidebar-menu">
+    <x-sidebar-link
+        :href="route('admin.dashboard')"
+        :active="request()->is('admin/dashboard')">
         Dashboard
-    </a>
+    </x-sidebar-link>
 
-    {{-- ADMIN --}}
     @if(auth()->user()->role->name === 'admin')
 
-        <a href="{{route('admin.users.index') }}" class="list-group-item list-group-item-action bg-dark text-white">
-            Users Management
-        </a>
+        <x-sidebar-link href="{{route('admin.users.index') }}" :active="request()->is('/')">
+            Users
+        </x-sidebar-link>
 
-        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+        <x-sidebar-link href="#" :active="request()->is('/')">
             Residents
-        </a>
+        </x-sidebar-link>
 
-        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
-            Gatekeepers
-        </a>
-
-        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
-            Reports
-        </a>
 
     @endif
 
-    {{-- GATEKEEPER --}}
     @if(auth()->user()->role->name === 'gatekeeper')
 
-        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+        <x-sidebar-link href="#">
             Visitors
-        </a>
+        </x-sidebar-link>
 
-        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+        <x-sidebar-link href="#">
             Entry Logs
-        </a>
+        </x-sidebar-link>
 
     @endif
 
-    {{-- RESIDENT --}}
     @if(auth()->user()->role->name === 'resident')
 
-        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+        <x-sidebar-link href="#">
             My Visitors
-        </a>
+        </x-sidebar-link>
 
-        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+        <x-sidebar-link href="#">
             Complaints
-        </a>
+        </x-sidebar-link>
 
     @endif
 

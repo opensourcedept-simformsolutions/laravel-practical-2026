@@ -3,7 +3,7 @@
     <div class="container-fluid">
 
         <a class="navbar-brand" href="#">
-            Society System
+            Society Gatekeeper Management System
         </a>
 
         <div class="d-flex align-items-center">
