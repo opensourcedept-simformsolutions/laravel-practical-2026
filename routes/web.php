@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FlatController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -36,4 +37,11 @@ Route::middleware(['auth', 'role:gatekeeper'])->group(function () {
 Route::view('/test-form','testform');
 Route::view('/test-tables', 'testtable');
 
-require __DIR__ . '/auth.php';
+Route::view('/test-form','testform');
+Route::view('/test-tables', 'testtable');
+
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::resource('flats', FlatController::class);
+});
+
+require __DIR__ . '/auth.php';  
