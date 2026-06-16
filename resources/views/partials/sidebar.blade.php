@@ -1,12 +1,9 @@
 <div class="sidebar-menu">
-    <x-sidebar-link
-        :href="route('admin.dashboard')"
-        :active="request()->is('admin/dashboard')">
+    <x-sidebar-link :href="route('admin.dashboard')" :active="request()->is('admin/dashboard')">
         Dashboard
     </x-sidebar-link>
 
-    @if(auth()->user()->role->name === 'admin')
-
+    @can('is-admin')
         <x-sidebar-link href="#" :active="request()->is('/')">
             Users
         </x-sidebar-link>
@@ -14,12 +11,9 @@
         <x-sidebar-link href="#" :active="request()->is('/')">
             Residents
         </x-sidebar-link>
+    @endcan
 
-
-    @endif
-
-    @if(auth()->user()->role->name === 'gatekeeper')
-
+    @can('is-gatekeeper')
         <x-sidebar-link href="#">
             Visitors
         </x-sidebar-link>
@@ -27,11 +21,9 @@
         <x-sidebar-link href="#">
             Entry Logs
         </x-sidebar-link>
+    @endcan
 
-    @endif
-
-    @if(auth()->user()->role->name === 'resident')
-
+    @can('is-resident')
         <x-sidebar-link href="#">
             My Visitors
         </x-sidebar-link>
@@ -39,8 +31,6 @@
         <x-sidebar-link href="#">
             Complaints
         </x-sidebar-link>
-
-    @endif
+    @endcan
 
 </div>
-
