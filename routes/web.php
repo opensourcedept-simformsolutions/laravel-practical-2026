@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -17,7 +18,19 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/admin/dashboard', [DashboardController::class, 'admin'])
+        ->name('admin.dashboard');
+});
 
+Route::middleware(['auth', 'role:resident'])->group(function () {
+    Route::get('/resident/dashboard', [DashboardController::class, 'resident'])
+        ->name('resident.dashboard');
+});
 
+Route::middleware(['auth', 'role:gatekeeper'])->group(function () {
+    Route::get('/gatekeeper/dashboard', [DashboardController::class, 'gatekeeper'])
+        ->name('gatekeeper.dashboard');
+});
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

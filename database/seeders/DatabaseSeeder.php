@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        User::factory(10)->create();
 
         // User::factory()->create([
         //     'name' => 'Test User',
@@ -27,12 +27,12 @@ class DatabaseSeeder extends Seeder
         //     RoleSeeder::class,
         // ]);
 
-        User::create([
-            'name' => 'Admin',
-            'email' => 'admin@example.com',
-            'password' => bcrypt('1'),
-            'phone' => '1221221221',
-            'role_id' => Role::where('name', 'admin')->first()->id,
-        ]);
+        // User::create([
+        //     'name' => 'Admin',
+        //     'email' => 'admin@example.com',
+        //     'password' => bcrypt('1'),
+        //     'phone' => '111111111',
+        //     'role_id' => Role::where('name', 'admin')->first()->id,
+        // ]);
     }
 }
