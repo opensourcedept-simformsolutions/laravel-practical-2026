@@ -8,8 +8,8 @@
     {{-- ADMIN --}}
     @if(auth()->user()->role->name === 'admin')
 
-        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
-            Users
+        <a href="{{route('admin.users.index') }}" class="list-group-item list-group-item-action bg-dark text-white">
+            Users Management
         </a>
 
         <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
