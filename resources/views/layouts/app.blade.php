@@ -15,16 +15,17 @@
 </head>
 
 <body>
+    
+    @include('partials.navbar')
 
-    <div class="app-layout">
-        <div class="sidebar-container bg-dark min-vh-100 p-0" id="sidebarContainer">
-            @include('partials.sidebar')
-        </div>
+    <div class="container-fluid">
+        <div class="row">
 
-        <div class="main-content-area">
-            @include('partials.navbar')
-
-            <div class="content-wrapper">
+            <div class="col-md-3 col-lg-2 bg-dark min-vh-100 p-0">
+                @include('partials.sidebar')
+            </div>
+    
+            <div class="col-md-9 col-lg-10 p-4">
                 @yield('content')
             </div>
         </div>
