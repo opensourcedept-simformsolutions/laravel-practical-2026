@@ -23,14 +23,15 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
 
-        $this->call([
-            RoleSeeder::class,
-        ]);
+        // $this->call([
+        //     RoleSeeder::class,
+        // ]);
 
         User::create([
             'name' => 'Admin',
             'email' => 'admin@example.com',
             'password' => bcrypt('1'),
+            'phone' => '1221221221',
             'role_id' => Role::where('name', 'admin')->first()->id,
         ]);
     }

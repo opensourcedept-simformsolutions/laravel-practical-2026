@@ -19,28 +19,5 @@ Route::middleware('auth')->group(function () {
 
 
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
-
-    Route::get('/admin/dashboard', function () {
-        return 'Admin Dashboard';
-    });
-
-});
-
-Route::middleware(['auth', 'role:resident'])->group(function () {
-
-    Route::get('/resident/dashboard', function () {
-        return 'Resident Dashboard';
-    });
-
-});
-
-Route::middleware(['auth', 'role:gatekeeper'])->group(function () {
-
-    Route::get('/gatekeeper/dashboard', function () {
-        return 'Gatekeeper Dashboard';
-    });
-
-});
 
 require __DIR__.'/auth.php';
