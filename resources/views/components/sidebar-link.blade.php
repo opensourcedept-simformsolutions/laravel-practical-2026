@@ -1,6 +1,11 @@
-@props(['href' => '#','active' => false,])
+@props(['href' => '#', 'active' => false])
 
 <a href="{{ $href }}"
-    {{ $attributes->merge(['class' => 'sidebar-link ' . ($active ? 'active' : '')]) }}>
+    @if ($active)
+        aria-current="page"
+    @endif
+    data-sidebar-link
+    data-active="{{ $active ? 'true' : 'false' }}"
+    {{ $attributes->merge(['class' => 'sidebar-link' . ($active ? ' active' : '')]) }}>
     {{ $slot }}
 </a>
