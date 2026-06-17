@@ -1,9 +1,9 @@
 .sidebar-container {
     width: 260px;
-    background: var(--sidebar-bg);
-    color: white;
-    z-index: 99;
-    transition: width 0.3s ease, margin-left 0.3s ease;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    flex-shrink: 0;
     overflow: hidden;
 }
 
