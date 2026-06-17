@@ -1,13 +1,20 @@
+
 <div class="sidebar-menu">
     <x-sidebar-link
         :href="route('admin.dashboard')"
         :active="request()->is('admin/dashboard')">
+
+<div class="list-group list-group-flush">
+
+    <a href="{{ route('admin.dashboard') }}" class="list-group-item list-group-item-action bg-dark text-white">
+
         Dashboard
     </x-sidebar-link>
 
-    @if(auth()->user()->role->name === 'admin')
+    {{-- ADMIN --}}
+    @can('is-admin')
+        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
 
-        <x-sidebar-link href="#" :active="request()->is('/')">
             Users
         </x-sidebar-link>
 
@@ -16,30 +23,37 @@
         </x-sidebar-link>
 
 
-    @endif
 
-    @if(auth()->user()->role->name === 'gatekeeper')
+    @endcan
 
-        <x-sidebar-link href="#">
+
+    {{-- GATEKEEPER --}}
+    @can('is-gatekeeper')
+        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+
             Visitors
         </x-sidebar-link>
 
         <x-sidebar-link href="#">
             Entry Logs
+
         </x-sidebar-link>
 
-    @endif
 
-    @if(auth()->user()->role->name === 'resident')
+    @endcan
+    {{-- RESIDENT --}}
+    @can('is-resident')
+        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
 
-        <x-sidebar-link href="#">
             My Visitors
         </x-sidebar-link>
 
         <x-sidebar-link href="#">
             Complaints
+
         </x-sidebar-link>
 
-    @endif
+        </a>
+    @endcan
 
 </div>

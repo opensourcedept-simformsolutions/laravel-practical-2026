@@ -21,7 +21,12 @@
                 @include('partials.sidebar')
             </div>
 
+
             <div class="col-md-9 col-lg-10 content-wrapper">
+
+    
+            <div class="col-md-9 col-lg-10 p-4">
+
                 @yield('content')
             </div>
 
