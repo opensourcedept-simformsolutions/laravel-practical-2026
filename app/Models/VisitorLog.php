@@ -41,4 +41,9 @@ class VisitorLog extends Model
     {
         return $this->belongsTo(User::class, 'gatekeeper_id');
     }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }

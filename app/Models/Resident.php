@@ -30,4 +30,9 @@ class Resident extends Model
     {
         return $this->hasMany(Delivery::class);
     }
+
+    public function society()
+    {
+        return $this->hasOneThrough(Society::class, User::class);
+    }
 }

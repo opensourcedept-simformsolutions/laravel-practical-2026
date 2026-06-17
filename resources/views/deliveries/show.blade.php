@@ -4,8 +4,6 @@
 
 @section('content')
     <div class="mx-auto w-100" style="max-width: 1000px;">
-
-
         <x-form.form-section title="Delivery Details">
 
             <div class="section-actions">

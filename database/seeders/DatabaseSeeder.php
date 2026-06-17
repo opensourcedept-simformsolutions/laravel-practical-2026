@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             ComplaintSeeder::class,
             DeliverySeeder::class,
             VisitorLogSeeder::class,
+            DemoDataSeeder::class,
         ]);
     }
 }

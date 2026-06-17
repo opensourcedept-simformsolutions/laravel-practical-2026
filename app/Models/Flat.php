@@ -11,6 +11,7 @@ class Flat extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'society_id',
         'wing',
         'floor',
         'flat_number',
@@ -29,5 +30,10 @@ class Flat extends Model
     public function deliveries()
     {
         return $this->hasMany(Delivery::class);
+    }
+
+    public function society()
+    {
+        return $this->belongsTo(Society::class);
     }
 }

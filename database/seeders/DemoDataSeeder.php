@@ -12,38 +12,29 @@ use App\Models\User;
 use App\Models\Visitor;
 use App\Models\VisitorLog;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class DemoDataSeeder extends Seeder
 {
     public function run(): void
     {
-        $today = now();
+        $superAdminRole = Role::create([
+            'name' => 'super_admin',
+        ]);
 
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        $adminRole = Role::create([
+            'name' => 'admin',
+        ]);
 
-        Complaint::truncate();
-        Delivery::truncate();
-        VisitorLog::truncate();
-        Visitor::truncate();
-        Resident::truncate();
-        User::truncate();
-        Flat::truncate();
-        Society::truncate();
-        Role::truncate();
+        $residentRole = Role::create([
+            'name' => 'resident',
+        ]);
 
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        $gatekeeperRole = Role::create([
+            'name' => 'gatekeeper',
+        ]);
 
-        // Roles
-        $roles = [
-            'super_admin' => Role::create(['name' => 'super_admin']),
-            'admin' => Role::create(['name' => 'admin']),
-            'resident' => Role::create(['name' => 'resident']),
-            'gatekeeper' => Role::create(['name' => 'gatekeeper']),
-        ];
-
-        // Society
         $society = Society::create([
             'name' => 'Green Valley Society',
             'address' => 'SG Highway',
@@ -52,13 +43,12 @@ class DemoDataSeeder extends Seeder
             'pincode' => '380015',
         ]);
 
-        // Admin users (fixed small count)
         $superAdmin = User::create([
             'name' => 'Super Admin',
             'email' => 'superadmin@example.com',
             'phone' => '9000000001',
             'password' => Hash::make('1'),
-            'role_id' => $roles['super_admin']->id,
+            'role_id' => $superAdminRole->id,
             'society_id' => $society->id,
         ]);
 
@@ -67,7 +57,7 @@ class DemoDataSeeder extends Seeder
             'email' => 'admin@example.com',
             'phone' => '9000000002',
             'password' => Hash::make('1'),
-            'role_id' => $roles['admin']->id,
+            'role_id' => $adminRole->id,
             'society_id' => $society->id,
         ]);
 
@@ -76,112 +66,119 @@ class DemoDataSeeder extends Seeder
             'email' => 'gatekeeper@example.com',
             'phone' => '9000000003',
             'password' => Hash::make('1'),
-            'role_id' => $roles['gatekeeper']->id,
+            'role_id' => $gatekeeperRole->id,
             'society_id' => $society->id,
         ]);
 
-        // Flats (40)
-        $flats = [];
-        for ($i = 1; $i <= 40; $i++) {
-            $flats[] = Flat::create([
-                'society_id' => $society->id,
-                'wing' => 'A',
-                'floor' => ceil($i / 10),
-                'flat_number' => 100 + $i,
-            ]);
-        }
+        $flat101 = Flat::create([
+            'society_id' => $society->id,
+            'wing' => 'A',
+            'floor' => 1,
+            'flat_number' => 101,
+        ]);
 
-        // Residents Users (40)
-        $residentUsers = [];
-        for ($i = 1; $i <= 40; $i++) {
-            $residentUsers[] = User::create([
-                'name' => "Resident $i",
-                'email' => "resident$i@example.com",
-                'phone' => '9000001' . str_pad($i, 3, '0', STR_PAD_LEFT),
-                'password' => Hash::make('1'),
-                'role_id' => $roles['resident']->id,
-                'society_id' => $society->id,
-            ]);
-        }
+        $flat102 = Flat::create([
+            'society_id' => $society->id,
+            'wing' => 'A',
+            'floor' => 1,
+            'flat_number' => 102,
+        ]);
 
-        // Residents mapping (40)
-        $residents = [];
-        foreach ($residentUsers as $i => $user) {
-            $residents[] = Resident::create([
-                'user_id' => $user->id,
-                'flat_id' => $flats[$i]->id,
-                'resident_type' => $i % 2 == 0 ? 'owner' : 'tenant',
-            ]);
-        }
+        $residentUser1 = User::create([
+            'name' => 'John Resident',
+            'email' => 'john@example.com',
+            'phone' => '9000000004',
+            'password' => Hash::make('1'),
+            'role_id' => $residentRole->id,
+            'society_id' => $society->id,
+        ]);
 
-        // Visitors (40)
-        $visitors = [];
-        for ($i = 1; $i <= 40; $i++) {
-            $visitors[] = Visitor::create([
-                'name' => "Visitor $i",
-                'phone' => '9876500' . str_pad($i, 3, '0', STR_PAD_LEFT),
-                'vehicle_number' => $i % 2 == 0 ? "GJ01AB" . (1000 + $i) : null,
-            ]);
-        }
+        $residentUser2 = User::create([
+            'name' => 'Jane Resident',
+            'email' => 'jane@example.com',
+            'phone' => '9000000005',
+            'password' => Hash::make('1'),
+            'role_id' => $residentRole->id,
+            'society_id' => $society->id,
+        ]);
 
-        // Visitor Logs (100)
-        for ($i = 0; $i < 100; $i++) {
+        $resident1 = Resident::create([
+            'user_id' => $residentUser1->id,
+            'flat_id' => $flat101->id,
+            'resident_type' => 'owner',
+        ]);
 
-            $entryTime = fake()->dateTimeBetween($today->copy()->subDays(30), $today);
+        $resident2 = Resident::create([
+            'user_id' => $residentUser2->id,
+            'flat_id' => $flat102->id,
+            'resident_type' => 'tenant',
+        ]);
 
-            VisitorLog::create([
-                'visitor_id' => $visitors[array_rand($visitors)]->id,
-                'flat_id' => $flats[array_rand($flats)]->id,
-                'created_by' => $residentUsers[array_rand($residentUsers)]->id,
-                'gatekeeper_id' => $gatekeeper->id,
-                'purpose' => fake()->randomElement(['Personal Visit', 'Delivery', 'Maintenance', 'Guest Visit',]),
-                'visit_date' => $entryTime->format('Y-m-d'),
-                'entry_time' => $entryTime,
-                'status' => fake()->randomElement(['entered', 'pending', 'exited',]),
-            ]);
-        }
+        $visitor1 = Visitor::create([
+            'name' => 'Rahul Sharma',
+            'phone' => '9876543210',
+            'vehicle_number' => 'GJ01AB1234',
+        ]);
 
-        // Deliveries (40)
-        for ($i = 0; $i < 40; $i++) {
+        $visitor2 = Visitor::create([
+            'name' => 'Courier Boy',
+            'phone' => '9876543211',
+            'vehicle_number' => null,
+        ]);
 
-            $receivedAt = fake()->dateTimeBetween($today->copy()->subDays(30), $today);
+        VisitorLog::create([
+            'visitor_id' => $visitor1->id,
+            'flat_id' => $flat101->id,
+            'created_by' => $residentUser1->id,
+            'gatekeeper_id' => $gatekeeper->id,
+            'purpose' => 'Personal Visit',
+            'visit_date' => now()->toDateString(),
+            'entry_time' => now(),
+            'status' => 'entered',
+        ]);
 
-            $isDelivered = fake()->boolean(70);
+        VisitorLog::create([
+            'visitor_id' => $visitor2->id,
+            'flat_id' => $flat102->id,
+            'created_by' => $residentUser2->id,
+            'gatekeeper_id' => $gatekeeper->id,
+            'purpose' => 'Package Delivery',
+            'visit_date' => now()->toDateString(),
+            'status' => 'pending',
+        ]);
 
-            Delivery::create([
-                'flat_id' => $flats[$i]->id,
-                'resident_id' => $residents[$i]->id,
-                'vendor' => fake()->randomElement(['Amazon', 'Flipkart', 'Blinkit', 'Zepto', 'Swiggy Instamart',]),
-                'package_details' => fake()->sentence(3),
-                'status' => $isDelivered ? 'delivered' : 'received',
-                'received_at' => $receivedAt,
-                'delivered_at' => $isDelivered ? (clone $receivedAt)->modify('+' . rand(1, 24) . ' hours') : null,
-            ]);
-        }
+        Delivery::create([
+            'flat_id' => $flat101->id,
+            'resident_id' => $resident1->id,
+            'vendor' => 'Amazon',
+            'package_details' => 'Bluetooth Speaker',
+            'status' => 'received',
+            'received_at' => now(),
+        ]);
 
-        // Complaints (40)
-        $categories = [
-            'security',
-            'cleaning',
-            'water',
-            'parking'
-        ];
+        Delivery::create([
+            'flat_id' => $flat102->id,
+            'resident_id' => $resident2->id,
+            'vendor' => 'Flipkart',
+            'package_details' => 'Laptop Bag',
+            'status' => 'delivered',
+            'received_at' => now()->subHour(),
+            'delivered_at' => now(),
+        ]);
 
-        for ($i = 0; $i < 40; $i++) {
+        Complaint::create([
+            'user_id' => $residentUser1->id,
+            'category' => 'water',
+            'description' => 'Low water pressure in bathroom.',
+            'status' => 'open',
+        ]);
 
-            $createdAt = fake()->dateTimeBetween($today->copy()->subDays(30), $today);
-
-            $status = fake()->randomElement(['open', 'in_progress', 'resolved',]);
-
-            Complaint::create([
-                'user_id' => $residentUsers[$i]->id,
-                'category' => fake()->randomElement($categories),
-                'description' => fake()->paragraph(),
-                'status' => $status,
-                'admin_notes' => $status === 'in_progress' ? 'Admin is working on it' : ($status === 'resolved' ? 'Issue resolved successfully' : null),
-                'created_at' => $createdAt,
-                'updated_at' => $status !== 'open' ? (clone $createdAt)->modify('+' . rand(1, 72) . ' hours') : $createdAt,
-            ]);
-        }
+        Complaint::create([
+            'user_id' => $residentUser2->id,
+            'category' => 'parking',
+            'description' => 'Unauthorized vehicle parked.',
+            'status' => 'in_progress',
+            'admin_notes' => 'Security team informed.',
+        ]);
     }
 }
