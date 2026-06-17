@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreFlatRequest;
+use App\Http\Requests\UpdateFlatRequest;
 use App\Models\Flat;
 
 class FlatController extends Controller
@@ -27,15 +29,9 @@ class FlatController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreFlatRequest $request)
     {
-        $request->validate([
-            'wing' => 'required',
-            'floor' => 'required|integer',
-            'flat_number' => 'required',
-        ]);
-
-        Flat::create($request->all());
+        Flat::create($request->validated());
 
         return redirect()->route('flats.index')
             ->with('success', 'Flat created successfully');
@@ -57,15 +53,11 @@ class FlatController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Flat $flat)
+    public function update(UpdateFlatRequest $request, Flat $flat)
     {
-        $request->validate([
-            'wing' => 'required',
-            'floor' => 'required|integer',
-            'flat_number' => 'required',
-        ]);
 
-        $flat->update($request->all());
+
+        $flat->update($request->validated());
 
         return redirect()->route('flats.index')
             ->with('success', 'Flat updated successfully');
