@@ -59,4 +59,7 @@ Route::middleware(['auth', 'role:gatekeeper'])->group(function () {
         ->name('gatekeeper.dashboard');
 });
 
+Route::view('/test-form','testform');
+Route::view('/test-tables', 'testtable');
+
 require __DIR__ . '/auth.php';
