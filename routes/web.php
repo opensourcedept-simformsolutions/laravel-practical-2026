@@ -1,9 +1,9 @@
 <?php
 
 use App\Http\Controllers\ComplaintController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -11,7 +11,6 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
     return view('dashboard');
-
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -20,29 +19,22 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'role:super_admin,admin'])
+Route::middleware(['auth', 'role:admin,super_admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-
-        Route::get('/dashboard', fn () => 'Admin Dashboard');
-
-        Route::get('/complaints', [ComplaintController::class, 'index'])
-            ->name('complaints.index');
-
-        Route::get('/complaints/{complaint}', [ComplaintController::class, 'show'])
-            ->name('complaints.show');
-
-        Route::patch('/complaints/{complaint}', [ComplaintController::class, 'update'])
-            ->name('complaints.update');
+        Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
+        Route::get('/complaints', [ComplaintController::class, 'index'])->name('complaints.index');
+        Route::get('/complaints/{complaint}', [ComplaintController::class, 'show'])->name('complaints.show');
+        Route::patch('/complaints/{complaint}', [ComplaintController::class, 'update'])->name('complaints.update');
     });
 
 Route::middleware(['auth', 'role:resident'])->group(function () {
-    Route::get('resident/dashboard', fn () => 'User Dashboard');
+    Route::get('resident/dashboard', [DashboardController::class, 'resident'])->name('resident.dashboard');
 });
 
 Route::middleware(['auth', 'role:gatekeeper'])->group(function () {
-    Route::get('gatekeeper/dashboard', fn () => 'User Dashboard');
+    Route::get('gatekeeper/dashboard', [DashboardController::class, 'resident'])->name('resident.dashboard');
 });
 
 Route::middleware(['auth', 'role:resident,gatekeeper'])->group(function () {
@@ -52,4 +44,4 @@ Route::middleware(['auth', 'role:resident,gatekeeper'])->group(function () {
     Route::get('/complaints/{complaint}', [ComplaintController::class, 'show'])->name('complaints.show');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

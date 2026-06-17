@@ -32,7 +32,7 @@ class ComplaintController extends Controller
         $role = auth()->user()->role->name;
 
         return redirect()
-            ->route($role.'.complaints.create')
+            ->route('complaints.create')
             ->with('success', 'Complaint submitted successfully.');
     }
 
@@ -42,14 +42,16 @@ class ComplaintController extends Controller
 
         $user = auth()->user();
 
-        if ($user->role->name === 'resident') {
+        if (in_array($user->role->name, ['resident', 'gatekeeper'])) {
+
             $query->where('user_id', $user->id);
 
         } elseif ($user->role->name === 'admin') {
+
             $query->whereHas('user', function ($q) use ($user) {
                 $q->where('society_id', $user->society_id);
-
             });
+
         }
 
         if ($request->filled('category')) {
@@ -64,7 +66,7 @@ class ComplaintController extends Controller
             $query->whereDate('created_at', $request->date);
         }
 
-        $complaints = $query->latest()->paginate(5);
+        $complaints = $query->latest()->get();
 
         return view('complaints.index', ['complaints' => $complaints]);
     }
@@ -72,7 +74,7 @@ class ComplaintController extends Controller
     public function show(Complaint $complaint)
     {
         $user = auth()->user();
-        if ($user->role->name === 'resident' && $complaint->user_id !== $user->id) {
+        if (in_array($user->role->name, ['resident', 'gatekeeper'])&& $complaint->user_id !== $user->id) {
             abort(403);
         }
 
@@ -87,7 +89,7 @@ class ComplaintController extends Controller
     {
         $user = auth()->user();
 
-        if (! in_array($user->role->name,['admin', 'super_admin'])) {
+        if (! in_array($user->role->name, ['admin', 'super_admin'])) {
             abort(403);
         }
 

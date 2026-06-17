@@ -1,161 +1,120 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Complaint Details</title>
-</head>
+@section('title', 'Complaint Details')
 
-<body>
+@section('content')
 
-    <div>
+<div class="mb-3">
+    @if(in_array(auth()->user()->role->name, ['admin', 'super_admin']))
+    <a href="{{ route('admin.complaints.index') }}">
+        ← Back to Complaints
+    </a>
+    @else
+    <a href="{{ route('complaints.index') }}">
+        ← Back to Complaints
+    </a>
+    @endif
 
-        <div>
-            @if(in_array(auth()->user()->role->name, ['admin', 'super_admin']))
+</div>
 
-            <a href="{{ route('admin.complaints.index') }}">
-                Back
-            </a>
+@if(session('success')) <div class="alert alert-success">
+    {{ session('success') }} </div>
+@endif
+
+<x-form.form-section title="Complaint #{{ $complaint->id }}">
+
+    <x-form.fieldset legend="Complaint Information">
+
+        <div class="mb-3">
+            <strong>Category:</strong>
+            {{ ucfirst($complaint->category) }}
+        </div>
+
+        <div class="mb-3">
+            <strong>Description:</strong>
+            <br>
+            {{ $complaint->description }}
+        </div>
+
+        <div class="mb-3">
+            <strong>Status:</strong>
+
+            @if($complaint->status == 'open')
+            Open
+            @elseif($complaint->status == 'in_progress')
+            In Progress
             @else
-            <a href="{{ route('complaints.index') }}">
-                Back
-            </a>
+            Resolved
             @endif
         </div>
 
-        <br>
-
-        @if(session('success'))
-        <div>
-            {{ session('success') }}
-        </div>
-        <br>
-        @endif
-
-        <div>
-
-            <h4>
-                Complaint #{{ $complaint->id }}
-            </h4>
-
-            <hr>
-
-            <div>
-                <strong>Category:</strong>
-                {{ ucfirst($complaint->category) }}
-            </div>
-
-            <br>
-
-            <div>
-                <strong>Description:</strong>
-                <br>
-                {{ $complaint->description }}
-            </div>
-
-            <br>
-
-            <div>
-                <strong>Status:</strong>
-
-                @if($complaint->status == 'open')
-                Open
-                @elseif($complaint->status == 'in_progress')
-                In Progress
-                @else
-                Resolved
-                @endif
-            </div>
-
-            <br>
-
-            <div>
-                <strong>Created At:</strong>
-                {{ $complaint->created_at->format('d M Y h:i A') }}
-            </div>
-
-            <br>
-
-            <div>
-                <strong>Admin Notes:</strong>
-
-                <div>
-                    {{ $complaint->admin_notes ?? 'No notes added yet.' }}
-                </div>
-            </div>
-
+        <div class="mb-3">
+            <strong>Created At:</strong>
+            {{ $complaint->created_at->format('d M Y h:i A') }}
         </div>
 
-        @if(in_array(auth()->user()->role->name, ['admin', 'super_admin']))
-        <hr>
+        <div class="mb-3">
+            <strong>Admin Notes:</strong>
+            <div>
+                {{ $complaint->admin_notes ?? 'No notes added yet.' }}
+            </div>
+        </div>
 
-        <div>
+    </x-form.fieldset>
 
-            <h5>
-                Update Complaint
-            </h5>
+</x-form.form-section>
 
-            <form action="{{ route('admin.complaints.update', $complaint) }}" method="POST">
+@if(in_array(auth()->user()->role->name, ['admin', 'super_admin']))
 
-                @csrf
-                @method('PATCH')
+<x-form.form :action="route('admin.complaints.update', $complaint)" method="POST" class="form-contained">
 
-                <div>
+    @method('PATCH')
 
-                    <label>
-                        Status
-                    </label>
+    <x-form.form-section title="Update Complaint">
 
-                    <br>
+        <x-form.fieldset legend="Complaint Status">
 
-                    <select name="status">
+            <x-form.field name="status" label="Status" required>
 
-                        <option value="open" {{ $complaint->status == 'open' ? 'selected' : '' }}>
-                            Open
-                        </option>
+                <select name="status" id="status" class="form-control">
 
-                        <option value="in_progress" {{ $complaint->status == 'in_progress' ? 'selected' : '' }}>
-                            In Progress
-                        </option>
+                    <option value="open" {{ $complaint->status == 'open' ? 'selected' : '' }}>
+                        Open
+                    </option>
 
-                        <option value="resolved" {{ $complaint->status == 'resolved' ? 'selected' : '' }}>
-                            Resolved
-                        </option>
+                    <option value="in_progress" {{ $complaint->status == 'in_progress' ? 'selected' : '' }}>
+                        In Progress
+                    </option>
 
-                    </select>
+                    <option value="resolved" {{ $complaint->status == 'resolved' ? 'selected' : '' }}>
+                        Resolved
+                    </option>
 
-                </div>
+                </select>
 
-                <br>
+            </x-form.field>
 
-                <div>
+            <x-form.field name="admin_notes" label="Admin Notes">
 
-                    <label>
-                        Admin Notes
-                    </label>
+                <textarea name="admin_notes" id="admin_notes" rows="5"
+                    class="form-control">{{ old('admin_notes', $complaint->admin_notes) }}</textarea>
 
-                    <br>
+            </x-form.field>
 
-                    <textarea name="admin_notes" rows="5"
-                        cols="50">{{ old('admin_notes', $complaint->admin_notes) }}</textarea>
+            <div class="d-flex justify-content-end">
 
-                </div>
-
-                <br>
-
-                <button type="submit">
+                <x-form.submit-button>
                     Update Complaint
-                </button>
+                </x-form.submit-button>
 
-            </form>
+            </div>
 
-        </div>
+        </x-form.fieldset>
 
-        @endif
+    </x-form.form-section>
 
-    </div>
+</x-form.form>
 
-</body>
+@endif
 
-</html>
+@endsection
