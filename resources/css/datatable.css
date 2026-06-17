@@ -1,0 +1,114 @@
+.app-datatable-wrapper {
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    background: #ffffff;
+    overflow: hidden;
+    box-shadow:
+        0 1px 3px rgba(15, 23, 42, 0.05),
+        0 10px 30px rgba(15, 23, 42, 0.04);
+}
+
+.app-datatable {
+    margin-bottom: 0 !important;
+    vertical-align: middle;
+}
+
+.app-datatable thead th {
+    background: #f8fafc;
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 1.1rem;
+}
+
+.app-datatable tbody td {
+    padding: 0.95rem 1.1rem;
+    border-color: var(--border-light);
+    color: var(--text-primary);
+}
+
+.app-datatable.table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: #fcfdff;
+}
+
+.app-datatable.table-bordered > :not(caption) > * > * {
+    border-width: 0 0 1px;
+}
+
+div.dt-container div.dt-layout-row {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    gap: 1rem;
+}
+
+div.dt-container .dt-search input,
+div.dt-container .dt-input,
+div.dt-container select.dt-input {
+    min-height: 42px;
+    padding: 0.55rem 0.8rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #ffffff;
+    color: var(--text-primary);
+}
+
+div.dt-container .dt-search input:focus,
+div.dt-container .dt-input:focus,
+div.dt-container select.dt-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+div.dt-container .dt-search label,
+div.dt-container .dt-length label,
+div.dt-container .dt-info {
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+}
+
+div.dt-container .dt-paging .dt-paging-button {
+    min-width: 38px;
+    min-height: 38px;
+    margin: 0 0.15rem;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 10px;
+    background: #ffffff !important;
+    color: var(--text-primary) !important;
+}
+
+div.dt-container .dt-paging .dt-paging-button:hover {
+    background: #eff6ff !important;
+    border-color: #bfdbfe !important;
+    color: var(--primary) !important;
+}
+
+div.dt-container .dt-paging .dt-paging-button.current,
+div.dt-container .dt-paging .dt-paging-button.current:hover {
+    background: linear-gradient(135deg, var(--primary), #60a5fa) !important;
+    border-color: transparent !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 18px rgba(59, 130, 246, 0.22);
+}
+
+div.dt-container .dt-paging .dt-paging-button.disabled,
+div.dt-container .dt-paging .dt-paging-button.disabled:hover {
+    opacity: 0.45;
+    background: #ffffff !important;
+    color: var(--text-secondary) !important;
+}
+
+@media (max-width: 767.98px) {
+    div.dt-container div.dt-layout-row {
+        padding: 0.9rem;
+    }
+
+    .app-datatable thead th,
+    .app-datatable tbody td {
+        padding-left: 0.85rem;
+        padding-right: 0.85rem;
+    }
+}
