@@ -1,68 +1,10 @@
+@import './theme.css';
+@import './navbar.css';
+@import './layout.css';
+@import './sidebar.css';
+@import './datatable.css';
+@import './forms.css';
+@import './ui.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-.content-wrapper {
-    background: #f8fafc;
-    min-height: calc(100vh - 56px);
-    padding: 30px;
-}
-
-.sidebar {
-    width: 260px;
-    min-height: 100vh;
-    background: #1e293b;
-    color: white;
-}
-
-.sidebar-header {
-    height: 70px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 24px;
-    font-size: 1.25rem;
-    font-weight: 700;
-    border-bottom: 1px solid rgba(255,255,255,.1);
-}
-
-.sidebar-menu {
-    padding: 20px 12px;
-}
-
-.sidebar-title {
-    color: #94a3b8;
-    font-size: .75rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin: 20px 12px 10px;
-}
-
-.sidebar-link {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    padding: 12px 14px;
-    margin-bottom: 6px;
-
-    color: #cbd5e1;
-    text-decoration: none;
-
-    border-radius: 10px;
-    transition: .2s;
-}
-
-.sidebar-link:hover {
-    background: rgba(255,255,255,.08);
-    color: white;
-}
-
-.sidebar-link.active {
-    background: #2563eb;
-    color: white;
-}
-
-.sidebar-link i {
-    font-size: 1rem;
-}
