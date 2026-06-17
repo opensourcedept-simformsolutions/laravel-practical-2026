@@ -1,6 +1,7 @@
 <aside class="sidebar" id="appSidebar">
     <div class="sidebar-header">
-        <i class="bi bi-buildings"></i>
+                <i class="bi bi-buildings-fill"></i>
+        
         <span class="sidebar-brand-text">SocietyMS</span>
     </div>
 
@@ -17,12 +18,12 @@
                 <span class="sidebar-link-label">Users</span>
             </x-sidebar-link>
             <x-sidebar-link :href="route('flats.index')" :active="request()->routeIs('flats.index')">
-                <i class="bi bi-people"></i>
+                <i class="bi bi-building-add"></i>
                 <span class="sidebar-link-label">Flats</span>
             </x-sidebar-link>
 
             <x-sidebar-link href="#" :active="request()->routeIs('residents.*')">
-                <i class="bi bi-house-door"></i>
+                <i class="bi bi-person-lines-fill"></i>
                 <span class="sidebar-link-label">Residents</span>
             </x-sidebar-link>
         @endcan

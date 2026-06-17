@@ -4,87 +4,169 @@
 
 @section('content')
 
-<div class="card">
+<div class="card shadow-sm">
+
     <div class="card-header">
-        <h4>Create User</h4>
+        <h4 class="mb-0">Create User</h4>
     </div>
 
     <div class="card-body">
 
-        <form action="{{ route('admin.users.store') }}"
-              method="POST">
+        <form action="{{ route('admin.users.store') }}" method="POST">
 
             @csrf
 
-            <div class="mb-3">
-                <label>Name</label>
+            <div class="row g-3">
 
-                <input type="text"
-                       name="name"
-                       class="form-control"
-                       value="{{ old('name') }}">
-            </div>
+                <!-- Name -->
+                <div class="col-md-6">
 
-            <div class="mb-3">
-                <label>Email</label>
+                    <label for="name" class="form-label">
+                        Name
+                    </label>
 
-                <input type="email"
-                       name="email"
-                       class="form-control"
-                       value="{{ old('email') }}">
-            </div>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        class="form-control @error('name') is-invalid @enderror"
+                        value="{{ old('name') }}"
+                    >
 
-            <div class="mb-3">
-                <label>Phone</label>
+                    <x-form.error name="name" />
 
-                <input type="text"
-                       name="phone"
-                       class="form-control"
-                       value="{{ old('phone') }}">
-            </div>
+                </div>
 
-            <div class="mb-3">
-                <label>Password</label>
+                <!-- Email -->
+                <div class="col-md-6">
 
-                <input type="password"
-                       name="password"
-                       class="form-control">
-            </div>
+                    <label for="email" class="form-label">
+                        Email
+                    </label>
 
-            <div class="mb-3">
-                <label>Role</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        class="form-control @error('email') is-invalid @enderror"
+                        value="{{ old('email') }}"
+                    >
 
-                <select name="role_id"
-                        class="form-select">
+                    <x-form.error name="email" />
 
-                    <option value="">
-                        Select Role
-                    </option>
+                </div>
 
-                    @foreach($roles as $role)
+                <!-- Phone -->
+                <div class="col-md-6">
 
-                        <option value="{{ $role->id }}">
-                            {{ ucfirst($role->name) }}
+                    <label for="phone" class="form-label">
+                        Phone
+                    </label>
+
+                    <input
+                        type="text"
+                        id="phone"
+                        name="phone"
+                        class="form-control @error('phone') is-invalid @enderror"
+                        value="{{ old('phone') }}"
+                    >
+
+                    <x-form.error name="phone" />
+
+                </div>
+
+                <!-- Role -->
+                <div class="col-md-6">
+
+                    <label for="role_id" class="form-label">
+                        Role
+                    </label>
+
+                    <select
+                        id="role_id"
+                        name="role_id"
+                        class="form-select @error('role_id') is-invalid @enderror"
+                    >
+
+                        <option value="">
+                            Select Role
                         </option>
 
-                    @endforeach
+                        @foreach ($roles as $role)
 
-                </select>
+                            <option
+                                value="{{ $role->id }}"
+                                @selected(old('role_id') == $role->id)
+                            >
+                                {{ ucfirst($role->name) }}
+                            </option>
+
+                        @endforeach
+
+                    </select>
+
+                    <x-form.error name="role_id" />
+
+                </div>
+
+                <!-- Password -->
+                <div class="col-md-6">
+
+                    <label for="password" class="form-label">
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        class="form-control @error('password') is-invalid @enderror"
+                    >
+
+                    <x-form.error name="password" />
+
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="col-md-6">
+
+                    <label for="password_confirmation" class="form-label">
+                        Confirm Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="password_confirmation"
+                        name="password_confirmation"
+                        class="form-control"
+                    >
+
+                </div>
+
+                <div class="col-12 mt-3">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        Create User
+                    </button>
+
+                    <a
+                        href="{{ route('admin.users.index') }}"
+                        class="btn btn-secondary"
+                    >
+                        Back
+                    </a>
+
+                </div>
+
             </div>
-
-            <button type="submit"
-                    class="btn btn-primary">
-                Save User
-            </button>
-
-            <a href="{{ route('admin.users.index') }}"
-               class="btn btn-secondary">
-                Back
-            </a>
 
         </form>
 
     </div>
+
 </div>
 
 @endsection

@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
@@ -31,18 +32,13 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreUserRequest $request)
     {
+        $validated=$request->validated();
+        
+        $validated['society_id']=auth()->user()->society_id;    
 
-        $request->validate([
-            'name' => 'required',
-            'email' => 'required | required',
-            'phone' => 'required| min:10',
-            'password' => 'required',
-            'role_id' => 'required',
-        ]);
-
-        User::create($request->all());
+        User::create($validated);
 
         return redirect()->route('admin.users.index')
             ->with('success', 'user created successfully');
@@ -69,38 +65,36 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, User $user)
+    public function update(UpdateUserRequest $request, User $user)
     {
-        $request->validate([
-            'name' => 'required',
-            'email' => 'required | required',
-            'phone' => 'required| min:10',
-            'role_id' => 'required',
-        ]);
-        
-        
-        $user->name = $request->name; 
-        $user->email = $request->email;
-        $user->phone = $request->phone;
-        $user->role_id = $request->role_id;
+        $validated = $request->validated();
 
-        $user->save();
-        // dd($user);
+        if(empty($validated['password']))
+            {
+                unset($validated['password']);
+            }
 
-        
+        $user->update($validated);
+
         return redirect()->route('admin.users.index')
-        ->with('success', 'edited successfully');
-        }
-        
-        /**
+            ->with('success', 'edited successfully');
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(User $user)
     {
+
+        if(auth()->id() === $user->id)
+            {
+                return redirect()->back()
+                ->with('error','you cant delete your self');
+            }
         $user->delete();
 
         return redirect()->route('admin.users.index')
-        ->with('success', 'deleted successfully');
-        
+            ->with('success', 'deleted successfully');
+
     }
 }
