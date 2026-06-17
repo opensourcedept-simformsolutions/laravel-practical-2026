@@ -3,10 +3,13 @@
 @section('title', 'Deliveries')
 @section('content')
     <div class="card shadow-sm border-0">
-        <div class="card-header bg-transparent py-3">
+        <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
             <h2 class="h3 fw-bold mb-0">
                 Deliveries
             </h2>
+            <a href="{{ route('deliveries.create') }}" type="button" class="btn btn-primary">
+                <i class="bi bi-plus-square me-1"></i> Create Delivery
+            </a>
         </div>
         <div class="card-body">
             <div class="table-responsive">
