@@ -18,7 +18,7 @@
         </div>
     @endif
 
-    <table class="table table-bordered" id="flatsTable">
+    <x-data-table id="flatsTable">
         <thead class="table-dark">
             <tr>
                 <th>ID</th>
@@ -55,14 +55,6 @@
                 </tr>
             @endforeach
         </tbody>
-    </table>
+    </x-data-table>
 
 @endsection
-
-@push('scripts')
-    <script>
-        $(document).ready(function() {
-            $('#flatsTable').DataTable();
-        });
-    </script>
-@endpush
