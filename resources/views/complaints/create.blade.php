@@ -17,9 +17,8 @@
     </div>
     @endif
 
-    <form action="{{ route('resident.complaints.store') }}" method="POST">
+    <form action="{{route('complaints.store')}}" method="POST">
         @csrf
-
         <div>
             <label>Category</label><br>
 

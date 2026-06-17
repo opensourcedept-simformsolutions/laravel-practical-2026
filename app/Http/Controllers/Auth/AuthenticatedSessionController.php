@@ -42,6 +42,10 @@ class AuthenticatedSessionController extends Controller
             return redirect()->intended('/gatekeeper/dashboard');
         }
 
+        if ($user->role->name === 'super_admin') {
+            return redirect()->intended('/admin/dashboard');
+        }
+
         abort(403);
     }
 

@@ -9,7 +9,15 @@
 
 <body>
 
-    <h2>Complaints</h2>
+    @if(auth()->user()->role->name === 'super_admin')
+    <h2>All Complaints</h2>
+
+    @elseif(auth()->user()->role->name === 'admin')
+    <h2>Society Complaints</h2>
+
+    @else
+    <h2>My Complaints</h2>
+    @endif
 
     @if(session('success'))
     <div>
@@ -91,6 +99,9 @@
         <thead>
             <tr>
                 <th>#</th>
+                @if(auth()->user()->role->name === 'super_admin')
+                <th>Society</th>
+                @endif
                 <th>Category</th>
                 <th>Description</th>
                 <th>Status</th>
@@ -106,6 +117,12 @@
             <tr>
 
                 <td>{{ $complaint->id }}</td>
+
+                @if(auth()->user()->role->name === 'super_admin')
+                <td>
+                    {{ $complaint->user->society->name ?? 'N/A' }}
+                </td>
+                @endif
 
                 <td>
                     {{ ucfirst($complaint->category) }}
@@ -135,7 +152,7 @@
 
                 <td>
 
-                    @if(auth()->user()->role->name === 'admin')
+                    @if(in_array(auth()->user()->role->name, ['admin', 'super_admin']))
 
                     <a href="{{ route('admin.complaints.show', $complaint->id) }}">
                         View
@@ -143,7 +160,7 @@
 
                     @else
 
-                    <a href="{{ route('resident.complaints.show', $complaint->id) }}">
+                    <a href="{{ route('complaints.show', $complaint->id) }}">
                         View
                     </a>
 

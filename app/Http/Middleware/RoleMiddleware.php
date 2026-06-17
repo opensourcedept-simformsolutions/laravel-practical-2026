@@ -13,13 +13,13 @@ class RoleMiddleware
      *
      * @param  Closure(Request): (Response)  $next
      */
-    public function handle(Request $request, Closure $next, string $role): Response
+    public function handle(Request $request, Closure $next, ...$roles): Response
     {
         if (! auth()->check()) {
             abort(403);
         }
 
-        if (auth()->user()->role->name !== $role) {
+        if (! in_array(auth()->user()->role->name,$roles)) {
             abort(403);
         }
 

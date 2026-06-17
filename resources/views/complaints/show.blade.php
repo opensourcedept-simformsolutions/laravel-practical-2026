@@ -12,12 +12,13 @@
     <div>
 
         <div>
-            @if(auth()->user()->role->name === 'admin')
+            @if(in_array(auth()->user()->role->name, ['admin', 'super_admin']))
+
             <a href="{{ route('admin.complaints.index') }}">
                 Back
             </a>
             @else
-            <a href="{{ route('resident.complaints.index') }}">
+            <a href="{{ route('complaints.index') }}">
                 Back
             </a>
             @endif
@@ -86,8 +87,7 @@
 
         </div>
 
-        @if(auth()->user()->role->name === 'admin')
-
+        @if(in_array(auth()->user()->role->name, ['admin', 'super_admin']))
         <hr>
 
         <div>

@@ -13,7 +13,7 @@ class ComplaintController extends Controller
     {
         $category = array_column(ComplaintCategory::cases(), 'value');
 
-        return view('resident.complaints.create', ['categories' => $category]);
+        return view('complaints.create', ['categories' => $category]);
     }
 
     public function store(Request $request)
@@ -29,18 +29,27 @@ class ComplaintController extends Controller
             'description' => $request->description,
             'status' => ComplaintStatus::OPEN,
         ]);
+        $role = auth()->user()->role->name;
 
         return redirect()
-            ->route('resident.complaints.create')
+            ->route($role.'.complaints.create')
             ->with('success', 'Complaint submitted successfully.');
     }
 
     public function index(Request $request)
     {
-        $query = Complaint::query();
+        $query = Complaint::with('user.society');
 
-        if (auth()->user()->role->name !== 'admin') {
-            $query->where('user_id', auth()->id());
+        $user = auth()->user();
+
+        if ($user->role->name === 'resident') {
+            $query->where('user_id', $user->id);
+
+        } elseif ($user->role->name === 'admin') {
+            $query->whereHas('user', function ($q) use ($user) {
+                $q->where('society_id', $user->society_id);
+
+            });
         }
 
         if ($request->filled('category')) {
@@ -57,21 +66,28 @@ class ComplaintController extends Controller
 
         $complaints = $query->latest()->paginate(5);
 
-        return view('resident.complaints.index', ['complaints' => $complaints]);
+        return view('complaints.index', ['complaints' => $complaints]);
     }
 
     public function show(Complaint $complaint)
     {
-        if (auth()->user()->role->name !== 'admin' && $complaint->user_id !== auth()->id()) {
+        $user = auth()->user();
+        if ($user->role->name === 'resident' && $complaint->user_id !== $user->id) {
             abort(403);
         }
 
-        return view('resident.complaints.show', compact('complaint'));
+        if ($user->role->name === 'admin' && $complaint->user->society_id !== $user->society_id) {
+            abort(403);
+        }
+
+        return view('complaints.show', compact('complaint'));
     }
 
     public function update(Request $request, Complaint $complaint)
     {
-        if (auth()->user()->role->name !== 'admin') {
+        $user = auth()->user();
+
+        if (! in_array($user->role->name,['admin', 'super_admin'])) {
             abort(403);
         }
 
