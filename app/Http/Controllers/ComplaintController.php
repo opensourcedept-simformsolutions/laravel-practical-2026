@@ -71,7 +71,7 @@ class ComplaintController extends Controller
     public function show(Complaint $complaint)
     {
         $user = auth()->user();
-        if (in_array($user->role->name, ['resident', 'gatekeeper'])&& $complaint->user_id !== $user->id) {
+        if (in_array($user->role->name, ['resident', 'gatekeeper']) && $complaint->user_id !== $user->id) {
             abort(403);
         }
 
@@ -90,11 +90,37 @@ class ComplaintController extends Controller
             abort(403);
         }
 
-        $request->validate(['status' => 'required', 'admin_notes' => 'nullable|string|max:1000']);
-        $complaint->update(['status' => $request->status, 'admin_notes' => $request->admin_notes]);
+        if ($user->role->name === 'admin' && $complaint->user->society_id !== $user->society_id) {
+            abort(403);
+        }
+
+        $request->validate([
+            'status' => 'required',
+            'admin_notes' => 'nullable|string|max:1000',
+        ]);
+
+        $complaint->update([
+            'status' => $request->status,
+            'admin_notes' => $request->admin_notes,
+        ]);
 
         return redirect()
             ->route('admin.complaints.show', $complaint)
             ->with('success', 'Complaint updated successfully.');
+    }
+
+    public function edit(Complaint $complaint)
+    {
+        $user = auth()->user();
+
+        if (! in_array($user->role->name, ['admin', 'super_admin'])) {
+            abort(403);
+        }
+
+        if ($user->role->name === 'admin' && $complaint->user->society_id !== $user->society_id) {
+            abort(403);
+        }
+
+        return view('complaints.edit', compact('complaint'));
     }
 }

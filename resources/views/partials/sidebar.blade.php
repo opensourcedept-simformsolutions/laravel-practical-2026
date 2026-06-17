@@ -30,7 +30,7 @@
         @endcanany
 
         @can('is-gatekeeper')
-        <x-sidebar-link :href="route('admin.dashboard')" :active="request()->routeIs('gatekeeper.dashboard')">
+        <x-sidebar-link :href="route('gatekeeper.dashboard')" :active="request()->routeIs('gatekeeper.dashboard')">
             <i class="bi bi-speedometer2"></i>
             <span class="sidebar-link-label">Dashboard</span>
         </x-sidebar-link>

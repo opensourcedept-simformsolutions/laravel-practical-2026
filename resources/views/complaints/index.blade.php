@@ -8,18 +8,18 @@
 
     <div>
         @if(auth()->user()->role->name === 'super_admin')
-        <h2>All Complaints</h2>
+            <h2>All Complaints</h2>
         @elseif(auth()->user()->role->name === 'admin')
-        <h2>Society Complaints</h2>
+            <h2>Society Complaints</h2>
         @else
-        <h2>My Complaints</h2>
+            <h2>My Complaints</h2>
         @endif
     </div>
 
     @if(in_array(auth()->user()->role->name, ['resident', 'gatekeeper']))
-    <a href="{{ route('complaints.create') }}" class="btn btn-primary">
-        + Create Complaint
-    </a>
+        <a href="{{ route('complaints.create') }}" class="btn btn-primary">
+            + Create Complaint
+        </a>
     @endif
 
 </div>
@@ -30,9 +30,7 @@
 
 <x-form.form method="GET">
     <x-form.form-section title="Filter Complaints">
-
         <div class="row">
-
             <div class="col-md-4">
                 <x-form.field name="category" label="Category">
                     <select name="category" class="form-control">
@@ -88,6 +86,9 @@
 
 </x-form.form>
 
+<br>
+<hr>
+<br>
 @if($complaints->count())
 
 <x-table>
@@ -137,11 +138,11 @@
             <td>
 
                 @if(in_array(auth()->user()->role->name, ['admin', 'super_admin']))
-                <a href="{{ route('admin.complaints.show', $complaint) }}">
+                <a href="{{ route('admin.complaints.show', $complaint) }}" class="btn btn-primary">
                     View
                 </a>
                 @else
-                <a href="{{ route('complaints.show', $complaint) }}">
+                <a href="{{ route('complaints.show', $complaint) }}" class="btn btn-primary">
                     View
                 </a>
                 @endif
