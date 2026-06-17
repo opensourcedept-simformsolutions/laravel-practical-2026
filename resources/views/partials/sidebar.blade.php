@@ -21,7 +21,7 @@
                 <span class="sidebar-link-label">Flats</span>
             </x-sidebar-link>
 
-            <x-sidebar-link href="#" :active="request()->routeIs('residents.*')">
+            <x-sidebar-link :href="route('residents.index')" :active="request()->routeIs('residents.index')">
                 <i class="bi bi-house-door"></i>
                 <span class="sidebar-link-label">Residents</span>
             </x-sidebar-link>

@@ -25,5 +25,4 @@
 
     <button class="btn btn-primary">Update</button>
 </form>
-
 @endsection

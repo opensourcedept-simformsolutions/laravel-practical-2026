@@ -34,14 +34,19 @@ Route::middleware(['auth', 'role:gatekeeper'])->group(function () {
         ->name('gatekeeper.dashboard');
 });
 
-Route::view('/test-form','testform');
+Route::view('/test-form', 'testform');
 Route::view('/test-tables', 'testtable');
 
-Route::view('/test-form','testform');
+Route::view('/test-form', 'testform');
 Route::view('/test-tables', 'testtable');
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('flats', FlatController::class);
 });
 
-require __DIR__ . '/auth.php';  
+use App\Http\Controllers\ResidentController;
+
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::resource('residents', ResidentController::class);
+});
+require __DIR__ . '/auth.php';
