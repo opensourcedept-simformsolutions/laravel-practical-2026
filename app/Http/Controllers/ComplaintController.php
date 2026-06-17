@@ -29,7 +29,6 @@ class ComplaintController extends Controller
             'description' => $request->description,
             'status' => ComplaintStatus::OPEN,
         ]);
-        $role = auth()->user()->role->name;
 
         return redirect()
             ->route('complaints.create')
@@ -39,9 +38,7 @@ class ComplaintController extends Controller
     public function index(Request $request)
     {
         $query = Complaint::with('user.society');
-
         $user = auth()->user();
-
         if (in_array($user->role->name, ['resident', 'gatekeeper'])) {
 
             $query->where('user_id', $user->id);
