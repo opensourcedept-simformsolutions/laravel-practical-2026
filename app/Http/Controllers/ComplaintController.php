@@ -6,10 +6,10 @@ use App\Enum\ComplaintCategory;
 use App\Enum\ComplaintStatus;
 use App\Http\Requests\StoreComplaintRequest;
 use App\Http\Requests\UpdateComplaintRequest;
-
 use App\Models\Complaint;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
 
 class ComplaintController extends Controller
 {
@@ -18,9 +18,12 @@ class ComplaintController extends Controller
     public function create()
     {
         $this->authorize('create', Complaint::class);
-        $category = array_column(ComplaintCategory::cases(), 'value');
 
-        return view('complaints.create', ['categories' => $category]);
+        $categories = array_column(ComplaintCategory::cases(), 'value');
+
+        return view('complaints.create', [
+            'categories' => $categories,
+        ]);
     }
 
     public function store(StoreComplaintRequest $request)
@@ -42,35 +45,66 @@ class ComplaintController extends Controller
     public function index(Request $request)
     {
         $this->authorize('viewAny', Complaint::class);
-        $query = Complaint::with('user.society');
-        $user = auth()->user();
-        if (in_array($user->role->name, ['resident', 'gatekeeper'])) {
 
-            $query->where('user_id', $user->id);
+        if ($request->ajax()) {
 
-        } elseif ($user->role->name === 'admin') {
+            $query = Complaint::with('user.society');
 
-            $query->whereHas('user', function ($q) use ($user) {
-                $q->where('society_id', $user->society_id);
-            });
+            $user = auth()->user();
 
+            if (in_array($user->role->name, ['resident', 'gatekeeper'])) {
+
+                $query->where('user_id', $user->id);
+
+            } elseif ($user->role->name === 'admin') {
+
+                $query->whereHas('user', function ($q) use ($user) {
+                    $q->where('society_id', $user->society_id);
+                });
+
+            }
+            // super_admin sees everything
+
+            if ($request->filled('category')) {
+                $query->where('category', $request->category);
+            }
+
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            if ($request->filled('date')) {
+                $query->whereDate('created_at', $request->date);
+            }
+
+            return DataTables::of($query)
+                ->addColumn('society', function ($complaint) {
+                    return $complaint->user?->society?->name ?? 'N/A';
+                })
+
+                ->editColumn('category', function ($complaint) {
+                    return ucfirst($complaint->category);
+                })
+
+                ->editColumn('status', function ($complaint) {
+                    return ucwords(str_replace('_', ' ', $complaint->status));
+                })
+
+                ->editColumn('created_at', function ($complaint) {
+                    return $complaint->created_at->format('d M Y');
+                })
+
+                ->addColumn('action', function ($complaint) {
+                    return '<a href="' .
+                        route('complaints.show', $complaint) .
+                        '" class="btn btn-primary btn-sm">View</a>';
+                })
+
+                ->rawColumns(['action'])
+                ->make(true);
         }
 
-        if ($request->filled('category')) {
-            $query->where('category', $request->category);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('date')) {
-            $query->whereDate('created_at', $request->date);
-        }
-
-        $complaints = $query->latest()->Paginate(5);
-
-        return view('complaints.index', ['complaints' => $complaints]);
+        return view('complaints.index');
     }
 
     public function show(Complaint $complaint)
@@ -80,7 +114,15 @@ class ComplaintController extends Controller
         return view('complaints.show', compact('complaint'));
     }
 
-    public function update(UpdateComplaintRequest $request,Complaint $complaint) {
+    public function edit(Complaint $complaint)
+    {
+        $this->authorize('update', $complaint);
+
+        return view('complaints.edit', compact('complaint'));
+    }
+
+    public function update(UpdateComplaintRequest $request, Complaint $complaint)
+    {
         $this->authorize('update', $complaint);
 
         $complaint->update([
@@ -89,14 +131,7 @@ class ComplaintController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.complaints.show', $complaint)
+            ->route('complaints.show', $complaint)
             ->with('success', 'Complaint updated successfully.');
-    }
-
-    public function edit(Complaint $complaint)
-    {
-        $this->authorize('update', $complaint);
-
-        return view('complaints.edit', compact('complaint'));
     }
 }

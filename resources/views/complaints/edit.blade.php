@@ -3,54 +3,109 @@
 @section('title', 'Edit Complaint')
 
 @section('content')
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
 
-<x-form.form :action="route('admin.complaints.update', $complaint)" method="POST" class="form-contained">
+            <div class="row">
+                <div class="col-12">
 
-    @method('PATCH')
+                    <div class="card shadow">
 
-    <x-form.form-section title="Update Complaint">
+                        <div class="card-header bg-white border-bottom-0">
+                            <h5 class="mb-0">Update Complaint</h5>
+                        </div>
 
-        <x-form.fieldset legend="Complaint Status">
+                        <form method="POST" action="{{ route('complaints.update', $complaint) }}">
+                            @csrf
+                            @method('PATCH')
 
-            <x-form.field name="status" label="Status" required>
+                            <div class="card-body">
 
-                <select name="status" id="status" class="form-control">
+                                <p class="text-secondary mb-3 text-decoration-underline">
+                                    Complaint Status
+                                </p>
 
-                    <option value="open" {{ $complaint->status == 'open' ? 'selected' : '' }}>
-                        Open
-                    </option>
+                                <div class="row">
 
-                    <option value="in_progress" {{ $complaint->status == 'in_progress' ? 'selected' : '' }}>
-                        In Progress
-                    </option>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
 
-                    <option value="resolved" {{ $complaint->status == 'resolved' ? 'selected' : '' }}>
-                        Resolved
-                    </option>
+                                            <label class="form-label">
+                                                Status
+                                            </label>
 
-                </select>
+                                            <select name="status" class="form-select">
 
-            </x-form.field>
+                                                <option value="open" {{ old('status', $complaint->status) == 'open' ?
+                                                    'selected' : '' }}>
+                                                    Open
+                                                </option>
 
-            <x-form.field name="admin_notes" label="Admin Notes">
+                                                <option value="in_progress" {{ old('status', $complaint->status) ==
+                                                    'in_progress' ? 'selected' : '' }}>
+                                                    In Progress
+                                                </option>
 
-                <textarea name="admin_notes" id="admin_notes" rows="5"
-                    class="form-control">{{ old('admin_notes', $complaint->admin_notes) }}</textarea>
+                                                <option value="resolved" {{ old('status', $complaint->status) ==
+                                                    'resolved' ? 'selected' : '' }}>
+                                                    Resolved
+                                                </option>
 
-            </x-form.field>
+                                            </select>
 
-            <div class="d-flex justify-content-end">
+                                            @error('status')
+                                            <div class="text-danger pt-1">
+                                                {{ $message }}
+                                            </div>
+                                            @enderror
 
-                <x-form.submit-button>
-                    Update Complaint
-                </x-form.submit-button>
+                                        </div>
+                                    </div>
 
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+
+                                            <label class="form-label">
+                                                Admin Notes
+                                            </label>
+
+                                            <textarea name="admin_notes" rows="5"
+                                                class="form-control">{{ old('admin_notes', $complaint->admin_notes) }}</textarea>
+
+                                            @error('admin_notes')
+                                            <div class="text-danger pt-1">
+                                                {{ $message }}
+                                            </div>
+                                            @enderror
+
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="card-footer bg-white d-flex justify-content-end border-top-0">
+
+                                <a href="{{ route('complaints.show', $complaint) }}" class="btn btn-light me-2">
+                                    Cancel
+                                </a>
+
+                                <button type="submit" class="btn btn-primary">
+                                    Update Complaint
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
             </div>
 
-        </x-form.fieldset>
-
-    </x-form.form-section>
-
-</x-form.form>
-
+        </div>
+    </div>
+</div>
 @endsection

@@ -30,11 +30,11 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Gate::define('is-gatekeeper', function ($user) {
-            return $user->isResident();
+            return $user->isGatekeeper();
         });
 
         Gate::define('is-resident', function ($user) {
-            return $user->isGatekeeper();
+            return $user->isResident();
         });
 
         Gate::before(function ($user) {

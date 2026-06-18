@@ -41,7 +41,6 @@
 .sidebar-menu {
     padding: 20px 12px;
     max-height: calc(100vh - 100px);
-    overflow-y: auto;
 }
 
 .sidebar-menu::-webkit-scrollbar {

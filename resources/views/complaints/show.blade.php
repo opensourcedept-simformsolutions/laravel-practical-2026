@@ -4,72 +4,167 @@
 
 @section('content')
 
-<div class="mb-3">
-    @if(in_array(auth()->user()->role->name, ['admin', 'super_admin']))
-    <a href="{{ route('admin.complaints.index') }}" class="btn btn-primary">
-        ← Back to Complaints
-    </a>
-    @else
-    <a href="{{ route('complaints.index') }}" class="btn btn-primary">
-        ← Back to Complaints
-    </a>
-    @endif
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
 
-</div>
+            {{-- Header --}}
+            <div class="d-flex justify-content-between align-items-center mb-3">
 
-@if(session('success')) <div class="alert alert-success">
-    {{ session('success') }} </div>
-@endif
+                <h4 class="mb-0">
+                    Complaint #{{ $complaint->id }}
+                </h4>
 
-<x-form.form-section title="Complaint #{{ $complaint->id }}">
+                <a href="{{ route('complaints.index') }}" class="btn btn-light btn-sm">
+                    Back
+                </a>
 
-    <x-form.fieldset legend="Complaint Information">
-
-        <div class="mb-3">
-            <strong>Category:</strong>
-            {{ ucfirst($complaint->category) }}
-        </div>
-
-        <div class="mb-3">
-            <strong>Description:</strong>
-            <br>
-            {{ $complaint->description }}
-        </div>
-
-        <div class="mb-3">
-            <strong>Status:</strong>
-
-            @if($complaint->status == 'open')
-            Open
-            @elseif($complaint->status == 'in_progress')
-            In Progress
-            @else
-            Resolved
-            @endif
-        </div>
-
-        <div class="mb-3">
-            <strong>Created At:</strong>
-            {{ $complaint->created_at->format('d M Y h:i A') }}
-        </div>
-
-        <div class="mb-3">
-            <strong>Admin Notes:</strong>
-            <div>
-                {{ $complaint->admin_notes ?? 'No notes added yet.' }}
             </div>
+
+            @if(session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+            @endif
+
+            {{-- Main Card --}}
+            <div class="card shadow-sm border-0">
+
+                <div class="card-body">
+
+                    {{-- TOP SUMMARY --}}
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+
+                        <div>
+                            <h5 class="mb-1">
+                                {{ ucfirst($complaint->category) }}
+                            </h5>
+
+                            <div class="text-muted">
+                                Complaint Category
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+
+                            @php
+                            $badgeClass = match($complaint->status) {
+                            'resolved' => 'bg-success',
+                            'in_progress' => 'bg-warning',
+                            default => 'bg-danger',
+                            };
+                            @endphp
+
+                            <span class="badge {{ $badgeClass }}">
+                                {{ ucwords(str_replace('_', ' ', $complaint->status)) }}
+                            </span>
+
+                            <div class="small text-muted mt-1">
+                                Created:
+                                <strong>
+                                    {{ $complaint->created_at->format('d M Y') }}
+                                </strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <hr>
+
+                    {{-- DETAILS GRID --}}
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <div class="text-muted small">
+                                    Category
+                                </div>
+
+                                <div class="fw-semibold">
+                                    {{ ucfirst($complaint->category) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <div class="text-muted small">
+                                    Status
+                                </div>
+
+                                <div class="fw-semibold">
+                                    {{ ucwords(str_replace('_', ' ', $complaint->status)) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <div class="text-muted small">
+                                    Description
+                                </div>
+
+                                <div class="fw-semibold">
+                                    {{ $complaint->description }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <div class="text-muted small">
+                                    Admin Notes
+                                </div>
+
+                                <div class="fw-semibold">
+                                    {{ $complaint->admin_notes ?: 'No notes added yet.' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <div class="text-muted small">
+                                    Created At
+                                </div>
+
+                                <div class="fw-semibold">
+                                    {{ $complaint->created_at->format('d M Y h:i A') }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <div class="text-muted small">
+                                    Last Updated
+                                </div>
+
+                                <div class="fw-semibold">
+                                    {{ $complaint->updated_at->format('d M Y h:i A') }}
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                @can('update', $complaint)
+                <div class="card-footer bg-white border-top-0 text-end">
+
+                    <a href="{{ route('complaints.edit', $complaint) }}" class="btn btn-warning">
+                        Edit Complaint
+                    </a>
+
+                </div>
+                @endcan
+
+            </div>
+
         </div>
-
-    </x-form.fieldset>
-
-</x-form.form-section>
-
-@canany(['is-admin', 'is-superadmin'])
-    <div class="mt-3">
-            <a href="{{ route('admin.complaints.edit', $complaint) }}" class="btn btn-warning">
-                Edit Complaint
-            </a>
-        </div>
-@endcanany
+    </div>
+</div>
 
 @endsection

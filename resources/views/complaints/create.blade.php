@@ -3,61 +3,98 @@
 @section('title', 'Raise Complaint')
 
 @section('content')
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
 
-<x-form.form :action="route('complaints.store')" method="POST" class="form-contained">
+            <div class="row">
+                <div class="col-12">
 
+                    <div class="card shadow">
 
-    <x-form.form-section title="Raise Complaint">
+                        <div class="card-header bg-white border-bottom-0">
+                            <h5 class="mb-0">Raise Complaint</h5>
+                        </div>
 
-        <x-form.fieldset legend="Complaint Details">
+                        <form method="POST" action="{{ route('complaints.store') }}">
+                            @csrf
 
-            <x-form.field name="category" label="Category" required>
+                            <div class="card-body">
 
-                <select name="category" id="category" class="form-control">
+                                <p class="text-secondary mb-3 text-decoration-underline">
+                                    Complaint Details
+                                </p>
 
-                    <option value="">Select Category</option>
+                                <div class="row">
 
-                    @foreach($categories as $category)
-                    <option value="{{ $category }}" {{ old('category')==$category ? 'selected' : '' }}>
-                        {{ ucfirst($category) }}
-                    </option>
-                    @endforeach
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label for="category" class="form-label">
+                                                Category
+                                            </label>
 
-                </select>
+                                            <select id="category" name="category" class="form-control">
+                                                <option value="">
+                                                    Select Category
+                                                </option>
 
-                <x-form.error name="category" />
+                                                @foreach ($categories as $category)
+                                                <option value="{{ $category }}" {{ old('category')==$category
+                                                    ? 'selected' : '' }}>
+                                                    {{ ucfirst($category) }}
+                                                </option>
+                                                @endforeach
+                                            </select>
 
-            </x-form.field>
+                                            @error('category')
+                                            <div class="text-danger pt-1">
+                                                {{ $message }}
+                                            </div>
+                                            @enderror
+                                        </div>
+                                    </div>
 
-            <x-form.field name="description" label="Description" required>
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label for="description" class="form-label">
+                                                Description
+                                            </label>
 
-                <textarea name="description" id="description" rows="5" class="form-control"
-                    placeholder="Enter complaint details...">{{ old('description') }}</textarea>
+                                            <textarea id="description" name="description" rows="5" class="form-control"
+                                                placeholder="Enter complaint details...">{{ old('description') }}</textarea>
 
-                <x-form.error name="description" />
+                                            @error('description')
+                                            <div class="text-danger pt-1">
+                                                {{ $message }}
+                                            </div>
+                                            @enderror
+                                        </div>
+                                    </div>
 
-            </x-form.field>
+                                </div>
 
-            <div class="d-flex justify-content-between align-items-center mb-4">
+                            </div>
 
-                <a href="{{ route('complaints.index') }}" class="btn btn-outline-primary">
-                    My Complaints
-                </a>
+                            <div class="card-footer bg-white d-flex justify-content-end border-top-0">
 
-                <div class="d-flex justify-content-end">
+                                <a href="{{ route('complaints.index') }}" class="btn btn-light me-2">
+                                    My Complaints
+                                </a>
 
-                    <x-form.submit-button>
-                        Submit Complaint
-                    </x-form.submit-button>
+                                <button type="submit" class="btn btn-primary">
+                                    Submit Complaint
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </div>
 
                 </div>
             </div>
 
-        </x-form.fieldset>
-
-    </x-form.form-section>
-
-
-</x-form.form>
-
+        </div>
+    </div>
+</div>
 @endsection
