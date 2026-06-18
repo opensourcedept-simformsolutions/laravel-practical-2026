@@ -14,6 +14,7 @@ class VisitorLog extends Model
         'visitor_id',
         'flat_id',
         'purpose',
+        'created_by',
         'gatekeeper_id',
         'entry_time',
         'exit_time',

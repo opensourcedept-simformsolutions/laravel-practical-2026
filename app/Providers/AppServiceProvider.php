@@ -8,31 +8,31 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
         //
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        Paginator::useBootstrapFive();
+        require_once app_path('Helpers/helpers.php');
+
+        Gate::before(function ($user, $ability) {
+            if ($user->isSuperAdmin()) {
+                return true;
+            }
+        });
 
         Gate::define('is-admin', function ($user) {
-            return $user->role->name === 'admin';
+            return $user->isAdmin();
         });
 
         Gate::define('is-gatekeeper', function ($user) {
-            return $user->role->name === 'gatekeeper';
+            return $user->isResident();
         });
 
         Gate::define('is-resident', function ($user) {
-            return $user->role->name === 'resident';
+            return $user->isGatekeeper();
         });
     }
 }
