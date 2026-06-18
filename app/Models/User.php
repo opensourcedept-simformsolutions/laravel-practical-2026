@@ -57,5 +57,25 @@ class User extends Authenticatable
     public function society()
     {
         return $this->belongsTo(Society::class);
+    }    
+
+    public function isSuperAdmin()
+    {
+        return $this->role?->name === 'super_admin';
+    }
+
+    public function isAdmin()
+    {
+        return $this->role?->name === 'admin';
+    }
+
+    public function isResident()
+    {
+        return $this->role?->name === 'resident';
+    }
+
+    public function isGatekeeper()
+    {
+        return $this->role?->name === 'gatekeeper';
     }
 }

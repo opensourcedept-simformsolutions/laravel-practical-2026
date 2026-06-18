@@ -8,18 +8,19 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RoleMiddleware
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  Closure(Request): (Response)  $next
-     */
-    public function handle(Request $request, Closure $next, string $role): Response
+    public function handle(Request $request, Closure $next, ...$roles): Response
     {
         if (! auth()->check()) {
             abort(403);
         }
 
-        if (auth()->user()->role->name !== $role) {
+        $user = auth()->user();
+
+        if ($user->isSuperAdmin()) {
+            return $next($request);
+        }
+
+        if (! in_array(auth()->user()->role->name, $roles)) {
             abort(403);
         }
 
