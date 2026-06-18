@@ -5,14 +5,23 @@
 </div>
 
 @push('scripts')
-<script>
-$(function () {
-    $('#{{ $id }}').DataTable({
-        searching: {{ $searching ? 'true' : 'false' }},
-        paging: {{ $paging ? 'true' : 'false' }},
-        ordering: {{ $ordering ? 'true' : 'false' }},
-        pageLength: {{ $pageLength }}
-    });
-});
-</script>
+    <script>
+        $(function() {
+            $('#{{ $id }}').DataTable({
+                searching: {{ $searching ? 'true' : 'false' }},
+                paging: {{ $paging ? 'true' : 'false' }},
+                ordering: {{ $ordering ? 'true' : 'false' }},
+                pageLength: {{ $pageLength }},
+                layout: {
+                    topStart: {
+                        buttons: ['csv']
+                    },
+                    topEnd: {
+                        search: true,
+                        pageLength: true
+                    }
+                }
+            });
+        });
+    </script>
 @endpush

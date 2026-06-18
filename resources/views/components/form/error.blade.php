@@ -5,5 +5,3 @@
         {{ $errors->first($name) }}
     </div>
 @endif
-
-

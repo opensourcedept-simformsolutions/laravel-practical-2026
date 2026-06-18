@@ -11,7 +11,7 @@
     $hasError = is_bool($error) ? $error : ! empty($error);
 @endphp
 
-<div {{ $attributes->merge(['class' => 'form-choice-group' . ($hasError ? ' has-error' : '' )]) }}>
+<div {{ $attributes->merge(['class' => 'form-choice-group' . ($hasError ? ' has-error' : '')]) }}>
     @if ($legend)
         <div class="form-group-label">{{ $legend }}</div>
     @endif

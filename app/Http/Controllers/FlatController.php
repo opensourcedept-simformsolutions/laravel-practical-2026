@@ -2,71 +2,95 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Http\Requests\StoreFlatRequest;
 use App\Http\Requests\UpdateFlatRequest;
 use App\Models\Flat;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
+use Yajra\DataTables\Exceptions\Exception;
+use Yajra\DataTables\Facades\DataTables;
 
 class FlatController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        $flats = Flat::latest()->get();
-        return view('admin.flats.index', compact('flats'));
+        if ($request->ajax()) {
+
+            return DataTables::of(Flat::query())
+                ->addColumn('actions', function ($row) {
+
+                    $editUrl = route('flats.edit', $row->id);
+                    $deleteUrl = route('flats.destroy', $row->id);
+
+                    return '
+                    <a href="'.$editUrl.'" class="btn btn-sm btn-warning">Edit</a>
+
+                    <form action="'.$deleteUrl.'" method="POST" style="display:inline-block;">
+                        '.csrf_field().'
+                        '.method_field('DELETE').'
+                        <button type="submit" class="btn btn-sm btn-danger"
+                            onclick="return confirm(\'Are you sure?\')">
+                            Delete
+                        </button>
+                    </form>
+                ';
+                })
+                ->rawColumns(['actions'])
+                ->make(true);
+        }
+
+        return view('flats.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        return view('admin.flats.create');
+        return view('flats.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreFlatRequest $request)
     {
-        $data = $request->validated();
-        $data['society_id'] = auth()->user()->society_id;
-        Flat::create($data);
-        return redirect()->route('flats.index')
-            ->with('success', 'Flat created successfully');
+        try {
+            $validated = $request->validated();
+
+            Flat::create([
+                'wing' => $validated['wing'],
+                'floor' => $validated['floor'],
+                'flat_number' => $validated['flat_number'],
+                'society_id' => auth()->user()->society_id,
+            ]);
+
+            Session::flash('message', 'Flat Created Successfully.');
+            Session::flash('status', 'success');
+
+            return redirect()->route('flats.index');
+
+        } catch (Exception $e) {
+
+            Session::flash('message', 'Something went wrong.');
+            Session::flash('status', 'error');
+
+            return redirect()->back()->withInput();
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id) {}
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Flat $flat)
     {
-        return view('admin.flats.edit', compact('flat'));
+        return view('flats.edit', compact('flat'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateFlatRequest $request, Flat $flat)
     {
 
-
         $flat->update($request->validated());
+        Session::flash('message', 'Visitor Pass updated successfully.');
+        Session::flash('status', 'success');
 
         return redirect()->route('flats.index')
             ->with('success', 'Flat updated successfully');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Flat $flat)
     {
         $flat->delete();
