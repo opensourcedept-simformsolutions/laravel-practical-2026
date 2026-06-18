@@ -16,18 +16,18 @@
 .app-datatable thead th {
     background: #f8fafc;
     color: var(--text-secondary);
-    font-size: 0.84rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     border-bottom: 1px solid var(--border-color);
-    padding: 1rem 1.1rem;
+    padding: 0.75rem 0.9rem;
+    font-size: 0.8rem;
 }
 
 .app-datatable tbody td {
-    padding: 0.95rem 1.1rem;
     border-color: var(--border-light);
     color: var(--text-primary);
+    padding: 0.55rem 0.9rem;
 }
 
 .app-datatable.table-striped > tbody > tr:nth-of-type(odd) > * {
@@ -136,4 +136,92 @@ div.dt-container .dt-paging .dt-paging-button.disabled:hover {
         padding-left: 0.85rem;
         padding-right: 0.85rem;
     }
+}
+
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-weight: 600;
+    line-height: 1;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.7rem;
+    border: 1px solid transparent;
+}
+
+.table-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 28px;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.8rem;
+
+    border-radius: 8px;
+    border: 1px solid transparent;
+
+    font-weight: 500;
+    text-decoration: none;
+
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+/* View */
+.action-btn-view {
+    background: rgba(59, 130, 246, 0.12);
+    color: #2563eb;
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+.action-btn-view:hover {
+    background: rgba(59, 130, 246, 0.18);
+    color: #1d4ed8;
+}
+
+/* Edit */
+.action-btn-edit {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+.action-btn-edit:hover {
+    background: rgba(245, 158, 11, 0.18);
+    color: #b45309;
+}
+
+/* Success */
+.action-btn-success {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.action-btn-success:hover {
+    background: rgba(16, 185, 129, 0.18);
+    color: #047857;
+}
+/* Received */
+.status-received {
+    color: #2563eb;
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+/* Delivered */
+.status-delivered {
+    color: #059669;
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.2);
 }
