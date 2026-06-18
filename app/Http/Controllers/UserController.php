@@ -37,7 +37,7 @@ class UserController extends Controller
         $validated=$request->validated();
         
         $validated['society_id']=auth()->user()->society_id;    
-
+        
         User::create($validated);
 
         return redirect()->route('admin.users.index')

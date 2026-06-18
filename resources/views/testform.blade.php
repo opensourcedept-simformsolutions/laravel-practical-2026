@@ -3,7 +3,8 @@
 @section('title', 'Login')
 
 @section('content')
-    <x-form.form :action="route('login')" method="POST" class="form-contained">
+<div class="container">  
+<x-form.form :action="route('login')" method="POST" class="form-contained">
         <x-form.form-section title="Login">
             <x-form.fieldset legend="Account Access">
                 <x-form.field name="email" label="Email" required>

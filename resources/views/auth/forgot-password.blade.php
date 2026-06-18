@@ -1,25 +1,103 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
+@extends('layouts.guest')
+
+@section('title', 'Forgot Password')
+
+@section('content')
+
+    <div class="container-fluid">
+
+        <div class="row min-vh-100">
+
+            <div
+                class="col-lg-6 d-none d-lg-flex auth-branding
+                    align-items-center justify-content-center">
+
+                <div class="text-center">
+
+                    <i class="bi bi-shield-lock auth-logo"></i>
+
+                    <h1 class="fw-bold mt-3">
+                        SocietyMS
+                    </h1>
+
+                    <p class="lead">
+                        Password Recovery
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-6 d-flex align-items-center justify-content-center p-3">
+
+                <div class="card auth-card shadow w-100" style="max-width:450px;">
+                    <div class="text-center d-lg-none mb-4">
+
+                        <i class="bi bi-buildings fs-1 text-primary"></i>
+
+                        <h3 class="fw-bold">
+                            SocietyMS
+                        </h3>
+
+                    </div>
+                    <div class="card-body p-4">
+
+                        <h3 class="text-center mb-3">
+                            Forgot Password
+                        </h3>
+
+                        <p class="text-muted text-center">
+
+                            Enter your registered email address.
+                            We will send a password reset link.
+
+                        </p>
+
+                        @if (session('status'))
+                            <div class="alert alert-success">
+                                {{ session('status') }}
+                            </div>
+                        @endif
+
+                        <form method="POST" action="{{ route('password.email') }}">
+
+                            @csrf
+
+                            <div class="mb-3">
+
+                                <label>Email</label>
+
+                                <input type="email" name="email" value="{{ old('email') }}"
+                                    class="form-control form-control-lg @error('email') is-invalid @enderror">
+
+                                <x-form.error name="email" />
+
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+
+                                Send Reset Link
+
+                            </button>
+
+                        </form>
+
+                        <div class="text-center mt-3">
+
+                            <a href="{{ route('login') }}">
+                                Back To Login
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
-
-    <form method="POST" action="{{ route('password.email') }}">
-        @csrf
-
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Email Password Reset Link') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+@endsection
