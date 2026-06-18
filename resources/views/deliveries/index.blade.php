@@ -2,19 +2,30 @@
 
 @section('title', 'Deliveries')
 @section('content')
-    <x-table id="deliveries-table" title="Deliveries">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Flat</th>
-                <th>Resident</th>
-                <th>Vendor</th>
-                <th>Status</th>
-                <th>Received At</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-    </x-table>
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-transparent py-3">
+            <h2 class="h3 fw-bold mb-0">
+                Deliveries
+            </h2>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="deliveries-table" class='table table-hover align-middle mb-0'>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Flat</th>
+                            <th>Resident</th>
+                            <th>Vendor</th>
+                            <th>Status</th>
+                            <th>Received At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
