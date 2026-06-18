@@ -6,95 +6,110 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $users = User::with('role')->get();
+        Gate::authorize('viewAny', User::class);
 
-        return view('admin.users.index', compact('users'));
+        $users = User::with('role')
+            ->where(
+                'society_id',
+                auth()->user()->society_id
+            )
+            ->get();
+
+        return view(
+            'admin.users.index',
+            compact('users')
+        );
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        $roles = Role::all();
+        Gate::authorize('create', User::class);
 
-        return view('admin.users.create', compact('roles'));
+        $roles = Role::whereIn('name', [
+            'admin',
+            'gatekeeper',
+        ])->get();
+
+        return view(
+            'admin.users.create',
+            compact('roles')
+        );
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreUserRequest $request)
     {
-        $validated=$request->validated();
-        
-        $validated['society_id']=auth()->user()->society_id;    
-        
-        User::create($validated);
+        Gate::authorize('create', User::class);
 
-        return redirect()->route('admin.users.index')
-            ->with('success', 'user created successfully');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(User $user)
-    {
-        $roles = Role::all();
-
-        return view('admin.users.edit', compact('user', 'roles'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateUserRequest $request, User $user)
-    {
         $validated = $request->validated();
 
-        if(empty($validated['password']))
-            {
-                unset($validated['password']);
-            }
+        $validated['society_id'] =
+            auth()->user()->society_id;
+
+        User::create($validated);
+
+        return redirect()
+            ->route('admin.users.index')
+            ->with(
+                'success',
+                'User created successfully'
+            );
+    }
+
+    public function edit(User $user)
+    {
+        Gate::authorize('update', $user);
+
+        $roles = Role::whereIn('name', [
+            'resident',
+            'admin',
+            'gatekeeper',
+        ])->get();
+
+        return view(
+            'admin.users.edit',
+            compact('user', 'roles')
+        );
+    }
+
+    public function update(
+        UpdateUserRequest $request,
+        User $user
+    ) {
+        Gate::authorize('update', $user);
+
+        $validated = $request->validated();
+
+        if (empty($validated['password'])) {
+            unset($validated['password']);
+        }
 
         $user->update($validated);
 
-        return redirect()->route('admin.users.index')
-            ->with('success', 'edited successfully');
+        return redirect()
+            ->route('admin.users.index')
+            ->with(
+                'success',
+                'User updated successfully'
+            );
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(User $user)
     {
+        Gate::authorize('delete', $user);
 
-        if(auth()->id() === $user->id)
-            {
-                return redirect()->back()
-                ->with('error','you cant delete your self');
-            }
         $user->delete();
 
-        return redirect()->route('admin.users.index')
-            ->with('success', 'deleted successfully');
-
+        return redirect()
+            ->route('admin.users.index')
+            ->with(
+                'success',
+                'User deleted successfully'
+            );
     }
 }

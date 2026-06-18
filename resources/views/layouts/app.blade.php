@@ -55,35 +55,6 @@
   </style>
 </head>
 
-<<<<<<< HEAD
-<body>
-
-    <div class="app-layout">
-        <div class="sidebar-container bg-dark min-vh-100 p-0" id="sidebarContainer">
-            @include('partials.sidebar')
-        </div>
-
-        <div class="main-content-area">
-            @include('partials.navbar')
-
-            <div class="content-wrapper">
-
-            <div class="col-md-3 col-lg-2 bg-dark min-vh-100 p-0">
-                @include('partials.sidebar')
-            </div>
-    
-            <div class="col-md-9 col-lg-10 p-4">
-
-                @yield('content')
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    @stack('scripts')
-    @yield('scripts')
-=======
 <body class="bg-light">
 
   <div class="app-layout">
@@ -135,7 +106,6 @@
       })
     @endif
   </script>
->>>>>>> origin/TE-T672-feature/resident-profile
 
 
 <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
@@ -167,7 +137,39 @@ Swal.fire({
 });
 </script>
 
-@endif
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+        @stack('scripts')
+        @yield('scripts')
+
+
+        <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+
+        <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        @if (session('success'))
+            <script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: '{{ session('success') }}',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            </script>
+        @endif
+
+        @if (session('error'))
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: '{{ session('error') }}'
+                });
+            </script>
+        @endif
 </body>
 
 </html>
