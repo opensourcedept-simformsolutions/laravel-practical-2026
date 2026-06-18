@@ -11,11 +11,20 @@ use App\Http\Controllers\ResidentProfileController;
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
 
+    Route::get('/profile', [ProfileController::class, 'index'])
+        ->name('profile');
+
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
+
+    Route::patch('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
+
+    Route::delete('/profile', [ProfileController::class, 'destroy'])
+        ->name('profile.destroy');
+});
+    
 Route::middleware(['auth', 'role:resident,gatekeeper'])
     ->controller(VisitorPassController::class)
     ->name('passes.')
@@ -46,12 +55,4 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('residents', ResidentController::class);
 });
 
-Route::middleware('auth')->group(function () {
-
-    Route::get('/profile', [ProfileController::class, 'index'])
-        ->name('profile');
-
-    Route::get('/profile/edit', [ProfileController::class, 'edit'])
-        ->name('profile.edit');
-});
 require __DIR__ . '/auth.php';
