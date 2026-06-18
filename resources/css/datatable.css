@@ -1,0 +1,227 @@
+.app-datatable-wrapper {
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    background: #ffffff;
+    overflow: hidden;
+    box-shadow:
+        0 1px 3px rgba(15, 23, 42, 0.05),
+        0 10px 30px rgba(15, 23, 42, 0.04);
+}
+
+.app-datatable {
+    margin-bottom: 0 !important;
+    vertical-align: middle;
+}
+
+.app-datatable thead th {
+    background: #f8fafc;
+    color: var(--text-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.75rem 0.9rem;
+    font-size: 0.8rem;
+}
+
+.app-datatable tbody td {
+    border-color: var(--border-light);
+    color: var(--text-primary);
+    padding: 0.55rem 0.9rem;
+}
+
+.app-datatable.table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: #fcfdff;
+}
+
+.app-datatable.table-bordered > :not(caption) > * > * {
+    border-width: 0 0 1px;
+}
+
+div.dt-container div.dt-layout-row {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    gap: 1rem;
+}
+
+/* Search box */
+div.dt-container .dt-search input {
+    min-height: 42px;
+    padding: 0.55rem 0.8rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #ffffff;
+    color: var(--text-primary);
+}
+
+div.dt-container select.dt-input {
+    width: 70px;
+    min-width: 70px;
+    height: 42px;
+    padding: 0.25rem 2rem 0.25rem 0.75rem;
+
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background-color: #ffffff;
+    color: var(--text-primary);
+
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20'%3E%3Cpath fill='%2364748b' d='M5 7l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+}
+
+div.dt-container .dt-length {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+div.dt-container .dt-search input:focus,
+div.dt-container .dt-input:focus,
+div.dt-container select.dt-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+div.dt-container .dt-search label,
+div.dt-container .dt-length label,
+div.dt-container .dt-info {
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+}
+
+div.dt-container .dt-paging .dt-paging-button {
+    min-width: 38px;
+    min-height: 38px;
+    margin: 0 0.15rem;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 10px;
+    background: #ffffff !important;
+    color: var(--text-primary) !important;
+}
+
+div.dt-container .dt-paging .dt-paging-button:hover {
+    background: #eff6ff !important;
+    border-color: #bfdbfe !important;
+    color: var(--primary) !important;
+}
+
+div.dt-container .dt-paging .dt-paging-button.current,
+div.dt-container .dt-paging .dt-paging-button.current:hover {
+    background: linear-gradient(135deg, var(--primary), #60a5fa) !important;
+    border-color: transparent !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 18px rgba(59, 130, 246, 0.22);
+}
+
+div.dt-container .dt-paging .dt-paging-button.disabled,
+div.dt-container .dt-paging .dt-paging-button.disabled:hover {
+    opacity: 0.45;
+    background: #ffffff !important;
+    color: var(--text-secondary) !important;
+}
+
+@media (max-width: 767.98px) {
+    div.dt-container div.dt-layout-row {
+        padding: 0.9rem;
+    }
+
+    .app-datatable thead th,
+    .app-datatable tbody td {
+        padding-left: 0.85rem;
+        padding-right: 0.85rem;
+    }
+}
+
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-weight: 600;
+    line-height: 1;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.7rem;
+    border: 1px solid transparent;
+}
+
+.table-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 28px;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.8rem;
+
+    border-radius: 8px;
+    border: 1px solid transparent;
+
+    font-weight: 500;
+    text-decoration: none;
+
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+/* View */
+.action-btn-view {
+    background: rgba(59, 130, 246, 0.12);
+    color: #2563eb;
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+.action-btn-view:hover {
+    background: rgba(59, 130, 246, 0.18);
+    color: #1d4ed8;
+}
+
+/* Edit */
+.action-btn-edit {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+.action-btn-edit:hover {
+    background: rgba(245, 158, 11, 0.18);
+    color: #b45309;
+}
+
+/* Success */
+.action-btn-success {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.action-btn-success:hover {
+    background: rgba(16, 185, 129, 0.18);
+    color: #047857;
+}
+/* Received */
+.status-received {
+    color: #2563eb;
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+/* Delivered */
+.status-delivered {
+    color: #059669;
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.2);
+}

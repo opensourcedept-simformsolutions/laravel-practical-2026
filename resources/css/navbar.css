@@ -1,0 +1,103 @@
+.app-navbar {
+    min-height: 70px;
+    background: linear-gradient(135deg, var(--primary), #60a5fa);
+    padding: 0 24px;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    position: relative;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar-toggle {
+    color: white;
+    font-size: 1.3rem;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px 12px;
+    transition: all 0.2s ease;
+    margin-right: 16px;
+}
+
+.sidebar-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.app-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white !important;
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.app-brand i {
+    font-size: 1.4rem;
+}
+
+.nav-user-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    transition: 0.2s ease;
+}
+
+.nav-user-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    color: white;
+}
+
+.nav-user-btn:focus {
+    box-shadow: none;
+}
+
+.user-icon {
+    font-size: 1.5rem;
+}
+
+.user-info {
+    text-align: left;
+    line-height: 1.2;
+}
+
+.user-name {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.user-role {
+    font-size: 0.82rem;
+    opacity: 0.85;
+}
+
+.user-dropdown {
+    min-width: 220px;
+    border: none;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.user-dropdown .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+}
+
+.user-dropdown .dropdown-item:hover {
+    background: #f1f5f9;
+}
+
+.user-dropdown .dropdown-divider {
+    margin: 0;
+}
