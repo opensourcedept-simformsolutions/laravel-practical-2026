@@ -1,3 +1,4 @@
+
 <aside class="sidebar" id="appSidebar">
     <div class="sidebar-header">
                 <i class="bi bi-buildings-fill"></i>
@@ -22,8 +23,8 @@
                 <span class="sidebar-link-label">Flats</span>
             </x-sidebar-link>
 
-            <x-sidebar-link href="#" :active="request()->routeIs('residents.*')">
-                <i class="bi bi-person-lines-fill"></i>
+            <x-sidebar-link :href="route('residents.index')" :active="request()->routeIs('residents.index')">
+                <i class="bi bi-house-door"></i>
                 <span class="sidebar-link-label">Residents</span>
             </x-sidebar-link>
         @endcan
@@ -63,3 +64,52 @@
         @endcan
     </div>
 </aside>
+
+<div class="list-group list-group-flush">
+
+    <a href="{{ route('admin.dashboard') }}" class="list-group-item list-group-item-action bg-dark text-white">
+        Dashboard
+    </a>
+
+    {{-- ADMIN --}}
+    @can('is-admin')
+        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+            Users
+        </a>
+
+        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+            Residents
+        </a>
+
+        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+            Gatekeepers
+        </a>
+
+        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+            Reports
+        </a>
+    @endcan
+
+    {{-- GATEKEEPER --}}
+    @can('is-gatekeeper')
+        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+            Visitors
+        </a>
+
+        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+            Entry Logs
+        </a>
+    @endcan
+    {{-- RESIDENT --}}
+    @can('is-resident')
+        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+            My Visitors
+        </a>
+
+        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+            Complaints
+        </a>
+    @endcan
+
+</div>
+

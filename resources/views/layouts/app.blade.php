@@ -25,6 +25,13 @@
             @include('partials.navbar')
 
             <div class="content-wrapper">
+
+            <div class="col-md-3 col-lg-2 bg-dark min-vh-100 p-0">
+                @include('partials.sidebar')
+            </div>
+    
+            <div class="col-md-9 col-lg-10 p-4">
+
                 @yield('content')
             </div>
         </div>

@@ -31,8 +31,9 @@ class FlatController extends Controller
      */
     public function store(StoreFlatRequest $request)
     {
-        Flat::create($request->validated());
-
+        $data = $request->validated();
+        $data['society_id'] = auth()->user()->society_id;
+        Flat::create($data);
         return redirect()->route('flats.index')
             ->with('success', 'Flat created successfully');
     }
