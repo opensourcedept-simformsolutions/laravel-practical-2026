@@ -8,9 +8,6 @@ use Illuminate\Validation\Rule;
 
 class StoreResidentRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
@@ -33,6 +30,17 @@ class StoreResidentRequest extends FormRequest
             'phone' => ['required', 'string', 'max:15'],
             'flat_id' => ['required', 'exists:flats,id'],
             'resident_type' => ['required', 'in:owner,tenant'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Name is required.',
+            'email.required' => 'Email is required.',
+            'phone.required' => 'Phone number is required.',
+            'flat_id.required' => 'Flat number is required.',
+            'resident_type.required' => 'select a valid resident_type',
         ];
     }
 }
