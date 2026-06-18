@@ -4,28 +4,30 @@
     'actions' => null,
 ])
 
-<section {{ $attributes->merge(['class' => 'form-section']) }}>
+<section {{ $attributes->class(['card shadow-sm border-0']) }}>
     @if ($title || $description || $actions)
-        <div class="form-section-head">
-            <div>
+        <div class="card-header bg-transparent px-4 py-3">
+            <div class="d-flex flex-column flex-md-row align-items-md-start justify-content-md-between gap-3">
+                <div>
                 @if ($title)
-                    <h2 class="form-section-title">{{ $title }}</h2>
+                    <h2 class="h5 mb-1">{{ $title }}</h2>
                 @endif
 
                 @if ($description)
-                    <p class="form-section-description">{{ $description }}</p>
+                    <p class="text-muted mb-0">{{ $description }}</p>
+                @endif
+                </div>
+
+                @if ($actions)
+                    <div class="d-flex flex-wrap gap-2">
+                        {{ $actions }}
+                    </div>
                 @endif
             </div>
-
-            @if ($actions)
-                <div class="form-section-actions">
-                    {{ $actions }}
-                </div>
-            @endif
         </div>
     @endif
 
-    <div class="form-section-body">
+    <div class="card-body p-4">
         {{ $slot }}
     </div>
 </section>

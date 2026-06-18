@@ -7,18 +7,16 @@
 ])
 
 @php
-    $fieldName = $name;
     $fieldFor = $for ?? $name;
-    $fieldErrorText = $fieldName ? $errors->first($fieldName) : null;
 @endphp
 
-<div {{ $attributes->merge(['class' => 'form-field']) }}>
+<div {{ $attributes->class(['mb-3']) }}>
     @if ($label)
-        <x-form.label :for="$fieldFor" :required="$required">
+        <x-form.label :for="$fieldFor" :required="$required" class="mb-2">
             {{ $label }}
         </x-form.label>
     @endif
 
     {{ $slot }}
-
+    <x-form.error :name="$name" />
 </div>
