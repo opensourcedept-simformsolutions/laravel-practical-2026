@@ -154,8 +154,12 @@
         @endforeach
 
     </tbody>
-
 </x-table>
+
+<div class="mt-3">
+    {{ $complaints->links() }}
+</div>
+
 
 @else
 

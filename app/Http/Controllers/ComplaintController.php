@@ -68,7 +68,7 @@ class ComplaintController extends Controller
             $query->whereDate('created_at', $request->date);
         }
 
-        $complaints = $query->latest()->get();
+        $complaints = $query->latest()->Paginate(5);
 
         return view('complaints.index', ['complaints' => $complaints]);
     }
