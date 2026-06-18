@@ -11,11 +11,13 @@ function initializeDataTables() {
         }
 
         $table.DataTable({
-            searching: $table.data('searching') === true || $table.data('searching') === 'true',
-            paging: $table.data('paging') === true || $table.data('paging') === 'true',
-            ordering: $table.data('ordering') === true || $table.data('ordering') === 'true',
-            pageLength: Number($table.data('page-length')) || 10,
-        });
+    searching: $table.data('searching') === true || $table.data('searching') === 'true',
+    paging: $table.data('paging') === true || $table.data('paging') === 'true',
+    ordering: $table.data('ordering') === true || $table.data('ordering') === 'true',
+    pageLength: Number($table.data('page-length')) || 10,
+
+    info: false,
+});
     });
 }
 

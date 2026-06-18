@@ -1,7 +1,7 @@
 @props([
     'id' => null,
     'searching' => true,
-    'paging' => true,
+    'paging' => false,
     'ordering' => true,
     'pageLength' => 10,
 ])
