@@ -8,12 +8,26 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use App\Models\User;
 
 class ProfileController extends Controller
 {
     /**
      * Display the user's profile form.
      */
+
+
+    public function index()
+    {
+        $user = auth()->user();
+        if ($user->can('is-resident')) {
+            $user->load([
+                'resident.flat'
+            ]);
+        }
+
+        return view('profile.index', compact('user'));
+    }
     public function edit(Request $request): View
     {
         return view('profile.edit', [
@@ -57,4 +71,5 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+    
 }

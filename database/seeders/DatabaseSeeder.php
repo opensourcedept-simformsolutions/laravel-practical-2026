@@ -11,28 +11,10 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        User::factory(10)->create();
-
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
-
         $this->call([
-            RoleSeeder::class,
+            DemoDataSeeder::class,
         ]);
-
-        // User::create([
-        //     'name' => 'Admin',
-        //     'email' => 'admin@example.com',
-        //     'password' => bcrypt('1'),
-        //     'phone' => '111111111',
-        //     'role_id' => Role::where('name', 'admin')->first()->id,
-        // ]);
     }
 }
