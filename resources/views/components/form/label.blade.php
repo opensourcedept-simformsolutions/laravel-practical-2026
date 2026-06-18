@@ -9,6 +9,6 @@
     <span>{{ $slot }}</span>
 
     @if ($required)
-        <span class="form-label-required">*</span>
+        <span class="text-danger">*</span>
     @endif
 </label>

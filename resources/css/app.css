@@ -2,8 +2,6 @@
 @import './navbar.css';
 @import './layout.css';
 @import './sidebar.css';
-@import './datatable.css';
-@import './forms.css';
 @import './ui.css';
 @import './card.css';
 @tailwind base;

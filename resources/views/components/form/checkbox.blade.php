@@ -13,7 +13,7 @@
     $hasError = is_bool($error) ? $error : ! empty($error);
 @endphp
 
-<label {{ $attributes->merge(['class' => 'form-check' . ($hasError ? ' has-error' : '')]) }}>
+<label {{ $attributes->class(['form-check']) }}>
     <input
         class="form-check-input"
         type="checkbox"
