@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Complaint;
+use App\Policies\ComplaintPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -32,8 +34,12 @@ class AppServiceProvider extends ServiceProvider
             return $user->role->name === 'resident';
         });
 
-        Gate::define('is-superadmin', function ($user){
-            return $user->role->name === 'super_admin';
+        Gate::before(function ($user) {
+            if ($user->role->name === 'super_admin') {
+                return true;
+            }
         });
+
+        Gate::policy(Complaint::class, ComplaintPolicy::class);
     }
 }

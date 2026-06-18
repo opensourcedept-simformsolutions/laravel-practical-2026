@@ -1,8 +1,7 @@
 <?php
-
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -18,8 +17,7 @@ class User extends Authenticatable
         'email',
         'phone',
         'password',
-        'role_id',
-        'society_id'
+        'role_id'
     ];
 
     protected $hidden = [
@@ -58,5 +56,25 @@ class User extends Authenticatable
     public function society()
     {
         return $this->belongsTo(Society::class);
+    }
+
+    public function isSuperAdmin()
+    {
+        return $this->role?->name === 'super_admin';
+    }
+
+    public function isAdmin()
+    {
+        return $this->role?->name === 'admin';
+    }
+
+    public function isResident()
+    {
+        return $this->role?->name === 'resident';
+    }
+
+    public function isGatekeeper()
+    {
+        return $this->role?->name === 'gatekeeper';
     }
 }

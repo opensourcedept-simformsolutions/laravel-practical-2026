@@ -4,24 +4,28 @@ namespace App\Http\Controllers;
 
 use App\Enum\ComplaintCategory;
 use App\Enum\ComplaintStatus;
+use App\Http\Requests\StoreComplaintRequest;
+use App\Http\Requests\UpdateComplaintRequest;
+
 use App\Models\Complaint;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 
 class ComplaintController extends Controller
 {
+    use AuthorizesRequests;
+
     public function create()
     {
+        $this->authorize('create', Complaint::class);
         $category = array_column(ComplaintCategory::cases(), 'value');
 
         return view('complaints.create', ['categories' => $category]);
     }
 
-    public function store(Request $request)
+    public function store(StoreComplaintRequest $request)
     {
-        $request->validate([
-            'category' => 'required',
-            'description' => 'required|min:10|max:1000',
-        ]);
+        $this->authorize('create', Complaint::class);
 
         Complaint::create([
             'user_id' => auth()->id(),
@@ -37,6 +41,7 @@ class ComplaintController extends Controller
 
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Complaint::class);
         $query = Complaint::with('user.society');
         $user = auth()->user();
         if (in_array($user->role->name, ['resident', 'gatekeeper'])) {
@@ -70,34 +75,13 @@ class ComplaintController extends Controller
 
     public function show(Complaint $complaint)
     {
-        $user = auth()->user();
-        if (in_array($user->role->name, ['resident', 'gatekeeper']) && $complaint->user_id !== $user->id) {
-            abort(403);
-        }
-
-        if ($user->role->name === 'admin' && $complaint->user->society_id !== $user->society_id) {
-            abort(403);
-        }
+        $this->authorize('view', $complaint);
 
         return view('complaints.show', compact('complaint'));
     }
 
-    public function update(Request $request, Complaint $complaint)
-    {
-        $user = auth()->user();
-
-        if (! in_array($user->role->name, ['admin', 'super_admin'])) {
-            abort(403);
-        }
-
-        if ($user->role->name === 'admin' && $complaint->user->society_id !== $user->society_id) {
-            abort(403);
-        }
-
-        $request->validate([
-            'status' => 'required',
-            'admin_notes' => 'nullable|string|max:1000',
-        ]);
+    public function update(UpdateComplaintRequest $request,Complaint $complaint) {
+        $this->authorize('update', $complaint);
 
         $complaint->update([
             'status' => $request->status,
@@ -111,15 +95,7 @@ class ComplaintController extends Controller
 
     public function edit(Complaint $complaint)
     {
-        $user = auth()->user();
-
-        if (! in_array($user->role->name, ['admin', 'super_admin'])) {
-            abort(403);
-        }
-
-        if ($user->role->name === 'admin' && $complaint->user->society_id !== $user->society_id) {
-            abort(403);
-        }
+        $this->authorize('update', $complaint);
 
         return view('complaints.edit', compact('complaint'));
     }
