@@ -1,46 +1,46 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Delivery\DeliveryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Resident\VisitorPassController;
-use App\Models\Delivery;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FlatController;
+use App\Http\Controllers\ResidentController;
+use App\Http\Controllers\ResidentProfileController;
 
-Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/profile', [ProfileController::class, 'index'])
+        ->name('profile');
+
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
+
+    Route::patch('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
+
+    Route::delete('/profile', [ProfileController::class, 'destroy'])
+        ->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'role:resident,gatekeeper'])
+Route::middleware(['auth', 'role:admin,resident,gatekeeper'])
     ->controller(VisitorPassController::class)
     ->name('passes.')
     ->group(function () {
+
         Route::get('passes', 'index')->name('index');
         Route::get('passes/data', 'data')->name('data');
         Route::get('passes/create', 'create')->name('create');
         Route::post('passes', 'store')->name('store');
-        Route::get('/{id}/edit', 'edit')->name('edit');
-        Route::put('/{id}', 'update')->name('update');
+        Route::get('/passes/{visitorLog}/edit', 'edit')->name('edit');
+        Route::put('/passes/{visitorLog}', 'update')->name('update');
+        Route::get('passes/report', 'report')->name('report');
+        Route::get('passes/report/data', 'report')->name('report.data');
         Route::get('passes/{visitorLog}', 'show')->name('show');
         Route::patch('passes/{visitorLog}/cancel', 'cancel')->name('cancel');
-        Route::get('visitor-report', 'report')->name('report');
     });
-
-Route::middleware(['auth', 'role:resident'])->group(function () {
-    Route::get('/resident/dashboard', [DashboardController::class, 'resident'])
-        ->name('resident.dashboard');
-});
-
-Route::middleware(['auth', 'role:gatekeeper'])->group(function () {
-    Route::get('/gatekeeper/dashboard', [DashboardController::class, 'gatekeeper'])
-        ->name('gatekeeper.dashboard');
-});
 
 Route::get('deliveries/data', [DeliveryController::class, 'data'])
     ->middleware(['auth'])
@@ -66,7 +66,16 @@ Route::prefix('reports')
             ->name('visitors');
     });
 
-Route::view('/test-form', 'testform');
 Route::view('/test-tables', 'testtable');
+Route::view('/test-form', 'testform');
 
-require __DIR__.'/auth.php';
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::resource('flats', FlatController::class);
+});
+
+
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::resource('residents', ResidentController::class);
+});
+
+require __DIR__ . '/auth.php';
