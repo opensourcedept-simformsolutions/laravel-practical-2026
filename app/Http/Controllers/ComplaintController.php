@@ -11,7 +11,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Log;
-use Throwable;
+use Exception;
 
 class ComplaintController extends Controller
 {
@@ -45,7 +45,7 @@ class ComplaintController extends Controller
                 ->route('complaints.create')
                 ->with('success', 'Complaint submitted successfully.');
 
-        } catch (Throwable $e) {
+        } catch (Exception $e) {
 
             Log::error('Complaint Create Error', [
                 'user_id' => auth()->id(),
@@ -124,7 +124,7 @@ class ComplaintController extends Controller
 
             return view('complaints.index');
 
-        } catch (Throwable $e) {
+        } catch (Exception $e) {
 
             Log::error('Complaint Listing Error', [
                 'user_id' => auth()->id(),
@@ -152,7 +152,7 @@ class ComplaintController extends Controller
 
             return view('complaints.show', compact('complaint'));
 
-        } catch (Throwable $e) {
+        } catch (Exception $e) {
 
             Log::error('Complaint View Error', [
                 'complaint_id' => $complaint->id,
@@ -174,7 +174,7 @@ class ComplaintController extends Controller
 
             return view('complaints.edit', compact('complaint'));
 
-        } catch (Throwable $e) {
+        } catch (Exception $e) {
 
             Log::error('Complaint Edit Error', [
                 'complaint_id' => $complaint->id,
@@ -203,7 +203,7 @@ class ComplaintController extends Controller
                 ->route('complaints.show', $complaint)
                 ->with('success', 'Complaint updated successfully.');
 
-        } catch (Throwable $e) {
+        } catch (Exception $e) {
 
             Log::error('Complaint Update Error', [
                 'complaint_id' => $complaint->id,
