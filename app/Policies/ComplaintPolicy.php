@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Complaint;
 use App\Models\User;
+use App\Enum\ComplaintStatus;
 
 class ComplaintPolicy
 {
@@ -12,10 +13,7 @@ class ComplaintPolicy
      */
     public function viewAny(User $user): bool
     {
-        return in_array(
-            $user->role->name,
-            ['resident', 'gatekeeper', 'admin']
-        );
+        return true;
     }
 
     /**
@@ -23,11 +21,11 @@ class ComplaintPolicy
      */
     public function view(User $user, Complaint $complaint): bool
     {
-        if ($user->role->name === 'admin') {
+        if ($user->isAdmin()) {
             return $complaint->user->society_id === $user->society_id;
         }
 
-        if (in_array($user->role->name, ['resident', 'gatekeeper'])) {
+        if ($user->isResident() || $user->isGatekeeper()) {
             return $complaint->user_id === $user->id;
         }
 
@@ -39,7 +37,7 @@ class ComplaintPolicy
      */
     public function create(User $user): bool
     {
-        return in_array($user->role->name, ['resident', 'gatekeeper']);
+        return $user->isResident() || $user->isGatekeeper();
     }
 
     /**
@@ -47,8 +45,16 @@ class ComplaintPolicy
      */
     public function update(User $user, Complaint $complaint): bool
     {
-        return $user->role->name === 'admin'
-            && $complaint->user->society_id === $user->society_id;
+        if ($user->isAdmin()) {
+            return $complaint->user->society_id === $user->society_id;
+        }
+
+        if ($user->isResident() || $user->isGatekeeper()) {
+            return $complaint->user_id === $user->id
+                && $complaint->status !== ComplaintStatus::RESOLVED->value;
+        }
+
+        return false;
     }
 
     /**
@@ -56,22 +62,11 @@ class ComplaintPolicy
      */
     public function delete(User $user, Complaint $complaint): bool
     {
-        return false;
-    }
+        if ($user->isAdmin()) {
+            return $complaint->user->society_id === $user->society_id;
+        }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Complaint $complaint): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Complaint $complaint): bool
-    {
-        return false;
+        return $complaint->user_id === $user->id
+            && $complaint->status === ComplaintStatus::RESOLVED->value;
     }
 }

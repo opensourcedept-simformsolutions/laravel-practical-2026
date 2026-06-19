@@ -22,6 +22,9 @@
 
                             <div class="card-body">
 
+                                {{-- ADMIN FORM --}}
+                                @if(auth()->user()->isAdmin())
+
                                 <p class="text-secondary mb-3 text-decoration-underline">
                                     Complaint Status
                                 </p>
@@ -37,17 +40,17 @@
 
                                             <select name="status" class="form-select">
 
-                                                <option value="open" {{ old('status', $complaint->status) == 'open' ?
+                                                <option value="open" {{ old('status', $complaint->status) === 'open' ?
                                                     'selected' : '' }}>
                                                     Open
                                                 </option>
 
-                                                <option value="in_progress" {{ old('status', $complaint->status) ==
+                                                <option value="in_progress" {{ old('status', $complaint->status) ===
                                                     'in_progress' ? 'selected' : '' }}>
                                                     In Progress
                                                 </option>
 
-                                                <option value="resolved" {{ old('status', $complaint->status) ==
+                                                <option value="resolved" {{ old('status', $complaint->status) ===
                                                     'resolved' ? 'selected' : '' }}>
                                                     Resolved
                                                 </option>
@@ -83,6 +86,66 @@
                                     </div>
 
                                 </div>
+
+                                @else
+
+                                {{-- RESIDENT / GATEKEEPER FORM --}}
+                                <p class="text-secondary mb-3 text-decoration-underline">
+                                    Complaint Details
+                                </p>
+
+                                <div class="row">
+
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+
+                                            <label class="form-label">
+                                                Category
+                                            </label>
+
+                                            <select name="category" class="form-select">
+
+                                                @foreach(\App\Enum\ComplaintCategory::cases() as $category)
+                                                <option value="{{ $category->value }}" {{ old('category', $complaint->
+                                                    category) === $category->value ? 'selected' : '' }}
+                                                    >
+                                                    {{ ucfirst($category->value) }}
+                                                </option>
+                                                @endforeach
+
+                                            </select>
+
+                                            @error('category')
+                                            <div class="text-danger pt-1">
+                                                {{ $message }}
+                                            </div>
+                                            @enderror
+
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+
+                                            <label class="form-label">
+                                                Description
+                                            </label>
+
+                                            <textarea name="description" rows="5"
+                                                class="form-control">{{ old('description', $complaint->description) }}</textarea>
+
+                                            @error('description')
+                                            <div class="text-danger pt-1">
+                                                {{ $message }}
+                                            </div>
+                                            @enderror
+
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                @endif
 
                             </div>
 

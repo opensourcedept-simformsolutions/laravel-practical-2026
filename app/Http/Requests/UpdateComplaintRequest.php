@@ -2,8 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Enum\ComplaintCategory;
+use App\Enum\ComplaintStatus;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateComplaintRequest extends FormRequest
 {
@@ -22,9 +25,16 @@ class UpdateComplaintRequest extends FormRequest
      */
     public function rules(): array
     {
+        if (auth()->user()->isAdmin() || auth()->user()->isSuperAdmin()) {
+            return [
+                'status' => ['required', Rule::enum(ComplaintStatus::class)],
+                'admin_notes' => ['nullable', 'string', 'max:1000'],
+            ];
+        }
+
         return [
-            'status' => ['required'],
-            'admin_notes' => ['nullable', 'string', 'max:1000'],
+            'category' => ['required' , Rule::enum(ComplaintCategory::class)],
+            'description' => ['required', 'string' ,'min:10', 'max:1000'],
         ];
     }
 }

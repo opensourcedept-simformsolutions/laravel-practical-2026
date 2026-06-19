@@ -22,7 +22,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'role:gatekeeper'])->prefix('gatekeeper')->name('gatekeeper.')->group(function () {
+Route::middleware(['auth', 'role:gatekeeper'])->name('gatekeeper.')->group(function () {
     Route::get('/pending-pass', [VisitorLogController::class, 'pending'])->name('visitor-logs.pending');
     Route::patch('/visitor-logs/{visitorLog}/mark-entry', [VisitorLogController::class, 'markEntry'])->name('visitor-logs.mark-entry');
     Route::patch('/visitor-logs/{visitorLog}/mark-exit',[VisitorLogController::class, 'markExit'])->name('visitor-logs.mark-exit');
@@ -36,6 +36,7 @@ Route::middleware(['auth', 'role:resident,gatekeeper,admin,super_admin'])->group
 
     Route::get('/complaints/{complaint}/edit', [ComplaintController::class, 'edit'])->name('complaints.edit');
     Route::patch('/complaints/{complaint}', [ComplaintController::class, 'update'])->name('complaints.update');
+    Route::delete('/complaints/{complaint}', [ComplaintController::class, 'destroy'])->name('complaints.destroy');
 });
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');

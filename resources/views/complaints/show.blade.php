@@ -21,9 +21,10 @@
 
             </div>
 
-            @if(session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
+            {{-- Flash Message --}}
+            @if(session('message'))
+            <div class="alert alert-{{ session('status') === 'success' ? 'success' : 'danger' }}">
+                {{ session('message') }}
             </div>
             @endif
 
@@ -32,7 +33,7 @@
 
                 <div class="card-body">
 
-                    {{-- TOP SUMMARY --}}
+                    {{-- Top Summary --}}
                     <div class="d-flex justify-content-between align-items-start mb-4">
 
                         <div>
@@ -72,7 +73,7 @@
 
                     <hr>
 
-                    {{-- DETAILS GRID --}}
+                    {{-- Details --}}
                     <div class="row">
 
                         <div class="col-md-6 mb-3">
@@ -151,15 +152,28 @@
 
                 </div>
 
-                @can('update', $complaint)
+                {{-- Footer Actions --}}
                 <div class="card-footer bg-white border-top-0 text-end">
 
+                    @can('update', $complaint)
                     <a href="{{ route('complaints.edit', $complaint) }}" class="btn btn-warning">
                         Edit Complaint
                     </a>
+                    @endcan
+
+                    @can('delete', $complaint)
+                    <form action="{{ route('complaints.destroy', $complaint) }}" method="POST" class="d-inline"
+                        onsubmit="return confirm('Are you sure you want to delete this complaint?');">
+                        @csrf
+                        @method('DELETE')
+
+                        <button type="submit" class="btn btn-danger">
+                            Delete Complaint
+                        </button>
+                    </form>
+                    @endcan
 
                 </div>
-                @endcan
 
             </div>
 

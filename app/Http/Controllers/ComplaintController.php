@@ -7,11 +7,11 @@ use App\Enum\ComplaintStatus;
 use App\Http\Requests\StoreComplaintRequest;
 use App\Http\Requests\UpdateComplaintRequest;
 use App\Models\Complaint;
+use Exception;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Log;
-use Exception;
+use Yajra\DataTables\Facades\DataTables;
 
 class ComplaintController extends Controller
 {
@@ -42,8 +42,8 @@ class ComplaintController extends Controller
             ]);
 
             return redirect()
-                ->route('complaints.create')
-                ->with('success', 'Complaint submitted successfully.');
+                ->route('complaints.index')
+                ->with(['message' => 'Complaint submitted successfully', 'status' => 'success']);
 
         } catch (Exception $e) {
 
@@ -56,7 +56,7 @@ class ComplaintController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Something went wrong while submitting the complaint.');
+                ->with(['message' => 'Something went wrong while submitting the complaint', 'status' => 'error']);
         }
     }
 
@@ -72,12 +72,10 @@ class ComplaintController extends Controller
 
                 $user = auth()->user();
 
-                if (in_array($user->role->name, ['resident', 'gatekeeper'])) {
-
+                if ($user->isResident() || $user->isGatekeeper()) {
                     $query->where('user_id', $user->id);
 
-                } elseif ($user->role->name === 'admin') {
-
+                } elseif ($user->isAdmin()) {
                     $query->whereHas('user', function ($q) use ($user) {
                         $q->where('society_id', $user->society_id);
                     });
@@ -97,7 +95,7 @@ class ComplaintController extends Controller
 
                 return DataTables::of($query)
                     ->addColumn('society', function ($complaint) {
-                        return $complaint->user?->society?->name ?? 'N/A';
+                        return $complaint->user->society?->name ?? 'N/A';
                     })
 
                     ->editColumn('category', function ($complaint) {
@@ -141,7 +139,7 @@ class ComplaintController extends Controller
 
             return redirect()
                 ->back()
-                ->with('error', 'Something went wrong while loading complaints.');
+                ->with(['message' => 'Something went wrong while loading complaints.', 'status' => 'error']);
         }
     }
 
@@ -162,7 +160,7 @@ class ComplaintController extends Controller
 
             return redirect()
                 ->route('complaints.index')
-                ->with('error', 'Unable to load complaint details.');
+                ->with(['message' => 'Unable to load complaint details.', 'status' => 'error']);
         }
     }
 
@@ -184,7 +182,7 @@ class ComplaintController extends Controller
 
             return redirect()
                 ->route('complaints.index')
-                ->with('error', 'Unable to load complaint for editing.');
+                ->with(['message' => 'Unable to load complaint for editing.', 'status' => 'error']);
         }
     }
 
@@ -194,27 +192,71 @@ class ComplaintController extends Controller
 
         try {
 
-            $complaint->update([
-                'status' => $request->status,
-                'admin_notes' => $request->admin_notes,
-            ]);
+            $user = auth()->user();
+
+            if ($user->isAdmin()) {
+
+                $complaint->update([
+                    'status' => $request->status,
+                    'admin_notes' => $request->admin_notes,
+                ]);
+
+            } else {
+                $complaint->update([
+                    'category' => $request->category,
+                    'description' => $request->description,
+                ]);
+            }
 
             return redirect()
                 ->route('complaints.show', $complaint)
-                ->with('success', 'Complaint updated successfully.');
+                ->with([
+                    'message' => 'Complaint updated successfully.',
+                    'status' => 'success',
+                ]);
 
         } catch (Exception $e) {
 
             Log::error('Complaint Update Error', [
                 'complaint_id' => $complaint->id,
                 'error' => $e->getMessage(),
-                'exception' => $e,
             ]);
 
-            return redirect()
-                ->back()
+            return back()
                 ->withInput()
-                ->with('error', 'Something went wrong while updating the complaint.');
+                ->with([
+                    'message' => 'Failed to update complaint.',
+                    'status' => 'error',
+                ]);
+        }
+    }
+
+    public function destroy(Complaint $complaint)
+    {
+        $this->authorize('delete', $complaint);
+
+        try {
+
+            $complaint->delete();
+
+            return redirect()
+                ->route('complaints.index')
+                ->with([
+                    'message' => 'Complaint deleted successfully.',
+                    'status' => 'success',
+                ]);
+
+        } catch (Exception $e) {
+
+            Log::error('Complaint Delete Error', [
+                'complaint_id' => $complaint->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with([
+                'message' => 'Unable to delete complaint.',
+                'status' => 'error',
+            ]);
         }
     }
 }

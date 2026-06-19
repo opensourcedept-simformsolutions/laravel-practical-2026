@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enum\ComplaintCategory;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreComplaintRequest extends FormRequest
 {
@@ -23,8 +25,8 @@ class StoreComplaintRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'category' => ['required'],
-            'description' => ['required', 'min:10', 'max:1000'],
+            'category' => ['required' , Rule::enum(ComplaintCategory::class)],
+            'description' => ['required', 'string' ,'min:10', 'max:1000'],
         ];
     }
 }
