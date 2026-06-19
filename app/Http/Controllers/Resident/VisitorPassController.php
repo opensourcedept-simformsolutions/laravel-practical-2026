@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Resident;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreVisitorPassRequest;
+use App\Http\Requests\UpdateVisitorPassRequest;
+use App\Models\Flat;
 use App\Models\Visitor;
 use App\Models\VisitorLog;
 use Carbon\Carbon;
@@ -17,6 +19,8 @@ class VisitorPassController extends Controller
 {
     public function index()
     {
+        $this->authorize('viewAny', VisitorLog::class);
+
         return view('passes.index');
     }
 
@@ -170,19 +174,41 @@ class VisitorPassController extends Controller
             )
 
             ->addColumn('actions', function ($row) {
-                return '<div class="d-flex gap-2">
-                    <a href="/passes/' . $row->id . '" class="btn btn-info">
-                        <i class="bi bi-eye me-1"></i>
-                    </a>
 
-                    <a href="' . route('passes.edit', $row->id) . '" class="btn btn-primary">
-                        <i class="bi bi-pencil-square me-1"></i>
-                    </a>
+                $actions = '<div class="d-flex justify-content-center gap-2">';
 
-                    <button data-id="' . $row->id . '" data-url="' . route('passes.cancel', $row->id) . '" class="btn-delete btn btn-danger shadow-none">
-                        <i class="bi bi-trash3"></i>
-                    </button>
-                </div>';
+                $actions .= '
+                    <a href="' . route('passes.show', $row->id) . '" class="btn btn-info text-white">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                ';
+
+                if ($row->status === 'pending') {
+                    $actions .= '
+                        <a href="' . route('passes.edit', $row->id) . '" class="btn btn-primary">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                    ';
+                }
+
+                if ($row->status === 'pending') {
+                    $actions .= '
+                        <button
+                            class="btn btn-danger btn-action"
+                            data-url="' . route('passes.cancel', $row->id) . '"
+                            data-method="PATCH"
+                            data-title="Cancel Visitor Pass?"
+                            data-text="This action cannot be undone."
+                            data-confirm="Yes, Cancel"
+                            data-success="Visitor pass cancelled successfully">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    ';
+                }
+
+                $actions .= '</div>';
+
+                return $actions;
             })
 
             ->rawColumns(['actions'])
@@ -191,12 +217,17 @@ class VisitorPassController extends Controller
 
     public function create()
     {
+        $this->authorize('create', VisitorLog::class);
+
         return view('passes.create');
     }
 
     public function store(StoreVisitorPassRequest $request)
     {
+        $this->authorize('create', VisitorLog::class);
+
         try {
+
             $validated = $request->validated();
             $user = auth()->user();
 
@@ -248,26 +279,20 @@ class VisitorPassController extends Controller
         return view('passes.show', compact('visitorLog'));
     }
 
-    public function edit($id)
+    public function edit(VisitorLog $visitorLog)
     {
-        $visitorLog = VisitorLog::with('visitor')->findOrFail($id);
+        $this->authorize('update', $visitorLog);
 
         return view('passes.edit', compact('visitorLog'));
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateVisitorPassRequest $request, VisitorLog $visitorLog)
     {
-        try {
-            $validated = $request->validate([
-                'name' => 'required',
-                'phone' => 'required',
-                'purpose' => 'required',
-                'visit_date' => 'required',
-                'vehicle_number' => 'nullable',
-                'status' => 'required',
-            ]);
+        $this->authorize('update', $visitorLog);
 
-            $visitorLog = VisitorLog::findOrFail($id);
+        $validated = $request->validated();
+
+        try {
             $user = auth()->user();
 
             DB::transaction(function () use ($validated, $visitorLog, $user) {
@@ -281,7 +306,6 @@ class VisitorPassController extends Controller
                 $visitorLog->created_by = $user->id;
                 $visitorLog->purpose = $validated['purpose'];
                 $visitorLog->visit_date = $validated['visit_date'];
-                $visitorLog->status = $validated['status'];
                 $visitorLog->save();
             });
 
@@ -298,62 +322,57 @@ class VisitorPassController extends Controller
 
     public function cancel(VisitorLog $visitorLog)
     {
-        if (!$visitorLog) {
-            return redirect()
-                ->back()
-                ->with('error', 'Visitor pass not found.');
-        }
+        $this->authorize('cancel', $visitorLog);
 
         if ($visitorLog->status !== 'pending') {
-            return redirect()
-                ->back()
-                ->with('error', 'Only pending visitor passes can be cancelled.');
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Only pending visitor passes can be cancelled.'
+            ], 422);
         }
 
         $visitorLog->update([
             'status' => 'cancelled'
         ]);
 
-        return redirect()->back()
-            ->with('success', 'Visitor pass cancelled successfully.');
+        return response()->json([
+            'success' => true,
+            'message' => 'Visitor pass cancelled successfully.'
+        ]);
     }
 
-    public function report(Request $request)
+    public function report1(Request $request)
     {
-        $query = VisitorLog::with([
-            'visitor',
-            'flat',
-            'gatekeeper'
-        ]);
+        $query = VisitorLog::query()
+            ->with(['visitor', 'flat', 'gatekeeper']);
 
         if ($request->filled('status')) {
-            $query->where(
-                'status',
-                $request->status
-            );
+            $query->where('status', $request->status);
         }
 
         if ($request->filled('flat_id')) {
-            $query->where(
-                'flat_id',
-                $request->flat_id
-            );
+            $query->where('flat_id', $request->flat_id);
         }
 
         if ($request->filled('from_date')) {
-            $query->whereDate(
-                'created_at',
-                '>=',
-                $request->from_date
-            );
+            $query->whereDate('visit_date', '>=', $request->from_date);
         }
 
         if ($request->filled('to_date')) {
-            $query->whereDate(
-                'created_at',
-                '<=',
-                $request->to_date
-            );
+            $query->whereDate('visit_date', '<=', $request->to_date);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('visitor', function ($q2) use ($search) {
+                    $q2->where('name', 'like', "%$search%")
+                        ->orWhere('phone', 'like', "%$search%");
+                })
+                    ->orWhere('purpose', 'like', "%$search%");
+            });
         }
 
         $visitorLogs = $query
@@ -361,6 +380,86 @@ class VisitorPassController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return view('passes.report', compact('visitorLogs'));
+        $flats = Flat::select('id', 'wing', 'flat_number')->get();
+
+        return view('passes.report', compact('visitorLogs', 'flats'));
+    }
+
+    public function report(Request $request)
+    {
+
+        if ($request->ajax()) {
+
+            $query = VisitorLog::query()
+                ->select([
+                    'visitor_logs.*',
+                    'visitors.name as visitor_name',
+                    'visitors.phone as visitor_phone',
+                    'flats.wing as flat_wing',
+                    'flats.flat_number as flat_number',
+                    'users.name as gatekeeper_name',
+                ])
+                ->leftJoin('visitors', 'visitors.id', '=', 'visitor_logs.visitor_id')
+                ->leftJoin('flats', 'flats.id', '=', 'visitor_logs.flat_id')
+                ->leftJoin('users', 'users.id', '=', 'visitor_logs.gatekeeper_id')
+                ->latest();
+
+            // 🔥 FILTERS
+
+            if ($request->filled('status')) {
+                $query->where('visitor_logs.status', $request->status);
+            }
+
+            if ($request->filled('flat_id')) {
+                $query->where('visitor_logs.flat_id', $request->flat_id);
+            }
+
+            if ($request->filled('from_date')) {
+                $query->whereDate('visitor_logs.visit_date', '>=', $request->from_date);
+            }
+
+            if ($request->filled('to_date')) {
+                $query->whereDate('visitor_logs.visit_date', '<=', $request->to_date);
+            }
+
+            return DataTables::of($query)
+
+                ->addColumn('visitor', fn($row) => $row->visitor_name ?? '-')
+                ->addColumn('phone', fn($row) => $row->visitor_phone ?? '-')
+
+                ->addColumn('flat', function ($row) {
+                    return $row->flat_wing && $row->flat_number
+                        ? $row->flat_wing . '-' . $row->flat_number
+                        : '-';
+                })
+
+                ->addColumn('status', fn($row) => ucfirst($row->status))
+
+                ->addColumn(
+                    'entry_time',
+                    fn($row) =>
+                    $row->entry_time ? format_date($row->entry_time) : '-'
+                )
+
+                ->addColumn(
+                    'exit_time',
+                    fn($row) =>
+                    $row->exit_time ? format_date($row->exit_time) : '-'
+                )
+
+                ->addColumn(
+                    'visit_date',
+                    fn($row) =>
+                    $row->visit_date ? format_date($row->visit_date, 'd M Y') : '-'
+                )
+
+                ->addColumn('gatekeeper', fn($row) => $row->gatekeeper_name ?? '-')
+
+                ->rawColumns([])
+
+                ->make(true);
+        }
+
+        return view('passes.report');
     }
 }

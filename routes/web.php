@@ -13,7 +13,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'role:resident,gatekeeper'])
+Route::middleware(['auth', 'role:admin,resident,gatekeeper'])
     ->controller(VisitorPassController::class)
     ->name('passes.')
     ->group(function () {
@@ -22,11 +22,12 @@ Route::middleware(['auth', 'role:resident,gatekeeper'])
         Route::get('passes/data', 'data')->name('data');
         Route::get('passes/create', 'create')->name('create');
         Route::post('passes', 'store')->name('store');
-        Route::get('/{id}/edit', 'edit')->name('edit');
-        Route::put('/{id}', 'update')->name('update');
+        Route::get('/passes/{visitorLog}/edit', 'edit')->name('edit');
+        Route::put('/passes/{visitorLog}', 'update')->name('update');
+        Route::get('passes/report', 'report')->name('report');
+        Route::get('passes/report/data', 'report')->name('report.data');
         Route::get('passes/{visitorLog}', 'show')->name('show');
         Route::patch('passes/{visitorLog}/cancel', 'cancel')->name('cancel');
-        Route::get('visitor-report', 'report')->name('report');
     });
 
 require __DIR__ . '/auth.php';

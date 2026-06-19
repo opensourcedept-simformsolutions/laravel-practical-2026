@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>@yield('title', 'Dashboard')</title>
 
   {{-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -88,15 +89,84 @@
 
   <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-  @stack('scripts')
-
   <script>
+    var table = null;
+
+    function rd() {
+      if (table) {
+        table.ajax.reload(null, false);
+      }
+    }
+
+    $.ajaxSetup({
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+        'Accept': 'application/json'
+      }
+    });
+
     const Toast = Swal.mixin({
       toast: true,
       position: 'top-end',
       showConfirmButton: false,
       timer: 3000,
       timerProgressBar: true,
+    });
+  </script>
+
+  @stack('scripts')
+
+  <script>
+    $(document).on('click', '.btn-action', function() {
+
+      let btn = $(this);
+
+      let url = btn.data('url');
+      let method = btn.data('method') || 'POST';
+
+      let title = btn.data('title') || 'Are you sure?';
+      let text = btn.data('text') || '';
+      let confirmText = btn.data('confirm') || 'Yes';
+      let successText = btn.data('success') || 'Success';
+
+      Swal.fire({
+        title: title,
+        text: text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: confirmText,
+        confirmButtonColor: '#dc3545'
+      }).then((result) => {
+
+        if (!result.isConfirmed) {
+          return;
+        }
+
+        $.ajax({
+          url: url,
+          type: method,
+          success: function(response) {
+            let successText = btn.data('success');
+
+            Toast.fire({
+              icon: 'success',
+              title: successText || response.message || 'Success'
+            });
+
+            rd();
+          },
+          error: function(xhr) {
+            let message = 'Something went wrong.';
+            if (xhr.responseJSON?.message) {
+              message = xhr.responseJSON.message;
+            }
+            Toast.fire({
+              icon: 'error',
+              title: message
+            });
+          }
+        });
+      });
     });
 
     @if (Session::has('message'))

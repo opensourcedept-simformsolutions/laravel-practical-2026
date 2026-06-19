@@ -58,8 +58,10 @@
         ajax: "{{ route('passes.data') }}",
 
         columns: [{
-            data: 'id',
-            name: 'visitor_logs.id'
+            data: 'DT_RowIndex',
+            name: 'DT_RowIndex',
+            orderable: false,
+            searchable: false
           },
           {
             data: 'visitor_name',
