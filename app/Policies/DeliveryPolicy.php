@@ -4,63 +4,53 @@ namespace App\Policies;
 
 use App\Models\Delivery;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
-
 class DeliveryPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->isAdmin() || $user->isGatekeeper() || $user->isResident();
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
     public function view(User $user, Delivery $delivery): bool
     {
-        return false;
+        if($user->isResident()){
+            return $delivery->flat_id === $user->resident->flat_id;
+        }
+
+        return $this->sameSociety($user, $delivery)
+            && $user->isAdmin() || $user->isGatekeeper();
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
     public function create(User $user): bool
     {
-        return false;
+        return ($user->isAdmin() || $user->isGatekeeper());
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
     public function update(User $user, Delivery $delivery): bool
     {
-        return false;
+        return $this->sameSociety($user, $delivery)
+            && ($user->isAdmin() || $user->isGatekeeper());
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
     public function delete(User $user, Delivery $delivery): bool
     {
-        return false;
+        return $this->sameSociety($user, $delivery)
+            && $user->isAdmin();
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Delivery $delivery): bool
+    public function markDelivered(User $user, Delivery $delivery): bool
     {
-        return false;
+        return $this->sameSociety($user, $delivery)
+            && ($user->isAdmin() || $user->isGatekeeper());
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Delivery $delivery): bool
+    private function canManageDeliveries(User $user): bool
     {
-        return false;
+        return $user->isAdmin() || $user->isGatekeeper();
+    }
+
+    private function sameSociety(User $user, Delivery $delivery): bool
+    {
+        return $delivery->flat->society_id === $user->society_id;
     }
 }

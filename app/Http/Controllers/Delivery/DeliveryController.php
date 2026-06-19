@@ -10,6 +10,7 @@ use App\Models\Delivery;
 use App\Models\Flat;
 use App\Models\Resident;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 use Yajra\DataTables\Facades\DataTables;
 
 class DeliveryController extends Controller
@@ -20,6 +21,18 @@ class DeliveryController extends Controller
             'flat',
             'resident.user',
         ]);
+
+        $user = auth()->user();
+
+        if (! $user->isSuperAdmin()) {
+            if ($user->isResident()) {
+                $query->where('flat_id', $user->resident->flat_id);
+            } else {
+                $query->whereHas('flat', function ($query) use ($user) {
+                    $query->where('society_id', $user->society_id);
+                });
+            }
+        }
 
         return DataTables::eloquent($query)
             ->addColumn('flat', fn ($delivery) => $delivery->flat->flat_number)
@@ -48,11 +61,15 @@ class DeliveryController extends Controller
 
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Delivery::class);
+
         return view('deliveries.index');
     }
 
     public function create()
     {
+        $this->authorize('create', Delivery::class);
+
         return view('deliveries.create', [
             'flatOptions' => $this->getFlatOptions(),
             'residentOptions' => $this->getResidentOptions(),
@@ -61,6 +78,8 @@ class DeliveryController extends Controller
 
     public function store(StoreDeliveryRequest $request)
     {
+        $this->authorize('create', Delivery::class);
+
         $validatedData = $request->validated();
 
         $delivery = Delivery::create([
@@ -73,13 +92,16 @@ class DeliveryController extends Controller
             'delivered_at' => null,
         ]);
 
-        return redirect()
-            ->route('deliveries.index')
-            ->with('Delivery recorded successfully.');
+        Session::flash('message', 'Delivery recorded successfully.');
+        Session::flash('status', 'success');
+
+        return redirect()->route('deliveries.index');
     }
 
     public function show(Delivery $delivery)
     {
+        $this->authorize('view', $delivery);
+
         $delivery->load(['flat', 'resident']);
 
         return view('deliveries.show', ['delivery' => $delivery]);
@@ -87,17 +109,22 @@ class DeliveryController extends Controller
 
     public function markDelivered(Delivery $delivery)
     {
+        $this->authorize('markDelivered', $delivery);
+
         $delivery->update([
             'status' => DeliveryStatus::DELIVERED->value,
             'delivered_at' => now()]);
 
-        return redirect()
-            ->back()
-            ->with('Delivery marked as delivered.');
+        Session::flash('message', 'Delivery marked as delivered.');
+        Session::flash('status', 'success');
+
+        return redirect()->back();
     }
 
     public function edit(Delivery $delivery)
     {
+        $this->authorize('update', $delivery);
+
         return view('deliveries.edit', [
             'delivery' => $delivery,
             'flatOptions' => $this->getFlatOptions(),
@@ -107,38 +134,59 @@ class DeliveryController extends Controller
 
     public function update(UpdateDeliveryRequest $request, Delivery $delivery)
     {
-        dd($request->validated());
+        $this->authorize('update', $delivery);
+
         $delivery->update($request->validated());
 
-        return redirect()
-            ->route('deliveries.index')
-            ->with('success', 'Delivery updated successfully.');
+        Session::flash('message', 'Delivery updated successfully.');
+        Session::flash('status', 'success');
+
+        return redirect()->route('deliveries.index');
     }
 
     public function destroy(Delivery $delivery)
     {
+        $this->authorize('delete', $delivery);
+
         $delivery->delete();
 
-        return redirect()
-            ->route('deliveries.index')
-            ->with('success', 'Delivery Deleted successfully.');
+        Session::flash('message', 'Delivery Deleted successfully.');
+        Session::flash('status', 'success');
+
+        return redirect()->route('deliveries.index');
     }
 
     private function getFlatOptions()
     {
-        return Flat::all()->mapWithKeys(function ($flat) {
-            return [
-                $flat->id => $flat->wing.'-'.$flat->flat_number,
-            ];
-        });
+        $user = auth()->user();
+
+        return Flat::query()
+            ->when(! $user->isSuperAdmin(), function ($query) use ($user) {
+                $query->where('society_id', $user->society_id);
+            })
+            ->get()
+            ->mapWithKeys(function ($flat) {
+                return [
+                    $flat->id => $flat->wing.'-'.$flat->flat_number,
+                ];
+            });
     }
 
     private function getResidentOptions()
     {
-        return Resident::with('user')->get()->mapWithKeys(function ($resident) {
-            return [
-                $resident->id => $resident->user->name,
-            ];
-        });
+        $user = auth()->user();
+
+        return Resident::with('user')
+            ->when(! $user->isSuperAdmin(), function ($query) use ($user) {
+                $query->whereHas('flat', function ($q) use ($user) {
+                    $q->where('society_id', $user->society_id);
+                });
+            })
+            ->get()
+            ->mapWithKeys(function ($resident) {
+                return [
+                    $resident->id => $resident->user->name,
+                ];
+            });
     }
 }

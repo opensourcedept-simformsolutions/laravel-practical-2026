@@ -13,172 +13,187 @@ use App\Models\Visitor;
 use App\Models\VisitorLog;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class DemoDataSeeder extends Seeder
 {
     public function run(): void
     {
-        $superAdminRole = Role::create([
-            'name' => 'super_admin',
-        ]);
+        // Roles
+        $superAdminRole = Role::firstOrCreate(['name' => 'super_admin']);
+        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $residentRole = Role::firstOrCreate(['name' => 'resident']);
+        $gatekeeperRole = Role::firstOrCreate(['name' => 'gatekeeper']);
 
-        $adminRole = Role::create([
-            'name' => 'admin',
-        ]);
+        // Societies
+        $societies = [
+            [
+                'name' => 'Green Valley Society',
+                'address' => 'SG Highway',
+                'city' => 'Ahmedabad',
+                'state' => 'Gujarat',
+                'pincode' => '380015',
+            ],
+            [
+                'name' => 'Sunshine Residency',
+                'address' => 'Vesu',
+                'city' => 'Surat',
+                'state' => 'Gujarat',
+                'pincode' => '395007',
+            ],
+        ];
 
-        $residentRole = Role::create([
-            'name' => 'resident',
-        ]);
+        $createdSocieties = [];
 
-        $gatekeeperRole = Role::create([
-            'name' => 'gatekeeper',
-        ]);
+        foreach ($societies as $societyData) {
+            $createdSocieties[] = Society::create($societyData);
+        }
 
-        $society = Society::create([
-            'name' => 'Green Valley Society',
-            'address' => 'SG Highway',
-            'city' => 'Ahmedabad',
-            'state' => 'Gujarat',
-            'pincode' => '380015',
-        ]);
-
-        $superAdmin = User::create([
+        // Super Admin
+        User::create([
             'name' => 'Super Admin',
             'email' => 'superadmin@example.com',
             'phone' => '9000000001',
             'password' => Hash::make('1'),
             'role_id' => $superAdminRole->id,
-            'society_id' => $society->id,
+            'society_id' => $createdSocieties[0]->id,
         ]);
 
-        $admin = User::create([
-            'name' => 'Society Admin',
-            'email' => 'admin@example.com',
-            'phone' => '9000000002',
-            'password' => Hash::make('1'),
-            'role_id' => $adminRole->id,
-            'society_id' => $society->id,
-        ]);
+        foreach ($createdSocieties as $societyIndex => $society) {
 
-        $gatekeeper = User::create([
-            'name' => 'Main Gate Guard',
-            'email' => 'gatekeeper@example.com',
-            'phone' => '9000000003',
-            'password' => Hash::make('1'),
-            'role_id' => $gatekeeperRole->id,
-            'society_id' => $society->id,
-        ]);
+            // Admin
+            User::create([
+                'name' => "Admin {$society->name}",
+                'email' => "admin{$societyIndex}@example.com",
+                'phone' => '91000000' . ($societyIndex + 1),
+                'password' => Hash::make('1'),
+                'role_id' => $adminRole->id,
+                'society_id' => $society->id,
+            ]);
 
-        $flat101 = Flat::create([
-            'society_id' => $society->id,
-            'wing' => 'A',
-            'floor' => 1,
-            'flat_number' => 101,
-        ]);
+            // Gatekeeper
+            $gatekeeper = User::create([
+                'name' => "Gatekeeper {$society->name}",
+                'email' => "gatekeeper{$societyIndex}@example.com",
+                'phone' => '92000000' . ($societyIndex + 1),
+                'password' => Hash::make('1'),
+                'role_id' => $gatekeeperRole->id,
+                'society_id' => $society->id,
+            ]);
 
-        $flat102 = Flat::create([
-            'society_id' => $society->id,
-            'wing' => 'A',
-            'floor' => 1,
-            'flat_number' => 102,
-        ]);
+            for ($i = 1; $i <= 10; $i++) {
 
-        $residentUser1 = User::create([
-            'name' => 'John Resident',
-            'email' => 'john@example.com',
-            'phone' => '9000000004',
-            'password' => Hash::make('1'),
-            'role_id' => $residentRole->id,
-            'society_id' => $society->id,
-        ]);
+                // Flat
+                $flat = Flat::create([
+                    'society_id' => $society->id,
+                    'wing' => chr(64 + (($i % 4) + 1)), // A,B,C,D
+                    'floor' => rand(1, 5),
+                    'flat_number' => 100 + $i,
+                ]);
 
-        $residentUser2 = User::create([
-            'name' => 'Jane Resident',
-            'email' => 'jane@example.com',
-            'phone' => '9000000005',
-            'password' => Hash::make('1'),
-            'role_id' => $residentRole->id,
-            'society_id' => $society->id,
-        ]);
+                // Resident User
+                $residentUser = User::create([
+                    'name' => "Resident {$societyIndex}{$i}",
+                    'email' => "resident{$societyIndex}{$i}@example.com",
+                    'phone' => '930' . str_pad(($societyIndex * 10 + $i), 7, '0', STR_PAD_LEFT),
+                    'password' => Hash::make('1'),
+                    'role_id' => $residentRole->id,
+                    'society_id' => $society->id,
+                ]);
 
-        $resident1 = Resident::create([
-            'user_id' => $residentUser1->id,
-            'flat_id' => $flat101->id,
-            'resident_type' => 'owner',
-        ]);
+                // Resident
+                $resident = Resident::create([
+                    'user_id' => $residentUser->id,
+                    'flat_id' => $flat->id,
+                    'resident_type' => rand(0, 1) ? 'owner' : 'tenant',
+                ]);
 
-        $resident2 = Resident::create([
-            'user_id' => $residentUser2->id,
-            'flat_id' => $flat102->id,
-            'resident_type' => 'tenant',
-        ]);
+                // Visitor
+                $visitor = Visitor::create([
+                    'name' => "Visitor {$societyIndex}{$i}",
+                    'phone' => '987654' . str_pad($i, 4, '0', STR_PAD_LEFT),
+                    'vehicle_number' => rand(0, 1)
+                        ? 'GJ01AB' . rand(1000, 9999)
+                        : null,
+                ]);
 
-        $visitor1 = Visitor::create([
-            'name' => 'Rahul Sharma',
-            'phone' => '9876543210',
-            'vehicle_number' => 'GJ01AB1234',
-        ]);
+                // Visitor Log
+                $visitorStatuses = [
+                    'accepted',
+                    'pending',
+                    'entered',
+                    'exited',
+                    'cancelled',
+                ];
 
-        $visitor2 = Visitor::create([
-            'name' => 'Courier Boy',
-            'phone' => '9876543211',
-            'vehicle_number' => null,
-        ]);
+                VisitorLog::create([
+                    'visitor_id' => $visitor->id,
+                    'flat_id' => $flat->id,
+                    'created_by' => $residentUser->id,
+                    'gatekeeper_id' => $gatekeeper->id,
+                    'purpose' => [
+                        'Personal Visit',
+                        'Courier',
+                        'Food Delivery',
+                        'Maintenance',
+                    ][array_rand([
+                        'Personal Visit',
+                        'Courier',
+                        'Food Delivery',
+                        'Maintenance',
+                    ])],
+                    'visit_date' => now()->subDays(rand(0, 15))->toDateString(),
+                    'entry_time' => now()->subHours(rand(1, 24)),
+                    'status' => $visitorStatuses[array_rand($visitorStatuses)],
+                ]);
 
-        VisitorLog::create([
-            'visitor_id' => $visitor1->id,
-            'flat_id' => $flat101->id,
-            'created_by' => $residentUser1->id,
-            'gatekeeper_id' => $gatekeeper->id,
-            'purpose' => 'Personal Visit',
-            'visit_date' => now()->toDateString(),
-            'entry_time' => now(),
-            'status' => 'entered',
-        ]);
+                // Delivery
+                $deliveryStatuses = [
+                    'received',
+                    'delivered',
+                ];
 
-        VisitorLog::create([
-            'visitor_id' => $visitor2->id,
-            'flat_id' => $flat102->id,
-            'created_by' => $residentUser2->id,
-            'gatekeeper_id' => $gatekeeper->id,
-            'purpose' => 'Package Delivery',
-            'visit_date' => now()->toDateString(),
-            'status' => 'pending',
-        ]);
+                Delivery::create([
+                    'flat_id' => $flat->id,
+                    'resident_id' => $resident->id,
+                    'vendor' => [
+                        'Amazon',
+                        'Flipkart',
+                        'Myntra',
+                        'Blinkit',
+                    ][array_rand([
+                        'Amazon',
+                        'Flipkart',
+                        'Myntra',
+                        'Blinkit',
+                    ])],
+                    'package_details' => "Package {$i}",
+                    'status' => $deliveryStatuses[array_rand($deliveryStatuses)],
+                    'received_at' => now()->subDays(rand(0, 5)),
+                    'delivered_at' => now(),
+                ]);
 
-        Delivery::create([
-            'flat_id' => $flat101->id,
-            'resident_id' => $resident1->id,
-            'vendor' => 'Amazon',
-            'package_details' => 'Bluetooth Speaker',
-            'status' => 'received',
-            'received_at' => now(),
-        ]);
+                // Complaint
+                $categories = [
+                    'security',
+                    'cleaning',
+                    'water',
+                    'parking',
+                ];
 
-        Delivery::create([
-            'flat_id' => $flat102->id,
-            'resident_id' => $resident2->id,
-            'vendor' => 'Flipkart',
-            'package_details' => 'Laptop Bag',
-            'status' => 'delivered',
-            'received_at' => now()->subHour(),
-            'delivered_at' => now(),
-        ]);
+                $complaintStatuses = [
+                    'open',
+                    'in_progress',
+                    'resolved',
+                ];
 
-        Complaint::create([
-            'user_id' => $residentUser1->id,
-            'category' => 'water',
-            'description' => 'Low water pressure in bathroom.',
-            'status' => 'open',
-        ]);
-
-        Complaint::create([
-            'user_id' => $residentUser2->id,
-            'category' => 'parking',
-            'description' => 'Unauthorized vehicle parked.',
-            'status' => 'in_progress',
-            'admin_notes' => 'Security team informed.',
-        ]);
+                Complaint::create([
+                    'user_id' => $residentUser->id,
+                    'category' => $categories[array_rand($categories)],
+                    'description' => "Sample complaint {$i}",
+                    'status' => $complaintStatuses[array_rand($complaintStatuses)],
+                    'admin_notes' => 'Demo complaint notes',
+                ]);
+            }
+        }
     }
 }

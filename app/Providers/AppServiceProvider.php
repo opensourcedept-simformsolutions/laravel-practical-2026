@@ -2,7 +2,8 @@
 
 namespace App\Providers;
 
-use Illuminate\Pagination\Paginator;
+use App\Models\Delivery;
+use App\Policies\DeliveryPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -17,6 +18,8 @@ class AppServiceProvider extends ServiceProvider
     {
         require_once app_path('Helpers/helpers.php');
 
+        Gate::policy(Delivery::class, DeliveryPolicy::class);
+
         Gate::before(function ($user, $ability) {
             if ($user->isSuperAdmin()) {
                 return true;
@@ -28,11 +31,11 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Gate::define('is-gatekeeper', function ($user) {
-            return $user->isResident();
+            return $user->isGatekeeper();
         });
 
         Gate::define('is-resident', function ($user) {
-            return $user->isGatekeeper();
+            return $user->isResident();
         });
     }
 }
