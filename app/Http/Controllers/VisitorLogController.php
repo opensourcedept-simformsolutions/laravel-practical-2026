@@ -16,6 +16,7 @@ class VisitorLogController extends Controller
             if ($request->ajax()) {
 
                 $query = VisitorLog::query()
+                    ->withTrashed()
                     ->whereIn('status', ['pending', 'entered'])
                     ->with(['visitor', 'flat'])
                     ->select('visitor_logs.*');
