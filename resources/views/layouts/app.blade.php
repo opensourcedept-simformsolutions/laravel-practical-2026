@@ -8,20 +8,16 @@
     <title>@yield('title', 'Dashboard')</title>
 
     <!-- Bootstrap -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css"
-        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Bootstrap Icons -->
-    <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <!-- DataTables -->
-    <link href="https://cdn.datatables.net/2.3.8/css/dataTables.bootstrap5.css"
-        rel="stylesheet">
+    <link href="https://cdn.datatables.net/2.3.8/css/dataTables.bootstrap5.css" rel="stylesheet">
 
     <!-- Buttons -->
-    <link href="https://cdn.datatables.net/buttons/3.2.5/css/buttons.bootstrap5.min.css"
-        rel="stylesheet">
+    <link href="https://cdn.datatables.net/buttons/3.2.5/css/buttons.bootstrap5.min.css" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -65,8 +61,7 @@
 
     <div class="app-layout">
 
-        <div class="sidebar-container bg-dark min-vh-100 p-0"
-            id="sidebarContainer">
+        <div class="sidebar-container bg-dark min-vh-100 p-0" id="sidebarContainer">
 
             @include('partials.sidebar')
 
@@ -79,9 +74,9 @@
             <div class="content-wrapper">
 
 
-                    @yield('content')
+                @yield('content')
 
-                
+
 
             </div>
 
@@ -115,11 +110,9 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-
         var table = null;
 
-        function rd()
-        {
+        function rd() {
             if (table) {
                 table.ajax.reload(null, false);
             }
@@ -127,8 +120,7 @@
 
         $.ajaxSetup({
             headers: {
-                'X-CSRF-TOKEN':
-                    $('meta[name="csrf-token"]').attr('content'),
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
                 'Accept': 'application/json'
             }
         });
@@ -140,7 +132,6 @@
             timer: 3000,
             timerProgressBar: true
         });
-
     </script>
 
     @stack('scripts')
@@ -148,8 +139,7 @@
     @yield('scripts')
 
     <script>
-
-        $(document).on('click', '.btn-action', function () {
+        $(document).on('click', '.btn-action', function() {
 
             let btn = $(this);
 
@@ -179,21 +169,23 @@
                     url: url,
                     type: method,
 
-                    success: function (response) {
+                    success: function(response) {
+
+                        let successText = btn.data('success');
 
                         Toast.fire({
                             icon: 'success',
-                            title: response.message || 'Success'
+                            title: successText || response.message || 'Success'
                         });
 
                         rd();
                     },
 
-                    error: function (xhr) {
+                    error: function(xhr) {
 
                         let message =
-                            xhr.responseJSON?.message
-                            || 'Something went wrong';
+                            xhr.responseJSON?.message ||
+                            'Something went wrong';
 
                         Toast.fire({
                             icon: 'error',
@@ -206,16 +198,15 @@
 
         });
 
-        @if(Session::has('message'))
+        @if (Session::has('message'))
 
             Toast.fire({
                 icon: "{{ Session::get('status', 'info') }}",
                 title: "{{ Session::get('message') }}"
             });
-
         @endif
-
     </script>
 
 </body>
+
 </html>

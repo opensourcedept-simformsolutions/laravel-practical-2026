@@ -5,11 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Notifications\Notifiable;
 
 class Resident extends Model
 {
-    use HasFactory, SoftDeletes,Notifiable;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'user_id',
@@ -19,7 +18,7 @@ class Resident extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class)->withTrashed();
+        return $this->belongsTo(User::class);
     }
 
     public function flat()

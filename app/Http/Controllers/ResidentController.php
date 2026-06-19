@@ -14,22 +14,18 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
+use Exception;
 use Illuminate\Support\Str;
 use Throwable;
 use Yajra\DataTables\Facades\DataTables;
 
 class ResidentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
-        Gate::authorize('viewAny', Resident::class);
         if ($request->ajax()) {
 
             $query = Resident::with(['user', 'flat']);
-
             return DataTables::of($query)
 
                 ->addColumn('name', fn ($row) => $row->user->name)
@@ -71,16 +67,9 @@ class ResidentController extends Controller
         return view('residents.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        Gate::authorize('create', Resident::class);
-        $flats = Flat::where(
-            'society_id',
-            auth()->user()->society_id
-        )->get();
+        $flats = Flat::where('society_id', auth()->user()->society_id)->get();
 
         return view('residents.create', compact('flats'));
     }
