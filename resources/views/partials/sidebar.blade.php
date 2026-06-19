@@ -41,7 +41,6 @@
 
 {{-- =========================
 SUPER ADMIN
-========================== --}}
 
 {{-- @can('manage-societies')
 <x-sidebar-link :href="route('societies.index')" :active="request()->routeIs('societies.*')">
@@ -59,7 +58,6 @@ SUPER ADMIN
 
 {{-- =========================
 ADMIN + SUPER ADMIN
-========================== --}}
 
 {{-- @can('manage-users')
 <x-sidebar-link :href="route('users.index')" :active="request()->routeIs('users.*')">
@@ -91,7 +89,6 @@ ADMIN + SUPER ADMIN
 
 {{-- =========================
 VISITORS
-========================== --}}
 
 {{-- @can('manage-visitors')
 <x-sidebar-link :href="route('visitors.index')" :active="request()->routeIs('visitors.*')">
@@ -114,7 +111,6 @@ VISITORS
 
 {{-- =========================
 DELIVERIES
-========================== --}}
 
 {{-- @can('manage-deliveries')
 <x-sidebar-link :href="route('deliveries.index')" :active="request()->routeIs('deliveries.*')">
@@ -132,7 +128,6 @@ DELIVERIES
 
 {{-- =========================
 COMPLAINTS
-========================== --}}
 
 {{-- @can('manage-complaints')
 <x-sidebar-link :href="route('complaints.index')" :active="request()->routeIs('complaints.*')">
@@ -150,7 +145,6 @@ COMPLAINTS
 
 {{-- =========================
 REPORTS
-========================== --}}
 
 {{-- @can('view-reports')
 <x-sidebar-link :href="route('reports.visitors')" :active="request()->routeIs('reports.*')">
@@ -161,7 +155,6 @@ REPORTS
 
 {{-- =========================
 SOCIETY DETAILS
-========================== --}}
 
 {{-- @can('view-society')
 <x-sidebar-link :href="route('society.show')" :active="request()->routeIs('society.*')">
@@ -169,3 +162,50 @@ SOCIETY DETAILS
     <span class="sidebar-link-label">Society Details</span>
 </x-sidebar-link>
 @endcan --}}
+<div class="list-group list-group-flush">
+
+    <a href="{{ route('admin.dashboard') }}" class="list-group-item list-group-item-action bg-dark text-white">
+        Dashboard
+    </a>
+
+    {{-- ADMIN --}}
+    @can('is-admin')
+        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+            Users
+        </a>
+
+        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+            Residents
+        </a>
+
+        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+            Gatekeepers
+        </a>
+
+        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+            Reports
+        </a>
+    @endcan
+
+    {{-- GATEKEEPER --}}
+    @can('is-gatekeeper')
+        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+            Visitors
+        </a>
+
+        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+            Entry Logs
+        </a>
+    @endcan
+    {{-- RESIDENT --}}
+    @can('is-resident')
+        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+            My Visitors
+        </a>
+
+        <a href="#" class="list-group-item list-group-item-action bg-dark text-white">
+            Complaints
+        </a>
+    @endcan
+
+</div>
