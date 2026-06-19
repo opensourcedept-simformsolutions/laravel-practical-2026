@@ -37,5 +37,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('is-resident', function ($user) {
             return $user->isResident();
         });
+
     }
 }

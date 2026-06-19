@@ -99,6 +99,52 @@
     border-color: rgba(15, 23, 42, 0.15);
 }
 
+.dashboard-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 120px;
+    transition: all .2s ease;
+    box-shadow: 0 2px 10px rgba(0,0,0,.04);
+}
+
+.dashboard-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.08);
+}
+
+.dashboard-card-title {
+    margin-bottom: .5rem;
+    font-size: .875rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.dashboard-card-value {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #212529;
+}
+
+.dashboard-card-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dashboard-card-icon i {
+    font-size: 1.5rem;
+    color: #495057;
+}
+
 @media (max-width: 767.98px) {
     .table-shell .dt-container .dt-layout-row {
         padding: 0.875rem 1rem;

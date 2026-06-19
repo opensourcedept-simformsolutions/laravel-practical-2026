@@ -8,7 +8,7 @@ class DeliveryPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin() || $user->isGatekeeper() || $user->isResident();
+        return true;
     }
 
     public function view(User $user, Delivery $delivery): bool
@@ -42,11 +42,6 @@ class DeliveryPolicy
     {
         return $this->sameSociety($user, $delivery)
             && ($user->isAdmin() || $user->isGatekeeper());
-    }
-
-    private function canManageDeliveries(User $user): bool
-    {
-        return $user->isAdmin() || $user->isGatekeeper();
     }
 
     private function sameSociety(User $user, Delivery $delivery): bool
