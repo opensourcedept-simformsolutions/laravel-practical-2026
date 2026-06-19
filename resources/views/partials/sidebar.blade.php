@@ -13,10 +13,21 @@
         </x-sidebar-link>
 
         {{-- Passes --}}
+        @cannot(['is-gatekeeper'])
         <x-sidebar-link :href="route('passes.index')" :active="request()->routeIs('passes.*')">
             <i class="bi bi-pass"></i>
             <span class="sidebar-link-label">Visitor Passes</span>
         </x-sidebar-link>
+        @endcannot
+
+        @can('is-gatekeeper')
+        <x-sidebar-link :href="route('gatekeeper.visitor-logs.pending')"
+            :active="request()->routeIs('gatekeeper.visitor-logs.*')">
+            <i class="bi bi-person-check"></i>
+            <span class="sidebar-link-label">Pending Passes</span>
+        </x-sidebar-link>
+        @endcan
+
 
         @canany(['is-admin', 'is-superadmin'])
         <x-sidebar-link href="#" :active="request()->routeIs('users.*')">

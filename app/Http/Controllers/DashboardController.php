@@ -136,24 +136,7 @@ class DashboardController extends Controller
                 ->latest()
                 ->take(5)
                 ->get(),
-
-
-class DashboardController extends Controller
-
-{
-    public function admin()
-    {
-        return view('admin.dashboard');
-    }
-
-    public function resident()
-    {
-        return view('resident.dashboard');
-    }
-
-    public function gatekeeper()
-    {
-        return view('gatekeeper.dashboard');
-
+        ]);
     }
 }
+
