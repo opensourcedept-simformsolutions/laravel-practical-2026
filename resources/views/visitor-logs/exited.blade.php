@@ -1,33 +1,26 @@
 @extends('layouts.app')
 
-@section('title', 'Visitor Passes')
+@section('title', 'Exited Visitors')
 
 @section('content')
 
 <div class="container py-4">
 
     <h2 class="mb-4">
-        Pending Visitor Passes
+        Exited Visitors
     </h2>
 
     <div class="card">
 
         <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <span class="fw-semibold">Visitor Pass List</span>
 
-            <div class="d-flex gap-2">
+            <span class="fw-semibold">Exited Visitor List</span>
 
-                <a href="{{ route('gatekeeper.visitor-logs.exited') }}" class="btn btn-success btn-sm">
-                    <i class="bi bi-box-arrow-right me-1"></i>
-                    Exited Visitors
-                </a>
+            <a href="{{ route('gatekeeper.visitor-logs.pending') }}" class="btn btn-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>
+                Back
+            </a>
 
-                <a href="{{ route('passes.create') }}" class="btn btn-primary btn-sm">
-                    <i class="bi bi-plus-square me-1"></i>
-                    Create Pass
-                </a>
-
-            </div>
         </div>
 
         <div class="card-body">
@@ -46,7 +39,7 @@
 
             <div class="table-responsive">
 
-                <table id="visitorLogsTable" class="table table-bordered table-striped w-100">
+                <table id="exitedVisitorsTable" class="table table-bordered table-striped w-100">
 
                     <thead>
                         <tr>
@@ -55,8 +48,10 @@
                             <th>Phone</th>
                             <th>Flat</th>
                             <th>Purpose</th>
+                            <th>Entry Time</th>
+                            <th>Exit Date</th>
+                            <th>Exit Time</th>
                             <th>Status</th>
-                            <th>Action</th>
                         </tr>
                     </thead>
 
@@ -76,12 +71,13 @@
 <script>
     $(function () {
 
-    $('#visitorLogsTable').DataTable({
-
+    $('#exitedVisitorsTable').DataTable({
         processing: true,
         serverSide: true,
 
-        ajax: "{{ route('gatekeeper.visitor-logs.pending') }}",
+        ajax: "{{ route('gatekeeper.visitor-logs.exited') }}",
+
+        order: [[6, 'desc']],
 
         columns: [
             {
@@ -106,13 +102,20 @@
                 name: 'purpose'
             },
             {
-                data: 'status',
-                name: 'status'
+                data: 'entry_time',
+                name: 'entry_time'
             },
             {
-                data: 'action',
-                searchable: false,
-                orderable: false
+                data: 'exit_date',
+                name: 'exit_time'
+            },
+            {
+                data: 'exit_time',
+                name: 'exit_time'
+            },
+            {
+                data: 'status',
+                name: 'status'
             }
         ]
     });

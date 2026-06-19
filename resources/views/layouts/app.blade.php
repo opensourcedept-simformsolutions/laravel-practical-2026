@@ -54,6 +54,19 @@
             font-size: 12px;
             border-radius: 6px;
         }
+        .form-select,
+        .dt-length .form-select,
+        .dt-search .form-control {
+        border: 1px solid #dee2e6;
+        border-radius: .375rem;
+        box-shadow: none;
+        }
+
+        .dt-length .form-select:focus,
+        .dt-search .form-control:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 .25rem rgba(13, 110, 253, .25);
+        }
     </style>
 </head>
 

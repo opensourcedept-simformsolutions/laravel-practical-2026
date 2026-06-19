@@ -3,8 +3,8 @@
 use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\VisitorLogController;
 use App\Http\Controllers\Resident\VisitorPassController;
+use App\Http\Controllers\VisitorLogController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -24,7 +24,8 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'role:gatekeeper'])->name('gatekeeper.')->group(function () {
     Route::get('/pending-pass', [VisitorLogController::class, 'pending'])->name('visitor-logs.pending');
     Route::patch('/visitor-logs/{visitorLog}/mark-entry', [VisitorLogController::class, 'markEntry'])->name('visitor-logs.mark-entry');
-    Route::patch('/visitor-logs/{visitorLog}/mark-exit',[VisitorLogController::class, 'markExit'])->name('visitor-logs.mark-exit');
+    Route::patch('/visitor-logs/{visitorLog}/mark-exit', [VisitorLogController::class, 'markExit'])->name('visitor-logs.mark-exit');
+    Route::get('/visitor-logs/exited',[VisitorLogController::class,'exited'])->name('visitor-logs.exited');
 });
 
 Route::middleware(['auth', 'role:resident,gatekeeper,admin,super_admin'])->group(function () {
@@ -50,14 +51,20 @@ Route::middleware(['auth', 'role:resident,gatekeeper'])
     ->controller(VisitorPassController::class)
     ->name('passes.')
     ->group(function () {
+
         Route::get('passes', 'index')->name('index');
         Route::get('passes/data', 'data')->name('data');
+
         Route::get('passes/create', 'create')->name('create');
         Route::post('passes', 'store')->name('store');
-        Route::get('/{id}/edit', 'edit')->name('edit');
-        Route::put('/{id}', 'update')->name('update');
+
+        Route::get('passes/{visitorLog}/edit', 'edit')->name('edit');
+        Route::put('passes/{visitorLog}', 'update')->name('update');
+        Route::delete('passes/{visitorLog}', 'destroy')->name('destroy');
+
         Route::get('passes/{visitorLog}', 'show')->name('show');
         Route::patch('passes/{visitorLog}/cancel', 'cancel')->name('cancel');
+
         Route::get('visitor-report', 'report')->name('report');
     });
 
@@ -77,4 +84,4 @@ Route::middleware(['auth', 'role:gatekeeper'])->group(function () {
         ->name('gatekeeper.dashboard');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
