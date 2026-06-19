@@ -3,9 +3,12 @@
 @section('title', 'Table Examples')
 
 @section('content')
-    <div class="form-contained" style="max-width: 1100px;">
-        <x-form.form-section title="DataTable Examples" description="Reference examples for the reusable x-table component.">
-                <x-table id="visitorsTable">
+    <div class="mx-auto w-100" style="max-width: 1100px;">
+        <x-form.form-section title="Table Examples" description="Reference examples for a plain Bootstrap table.">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped mb-0 align-middle">
                     <thead>
                         <tr>
                             <th>Visitor</th>
@@ -129,7 +132,10 @@
                             <td>01:10 PM</td>
                         </tr>
                     </tbody>
-                </x-table>
+                            </table>
+                        </div>
+                    </div>
+                </div>
         </x-form.form-section>
     </div>
 @endsection

@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FlatController;
 use App\Http\Controllers\ResidentController;
-use App\Http\Controllers\ResidentProfileController;
+use App\Http\Controllers\Delivery\DeliveryController;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -43,6 +43,39 @@ Route::middleware(['auth', 'role:admin,resident,gatekeeper'])
     });
 
 Route::view('/test-tables', 'testtable');
+Route::middleware(['auth', 'role:resident'])->group(function () {
+    Route::get('/resident/dashboard', [DashboardController::class, 'resident'])
+        ->name('resident.dashboard');
+});
+
+Route::middleware(['auth', 'role:gatekeeper'])->group(function () {
+    Route::get('/gatekeeper/dashboard', [DashboardController::class, 'gatekeeper'])
+        ->name('gatekeeper.dashboard');
+});
+
+Route::get('deliveries/data', [DeliveryController::class, 'data'])
+    ->middleware(['auth'])
+    ->name('deliveries.data');
+
+Route::resource('/deliveries', DeliveryController::class)
+    ->middleware(['auth']);
+
+Route::patch('deliveries/{delivery}/deliver', [DeliveryController::class, 'markDelivered'])
+    ->middleware(['auth'])
+    ->name('deliveries.deliver');
+
+Route::prefix('reports')
+    ->name('reports.')
+    ->group(function () {
+        Route::get('/deliveries', fn () => 'Delivery Report')
+            ->name('deliveries');
+
+        Route::get('/complaints', fn () => 'Complaint Report')
+            ->name('complaints');
+
+        Route::get('/visitors', fn () => 'Visitor Report')
+            ->name('visitors');
+    });
 
 Route::view('/test-form', 'testform');
 Route::view('/test-tables', 'testtable');

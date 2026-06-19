@@ -16,7 +16,7 @@
 <select
     @if ($name) name="{{ $name }}" @endif
     @if ($fieldId) id="{{ $fieldId }}" @endif
-    {{ $attributes->merge(['class' => 'form-select' . ($hasError ? ' is-invalid' : '')]) }}>
+    {{ $attributes->merge(['class' => 'form-control ' . ($hasError ? ' is-invalid' : '')]) }}>
     @if ($placeholder)
         <option value="">{{ $placeholder }}</option>
     @endif

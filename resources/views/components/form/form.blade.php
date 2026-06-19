@@ -11,7 +11,7 @@
 
 <form method="{{ $formMethod }}" @if ($action) action="{{ $action }}" @endif
     @if ($hasFiles) enctype="multipart/form-data" @endif
-    {{ $attributes->merge(['class' => 'form-base']) }}>
+    {{ $attributes->class(['d-grid gap-3']) }}>
     @if ($formMethod !== 'GET')
         @csrf
     @endif
