@@ -101,20 +101,9 @@
                     <div class="col-md-6">
                       <div class="mb-3">
                         <label class="form-label">Status</label>
-                        <select name="status" class="form-select">
-                          <option value="pending"
-                            {{ old('status', $visitorLog->status) == 'pending' ? 'selected' : '' }}>Pending</option>
-                          <option value="entered"
-                            {{ old('status', $visitorLog->status) == 'entered' ? 'selected' : '' }}>Entered</option>
-                          <option value="exited" {{ old('status', $visitorLog->status) == 'exited' ? 'selected' : '' }}>
-                            Exited</option>
-                        </select>
+                        <input type="text" class="form-control" value="{{ ucfirst($visitorLog->status) }}" readonly disabled>
 
-                        @error('status')
-                          <div class="text-danger pt-1">
-                            {{ $message }}
-                          </div>
-                        @enderror
+                        <input type="hidden" name="status" value="{{ $visitorLog->status }}">
                       </div>
                     </div>
 
