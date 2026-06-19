@@ -139,7 +139,7 @@ public function index(Request $request)
                                   onsubmit="return confirm(\'Are you sure you want to delete this complaint?\');">
                                 ' . csrf_field() . '
                                 ' . method_field('DELETE') . '
-                                <button type="submit" class="btn btn-danger btn-sm">
+                                <button type="submit" class="btn btn-danger btn-action btn-sm">
                                     Delete
                                 </button>
                             </form>

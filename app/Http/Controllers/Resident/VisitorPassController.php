@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Resident;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreVisitorPassRequest;
+use App\Models\Flat;
 use App\Models\Visitor;
 use App\Models\VisitorLog;
-use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +17,14 @@ class VisitorPassController extends Controller
 {
     public function index()
     {
-        return view('passes.index');
+        try {
+            return view('passes.index');
+        } catch (Exception $e) {
+            Session::flash('message', 'Something went wrong.');
+            Session::flash('status', 'error');
+
+            return redirect()->back()->withInput();
+        }
     }
 
     public function data1(Request $request)
@@ -53,7 +60,7 @@ class VisitorPassController extends Controller
 
                     if (
                         ($column['searchable'] ?? 'false') === 'true'
-                        && !empty($column['name'])
+                        && ! empty($column['name'])
                     ) {
                         $q->orWhere(
                             $column['name'],
@@ -95,10 +102,10 @@ class VisitorPassController extends Controller
             ->get();
 
         return response()->json([
-            "draw" => intval($request->draw),
-            "recordsTotal" => $total,
-            "recordsFiltered" => $filtered,
-            "data" => $data
+            'draw' => intval($request->draw),
+            'recordsTotal' => $total,
+            'recordsFiltered' => $filtered,
+            'data' => $data,
         ]);
     }
 
@@ -128,58 +135,54 @@ class VisitorPassController extends Controller
         return DataTables::of($query)
             ->addIndexColumn()
 
-            ->editColumn('visitor', fn($row) => $row->visitor_name ?? '-')
-            ->editColumn('phone', fn($row) => $row->visitor_phone ?? '-')
+            ->editColumn('visitor', fn ($row) => $row->visitor_name ?? '-')
+            ->editColumn('phone', fn ($row) => $row->visitor_phone ?? '-')
 
             ->editColumn(
                 'flat',
-                fn($row) =>
-                $row->flat_wing && $row->flat_number
-                    ? $row->flat_wing . '-' . $row->flat_number
+                fn ($row) => $row->flat_wing && $row->flat_number
+                    ? $row->flat_wing.'-'.$row->flat_number
                     : '-'
             )
 
-            ->editColumn('creator', fn($row) => $row->creator_name ?? '-')
-            ->editColumn('gatekeeper', fn($row) => $row->gatekeeper_name ?? '-')
+            ->editColumn('creator', fn ($row) => $row->creator_name ?? '-')
+            ->editColumn('gatekeeper', fn ($row) => $row->gatekeeper_name ?? '-')
 
-            ->editColumn('purpose', fn($row) => $row->purpose ?? '-')
-            ->editColumn('status', fn($row) => ucfirst($row->status))
+            ->editColumn('purpose', fn ($row) => $row->purpose ?? '-')
+            ->editColumn('status', fn ($row) => ucfirst($row->status))
 
             ->editColumn(
                 'entry_time',
-                fn($row) =>
-                $row->entry_time
+                fn ($row) => $row->entry_time
                     ? format_date($row->entry_time)
                     : '-'
             )
 
             ->editColumn(
                 'exit_time',
-                fn($row) =>
-                $row->exit_time
+                fn ($row) => $row->exit_time
                     ? format_date($row->exit_time)
                     : '-'
             )
 
             ->editColumn(
                 'visit_date',
-                fn($row) =>
-                $row->visit_date
+                fn ($row) => $row->visit_date
                     ? format_date($row->visit_date, 'd M Y')
                     : '-'
             )
 
             ->addColumn('actions', function ($row) {
                 return '<div class="d-flex gap-2">
-                    <a href="/passes/' . $row->id . '" class="btn btn-info">
+                    <a href="/passes/'.$row->id.'" class="btn btn-info">
                         <i class="bi bi-eye me-1"></i>
                     </a>
 
-                    <a href="' . route('passes.edit', $row->id) . '" class="btn btn-primary">
+                    <a href="'.route('passes.edit', $row->id).'" class="btn btn-primary">
                         <i class="bi bi-pencil-square me-1"></i>
                     </a>
 
-                    <button data-id="' . $row->id . '" data-url="' . route('passes.cancel', $row->id) . '" class="btn-delete btn btn-danger shadow-none">
+                    <button data-id="'.$row->id.'" data-url="'.route('passes.cancel', $row->id).'" class="btn-delete btn btn-danger shadow-none">
                         <i class="bi bi-trash3"></i>
                     </button>
                 </div>';
@@ -191,7 +194,13 @@ class VisitorPassController extends Controller
 
     public function create()
     {
-        return view('passes.create');
+        $flats = [];
+
+        if (auth()->user()->isGatekeeper()) {
+            $flats = Flat::orderBy('flat_number')->get();
+        }
+
+        return view('passes.create', compact('flats'));
     }
 
     public function store(StoreVisitorPassRequest $request)
@@ -212,10 +221,14 @@ class VisitorPassController extends Controller
                     ]
                 );
 
-                $visitorLog = new VisitorLog();
+                $flatId = $user->isGatekeeper()
+                    ? $validated['flat_id']
+                    : $user->resident->flat_id;
+
+                $visitorLog = new VisitorLog;
 
                 $visitorLog->visitor_id = $visitor->id;
-                $visitorLog->flat_id = $user->resident->flat_id;
+                $visitorLog->flat_id = $flatId;
                 $visitorLog->created_by = $user->id;
                 $visitorLog->purpose = $validated['purpose'];
                 $visitorLog->status = 'pending';
@@ -227,10 +240,16 @@ class VisitorPassController extends Controller
             Session::flash('message', 'Visitor Pass Created Successfully.');
             Session::flash('status', 'success');
 
+            if ($user->isGatekeeper()) {
+                return redirect()->route('gatekeeper.visitor-logs.pending');
+            }
+
             return redirect()->route('passes.index');
+
         } catch (Exception $e) {
             Session::flash('message', 'Something went wrong.');
             Session::flash('status', 'error');
+
             return redirect()->back()->withInput();
         }
     }
@@ -292,13 +311,14 @@ class VisitorPassController extends Controller
         } catch (Exception $e) {
             Session::flash('message', 'Something went wrong.');
             Session::flash('status', 'error');
+
             return redirect()->back()->withInput();
         }
     }
 
     public function cancel(VisitorLog $visitorLog)
     {
-        if (!$visitorLog) {
+        if (! $visitorLog) {
             return redirect()
                 ->back()
                 ->with('error', 'Visitor pass not found.');
@@ -311,7 +331,7 @@ class VisitorPassController extends Controller
         }
 
         $visitorLog->update([
-            'status' => 'cancelled'
+            'status' => 'cancelled',
         ]);
 
         return redirect()->back()
@@ -323,7 +343,7 @@ class VisitorPassController extends Controller
         $query = VisitorLog::with([
             'visitor',
             'flat',
-            'gatekeeper'
+            'gatekeeper',
         ]);
 
         if ($request->filled('status')) {
