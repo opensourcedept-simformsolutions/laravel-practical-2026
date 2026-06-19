@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Delivery\DeliveryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Resident\VisitorPassController;
 use Illuminate\Support\Facades\Route;
