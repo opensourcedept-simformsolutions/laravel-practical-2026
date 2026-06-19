@@ -1,23 +1,33 @@
 <aside class="sidebar" id="appSidebar">
-  <div class="sidebar-header">
-    <i class="bi bi-buildings"></i>
-    <span class="sidebar-brand-text">SocietyMS</span>
-  </div>
+    <div class="sidebar-header">
+        <i class="bi bi-buildings"></i>
+        <span class="sidebar-brand-text">SocietyMS</span>
+    </div>
 
-  <div class="sidebar-menu">
+    <div class="sidebar-menu">
 
-    {{-- Dashboard --}}
-    <x-sidebar-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-      <i class="bi bi-speedometer2"></i>
-      <span class="sidebar-link-label">Dashboard</span>
-    </x-sidebar-link>
+        {{-- Dashboard --}}
+        <x-sidebar-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+            <i class="bi bi-speedometer2"></i>
+            <span class="sidebar-link-label">Dashboard</span>
+        </x-sidebar-link>
 
-    {{-- Passes --}}
-    <x-sidebar-link :href="route('passes.index')" :active="request()->routeIs('passes.index')">
-      <i class="bi bi-pass"></i>
-      <span class="sidebar-link-label">Visitor Passes</span>
-    </x-sidebar-link>
-  </div>
+        {{-- Passes --}}
+        <x-sidebar-link :href="route('passes.index')" :active="request()->routeIs('passes.index')">
+            <i class="bi bi-pass"></i>
+            <span class="sidebar-link-label">Visitor Passes</span>
+        </x-sidebar-link>
+
+        <x-sidebar-link :href="route('flats.index')" :active="request()->routeIs('flats.index')">
+            <i class="bi bi-people"></i>
+            <span class="sidebar-link-label">Flats</span>
+        </x-sidebar-link>
+
+        <x-sidebar-link :href="route('residents.index')" :active="request()->routeIs('residents.index')">
+            <i class="bi bi-house-door"></i>
+            <span class="sidebar-link-label">Residents</span>
+            </x-sidebar-link>
+    </div>
 </aside>
 
 {{-- =========================
