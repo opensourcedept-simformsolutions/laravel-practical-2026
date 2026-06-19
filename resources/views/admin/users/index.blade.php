@@ -4,71 +4,111 @@
 
 @section('content')
 
-    <div class="d-flex justify-content-between mb-3">
-        <h3>User Management</h3>
 
-        <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
-            + Create User
-        </a>
+    <div class="card shadow-sm border-0 rounded-3">
+
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+
+            <span class="fw-semibold">
+                User Management
+            </span>
+
+            <a href="{{ route('admin.users.create') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-square me-1"></i>
+                Create User
+            </a>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table id="usersTable" class="table table-hover table-striped align-middle w-100 app-datatable">
+
+                    <thead class="table-light">
+
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Role</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody></tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
     </div>
 
-    <x-data-table id="usersTable">
-
-        <thead class="table-dark">
-            <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Role</th>
-                <th width="180">Action</th>
-            </tr>
-        </thead>
-
-        <tbody>
-
-            @foreach ($users as $user)
-
-                <tr>
-                    <td>{{ $user->name }}</td>
-
-                    <td>{{ $user->email }}</td>
-
-                    <td>{{ $user->phone }}</td>
-
-                    <td>{{ ucfirst($user->role->name) }}</td>
-
-                    <td>
-
-                        <a href="{{ route('admin.users.edit', $user) }}"
-                           class="btn btn-warning btn-sm">
-                            Edit
-                        </a>
-
-                        <form
-                            action="{{ route('admin.users.destroy', $user) }}"
-                            method="POST"
-                            class="d-inline">
-
-                            @csrf
-                            @method('DELETE')
-
-                            <button
-                                type="submit"
-                                class="btn btn-danger btn-sm"
-                                onclick="return confirm('Delete this user?')">
-                                Delete
-                            </button>
-
-                        </form>
-
-                    </td>
-
-                </tr>
-
-            @endforeach
-
-        </tbody>
-
-    </x-data-table>
-
 @endsection
+
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+
+            $('#usersTable').DataTable({
+
+                processing: true,
+
+                serverSide: true,
+
+                responsive: true,
+
+                ajax: "{{ route('admin.users.index') }}",
+
+                layout: {
+                    topStart: {
+                        buttons: [
+                            'csv',
+                            'excel'
+                        ]
+                    },
+                    topEnd: {
+                        search: true,
+                        pageLength: true
+                    }
+                },
+
+                columns: [
+
+                    {
+                        data: 'name',
+                        name: 'name'
+                    },
+
+                    {
+                        data: 'email',
+                        name: 'email'
+                    },
+
+                    {
+                        data: 'phone',
+                        name: 'phone'
+                    },
+
+                    {
+                        data: 'role',
+                        name: 'role.name'
+                    },
+
+                    {
+                        data: 'actions',
+                        orderable: false,
+                        searchable: false
+                    }
+
+                ]
+
+            });
+
+        });
+    </script>
+@endpush

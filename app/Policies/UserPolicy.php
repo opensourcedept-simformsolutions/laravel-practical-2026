@@ -28,7 +28,7 @@ class UserPolicy
     public function create(User $user): bool
     {
         return $user->role->name === 'admin';
-        
+
     }
 
     /**
@@ -36,7 +36,9 @@ class UserPolicy
      */
     public function update(User $user, User $model): bool
     {
-        return $user->role->name === 'admin' && $user->society_id === $model->society_id;
+        return $user->society_id === $model->society_id
+        && $model->role->name !== 'super_admin'
+        && $user->id !== $model->id;
     }
 
     /**
@@ -44,9 +46,9 @@ class UserPolicy
      */
     public function delete(User $user, User $model): bool
     {
-        return $user->role->name === 'admin'
-            && $user->society_id === $model->society_id
-            && $user->id !== $model->id;
+        return $user->society_id === $model->society_id
+        && $model->role->name !== 'super_admin'
+        && $user->id !== $model->id;
     }
 
     /**

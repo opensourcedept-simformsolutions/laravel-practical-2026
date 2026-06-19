@@ -1,14 +1,23 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Resident\VisitorPassController;
-use App\Http\Controllers\UserController;
-
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FlatController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Resident\VisitorPassController;
 use App\Http\Controllers\ResidentController;
-use App\Http\Controllers\ResidentProfileController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Auth;
+
+use Illuminate\Support\Facades\Route;
+
+Route::get('/', function () {
+
+    if (! Auth::check()) {
+        return redirect()->route('login');
+    }
+
+    return redirect()->route('dashboard');
+});
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -51,7 +60,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('flats', FlatController::class);
 });
 
-
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('residents', ResidentController::class);
 });
@@ -66,6 +74,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('flats', FlatController::class);
 });
 
+
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('residents', ResidentController::class);
     Route::get('/profile', [ProfileController::class, 'index'])
@@ -75,4 +84,4 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ->name('profile.edit');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

@@ -27,7 +27,7 @@
             <i class="bi bi-house-door"></i>
             <span class="sidebar-link-label">Residents</span>
             </x-sidebar-link>
-              <x-sidebar-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('users.*')">
+              <x-sidebar-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('users.index')">
                 <i class="bi bi-people"></i>
                 <span class="sidebar-link-label"> Users Management</span>
             </x-sidebar-link>
