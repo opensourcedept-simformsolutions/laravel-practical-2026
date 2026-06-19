@@ -14,6 +14,7 @@ class VisitorLog extends Model
         'visitor_id',
         'flat_id',
         'purpose',
+        'created_by',
         'gatekeeper_id',
         'entry_time',
         'exit_time',
@@ -39,5 +40,10 @@ class VisitorLog extends Model
     public function gatekeeper()
     {
         return $this->belongsTo(User::class, 'gatekeeper_id');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }
