@@ -19,8 +19,9 @@ class DeliveryController extends Controller
     {
         try {
             $query = Delivery::with([
-                'flat',
-                'resident.user',
+                'flat' => fn ($q) => $q->withTrashed(),
+                'resident' => fn ($q) => $q->withTrashed(),
+                'resident.user' => fn ($q) => $q->withTrashed(),
             ]);
 
             $user = auth()->user();
@@ -81,7 +82,7 @@ class DeliveryController extends Controller
     {
         $this->authorize('create', Delivery::class);
 
-        return view('deliveries.create', ['residentOptions'=>$this->getResidentOptions()]);
+        return view('deliveries.create', ['residentOptions' => $this->getResidentOptions()]);
     }
 
     public function store(StoreDeliveryRequest $request)
