@@ -14,15 +14,11 @@ use Yajra\DataTables\Facades\DataTables;
 
 class ResidentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         if ($request->ajax()) {
 
             $query = Resident::with(['user', 'flat']);
-
             return DataTables::of($query)
 
                 ->addColumn('name', fn ($row) => $row->user->name)
@@ -64,9 +60,6 @@ class ResidentController extends Controller
         return view('residents.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         $flats = Flat::where('society_id', auth()->user()->society_id)->get();
@@ -74,24 +67,19 @@ class ResidentController extends Controller
         return view('residents.create', compact('flats'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store1(StoreResidentRequest $request)
     {
         $data = $request->validated();
 
-        // 1. create user
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'phone' => $data['phone'],
             'password' => bcrypt('password123'),
-            'role_id' => 3, // resident
+            'role_id' => 3, 
             'society_id' => auth()->user()->society_id,
         ]);
 
-        // 2. create resident
         Resident::create([
             'user_id' => $user->id,
             'flat_id' => $data['flat_id'],
@@ -134,14 +122,8 @@ class ResidentController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show() {}
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Resident $resident)
     {
         $flats = Flat::where(
@@ -152,9 +134,6 @@ class ResidentController extends Controller
         return view('residents.edit', compact('resident', 'flats'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateResidentRequest $request, Resident $resident)
     {
         $data = $request->validated();
@@ -173,9 +152,6 @@ class ResidentController extends Controller
             ->with('success', 'Resident updated successfully');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Resident $resident)
     {
         $resident->user()->delete();

@@ -46,6 +46,14 @@
                 processing: true,
                 serverSide: true,
                 ajax: "{{ route('flats.index') }}",
+                dom: 'Bfrtip',
+                buttons: [
+                    'copy',
+                    'csv',
+                    'excel',
+                    'print',
+                    'pdf'
+                ],
 
                 columns: [{
                         data: 'id',
