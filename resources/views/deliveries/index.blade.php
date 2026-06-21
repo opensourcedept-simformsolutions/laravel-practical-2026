@@ -7,9 +7,11 @@
             <h2 class="h3 fw-bold mb-0">
                 Deliveries
             </h2>
-            <a href="{{ route('deliveries.create') }}" type="button" class="btn btn-primary">
-                <i class="bi bi-plus-square me-1"></i> Create Delivery
-            </a>
+            @cannot('is-resident')
+                <a href="{{ route('deliveries.create') }}" type="button" class="btn btn-primary">
+                    <i class="bi bi-plus-square me-1"></i> Create Delivery
+                </a>
+            @endcannot
         </div>
         <div class="card-body">
             <div class="table-responsive">

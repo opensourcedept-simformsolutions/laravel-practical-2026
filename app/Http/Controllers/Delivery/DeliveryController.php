@@ -7,9 +7,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Delivery\StoreDeliveryRequest;
 use App\Http\Requests\UpdateDeliveryRequest;
 use App\Models\Delivery;
+use App\Models\Flat;
 use App\Models\Resident;
 use App\Services\DeliveryNotificationService;
+use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
+use League\Csv\Writer;
 
 class DeliveryController extends Controller
 {
@@ -19,9 +22,9 @@ class DeliveryController extends Controller
     {
         try {
             $query = Delivery::with([
-                'flat' => fn ($q) => $q->withTrashed(),
-                'resident' => fn ($q) => $q->withTrashed(),
-                'resident.user' => fn ($q) => $q->withTrashed(),
+                'flat' => fn($q) => $q->withTrashed(),
+                'resident' => fn($q) => $q->withTrashed(),
+                'resident.user' => fn($q) => $q->withTrashed(),
             ]);
 
             $user = auth()->user();
@@ -37,16 +40,20 @@ class DeliveryController extends Controller
             }
 
             return DataTables::eloquent($query)
-                ->addColumn('flat', fn ($delivery) => $delivery->flat->wing.'-'.$delivery->flat->flat_number)
-                ->addColumn('resident', fn ($delivery) => $delivery->resident->user->name)
+                ->addColumn('flat', function ($delivery) {
+                    return $delivery->flat->wing . ' - Floor ' . $delivery->flat->floor . ' - ' . $delivery->flat->flat_number;
+                })
+                ->addColumn('resident', function ($delivery) {
+                    return $delivery->resident->user->name;
+                })
                 ->editColumn('status', function ($delivery) {
                     $class = $delivery->status === 'delivered'
                         ? 'text-bg-success'
                         : 'text-bg-primary';
 
-                    return '<span class="badge rounded-pill '.$class.'">'
-                        .ucfirst($delivery->status)
-                        .'</span>';
+                    return '<span class="badge rounded-pill ' . $class . '">'
+                        . ucfirst($delivery->status)
+                        . '</span>';
                 })
                 ->editColumn('received_at', function ($delivery) {
                     return $delivery->received_at?->format('d M Y H:i');
@@ -59,7 +66,6 @@ class DeliveryController extends Controller
                 })
                 ->rawColumns(['status', 'actions'])
                 ->toJson();
-
         } catch (\Throwable $e) {
 
             $this->notificationService->failed(
@@ -71,6 +77,101 @@ class DeliveryController extends Controller
         }
     }
 
+    public function reportData(Request $request)
+    {
+        try {
+            $query = $this->getReportQuery($request);
+
+            return DataTables::eloquent($query)
+                ->addIndexColumn()
+                ->addColumn('society', function ($delivery) {
+                    return $delivery->flat->society->name;
+                })
+                ->addColumn('flat', function ($delivery) {
+                    return $delivery->flat->wing . ' - Floor ' . $delivery->flat->floor . ' - ' . $delivery->flat->flat_number;
+                })
+                ->addColumn('resident', function ($delivery) {
+                    return $delivery->resident->user->name;
+                })
+                ->editColumn('status', function ($delivery) {
+                    return ucfirst($delivery->status);
+                })
+                ->editColumn('received_at', function ($delivery) {
+                    return $delivery->received_at->format('d M Y H:i');
+                })
+                ->editColumn('delivered_at', function ($delivery) {
+                    return $delivery->delivered_at?->format('d M Y H:i') ?? '-';
+                })
+                ->toJson();
+        } catch (\Throwable $e) {
+
+            $this->notificationService->failed(
+                'load delivery datatable',
+                $e
+            );
+
+            abort(500);
+        }
+    }
+    public function export(Request $request)
+    {
+        $query = $this->getReportQuery($request);
+
+        $csv = Writer::createFromString();
+
+        $csv->insertOne([
+            'ID',
+            'Society ID',
+            'Society Name',
+            'Flat',
+            'Resident',
+            'Vendor',
+            'Status',
+            'Received At',
+            'Delivered At',
+        ]);
+
+        foreach ($query->get() as $delivery) {
+            $csv->insertOne([
+                $delivery->id,
+                $delivery->flat->society_id,
+                $delivery->flat->society->name,
+                $delivery->flat->wing . '-' . $delivery->flat->floor . '-' . $delivery->flat->flat_number,
+                $delivery->resident->user->name,
+                $delivery->vendor,
+                ucfirst($delivery->status),
+                $delivery->received_at->format('Y-m-d H:i:s'),
+                $delivery->delivered_at?->format('Y-m-d H:i:s') ?? '-',
+            ]);
+        }
+
+        return response(
+            $csv->toString(),
+            200,
+            [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="delivery-report.csv"',
+            ]
+        );
+    }
+    public function report()
+    {
+        $flats = Flat::orderBy('wing')
+            ->orderBy('floor')
+            ->orderBy('flat_number')
+            ->get();
+
+        $vendors = Delivery::query()
+            ->whereNotNull('vendor')
+            ->distinct()
+            ->orderBy('vendor')
+            ->pluck('vendor');
+
+        return view('deliveries.report', compact(
+            'flats',
+            'vendors'
+        ));
+    }
     public function index()
     {
         $this->authorize('viewAny', Delivery::class);
@@ -110,7 +211,6 @@ class DeliveryController extends Controller
 
             return redirect()->route('deliveries.index')
                 ->with(['status' => 'success', 'message' => 'Delivery recorded successfully.']);
-
         } catch (\Throwable $e) {
             $this->notificationService->failed('create delivery', $e);
 
@@ -142,13 +242,13 @@ class DeliveryController extends Controller
             }
             $delivery->update([
                 'status' => DeliveryStatus::DELIVERED->value,
-                'delivered_at' => now()]);
+                'delivered_at' => now()
+            ]);
 
             $this->notificationService->notify($delivery, 'Delivery delivered');
 
             return back()
                 ->with(['status' => 'success', 'message' => 'Delivery marked as delivered.']);
-
         } catch (\Throwable $e) {
             $this->notificationService->failed('mark delivery as delivered', $e);
 
@@ -199,7 +299,6 @@ class DeliveryController extends Controller
             return redirect()
                 ->route('deliveries.index')
                 ->with(['status' => 'success', 'message' => 'Delivery updated successfully.']);
-
         } catch (\Throwable $e) {
             $this->notificationService->failed('update delivery', $e);
 
@@ -221,7 +320,6 @@ class DeliveryController extends Controller
             return redirect()
                 ->route('deliveries.index')
                 ->with(['status' => 'success', 'message' => 'Delivery deleted successfully.']);
-
         } catch (\Throwable $e) {
             $this->notificationService->failed('delete delivery', $e);
 
@@ -244,9 +342,49 @@ class DeliveryController extends Controller
             ->get()
             ->mapWithKeys(function ($resident) {
                 return [
-                    $resident->id => $resident->flat->wing.'-'.$resident->flat->flat_number
-                        .' - '.$resident->user->name,
+                    $resident->id => $resident->flat->wing . '-' . $resident->flat->flat_number
+                        . ' - ' . $resident->user->name,
                 ];
             });
+    }
+
+    private function getReportQuery(Request $request)
+    {
+        $query = Delivery::with([
+            'flat' => fn($q) => $q->withTrashed(),
+            'flat.society' => fn($q) => $q->withTrashed(),
+            'resident' => fn($q) => $q->withTrashed(),
+            'resident.user' => fn($q) => $q->withTrashed(),
+        ]);
+
+        $user = auth()->user();
+
+        if (! $user->isSuperAdmin()) {
+            if ($user->isResident()) {
+                $query->where('flat_id', $user->resident->flat_id);
+            } else {
+                $query->whereHas('flat', function ($query) use ($user) {
+                    $query->where('society_id', $user->society_id);
+                });
+            }
+        }
+
+        if ($request->filled('flat_id')) {
+            $query->where('flat_id', $request->flat_id);
+        }
+
+        if ($request->filled('vendor')) {
+            $query->where('vendor', 'like', '%' . $request->vendor . '%');
+        }
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('received_at', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('received_at', '<=', $request->to_date);
+        }
+
+        return $query;
     }
 }

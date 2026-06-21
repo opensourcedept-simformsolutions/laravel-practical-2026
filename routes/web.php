@@ -57,13 +57,17 @@ Route::patch('deliveries/{delivery}/deliver', [DeliveryController::class, 'markD
 Route::prefix('reports')
     ->name('reports.')
     ->group(function () {
-        Route::get('/deliveries', fn () => 'Delivery Report')
+        Route::get('/deliveries', [DeliveryController::class, 'report'])
             ->name('deliveries');
+        Route::get('/deliveries/data', [DeliveryController::class, 'reportData'])
+            ->name('deliveries.data');
+        Route::get('/deliveries/export',[DeliveryController::class, 'export'])
+            ->name('deliveries.export');
 
-        Route::get('/complaints', fn () => 'Complaint Report')
+        Route::get('/complaints', fn() => 'Complaint Report')
             ->name('complaints');
 
-        Route::get('/visitors', fn () => 'Visitor Report')
+        Route::get('/visitors', fn() => 'Visitor Report')
             ->name('visitors');
     });
 
