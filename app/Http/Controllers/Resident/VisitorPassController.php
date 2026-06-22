@@ -435,8 +435,6 @@ class VisitorPassController extends Controller
                 ->leftJoin('users', 'users.id', '=', 'visitor_logs.gatekeeper_id')
                 ->latest();
 
-            // 🔥 FILTERS
-
             if ($request->filled('status')) {
                 $query->where('visitor_logs.status', $request->status);
             }

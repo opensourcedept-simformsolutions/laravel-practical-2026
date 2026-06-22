@@ -1,5 +1,4 @@
 <nav class="navbar navbar-expand-lg app-navbar">
-
     <div class="container-fluid">
 
         <button
@@ -13,7 +12,6 @@
         </button>
 
         <div class="ms-auto">
-
             <div class="dropdown">
 
                 <button
@@ -40,15 +38,7 @@
 
                     <li>
                         <a class="dropdown-item" href="{{ route('profile') }}">
-                            <i class="bi bi-person"></i>
-                            Profile
-                        </a>
-                    </li>
-
-                    <li>
-                        <a class="dropdown-item" href="#">
-                            <i class="bi bi-key"></i>
-                            Change Password
+                            <i class="bi bi-person"></i> Profile
                         </a>
                     </li>
 
@@ -64,9 +54,7 @@
                                 type="submit"
                                 class="dropdown-item text-danger">
 
-                                <i class="bi bi-box-arrow-right"></i>
-                                Logout
-
+                                <i class="bi bi-box-arrow-right"></i> Logout
                             </button>
                         </form>
                     </li>
@@ -74,9 +62,7 @@
                 </ul>
 
             </div>
-
         </div>
 
     </div>
-
 </nav>

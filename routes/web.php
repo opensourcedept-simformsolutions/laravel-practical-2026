@@ -9,10 +9,9 @@ use App\Http\Controllers\Resident\VisitorPassController;
 use App\Http\Controllers\ResidentController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
-
 use Illuminate\Support\Facades\Route;
 
-// login or dashboard page redirect 
+// login or dashboard page redirect
 Route::get('/', function () {
 
     if (! Auth::check()) {
@@ -24,20 +23,14 @@ Route::get('/', function () {
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
-
-    Route::get('/profile', [ProfileController::class, 'index'])
-        ->name('profile');
-
-    Route::get('/profile/edit', [ProfileController::class, 'edit'])
-        ->name('profile.edit');
-
-    Route::patch('/profile', [ProfileController::class, 'update'])
-        ->name('profile.update');
-
-    Route::delete('/profile', [ProfileController::class, 'destroy'])
-        ->name('profile.destroy');
-});
+Route::middleware('auth')
+    ->controller(ProfileController::class)
+    ->group(function () {
+        Route::get('/profile', 'index')->name('profile');
+        Route::get('/profile/edit', 'edit')->name('profile.edit');
+        Route::patch('/profile', 'update')->name('profile.update');
+        Route::delete('/profile', 'destroy')->name('profile.destroy');
+    });
 
 Route::middleware(['auth', 'role:admin'])
     ->name('admin.')
@@ -46,26 +39,30 @@ Route::middleware(['auth', 'role:admin'])
 
         Route::resource('users', UserController::class);
     });
-
     
+Route::middleware(['auth', 'role:admin,gatekeeper'])
+    ->controller(VisitorLogController::class)
+    ->name('gatekeeper.')
+    ->group(function () {
+        Route::get('/pending-pass', 'pending')->name('visitor-logs.pending');
+        Route::patch('/visitor-logs/{visitorLog}/mark-entry', 'markEntry')->name('visitor-logs.mark-entry');
+        Route::patch('/visitor-logs/{visitorLog}/mark-exit', 'markExit')->name('visitor-logs.mark-exit');
+        Route::get('/visitor-logs/exited', 'exited')->name('visitor-logs.exited');
+    });
 
-Route::middleware(['auth', 'role:gatekeeper'])->name('gatekeeper.')->group(function () {
-    Route::get('/pending-pass', [VisitorLogController::class, 'pending'])->name('visitor-logs.pending');
-    Route::patch('/visitor-logs/{visitorLog}/mark-entry', [VisitorLogController::class, 'markEntry'])->name('visitor-logs.mark-entry');
-    Route::patch('/visitor-logs/{visitorLog}/mark-exit', [VisitorLogController::class, 'markExit'])->name('visitor-logs.mark-exit');
-    Route::get('/visitor-logs/exited', [VisitorLogController::class, 'exited'])->name('visitor-logs.exited');
-});
+Route::middleware(['auth', 'role:admin,resident,gatekeeper'])
+    ->controller(ComplaintController::class)
+    ->name('complaints.')
+    ->group(function () {
+        Route::get('/complaints/create', 'create')->name('create');
+        Route::post('/complaints', 'store')->name('store');
+        Route::get('/complaints', 'index')->name('index');
+        Route::get('/complaints/{complaint}', 'show')->name('show');
 
-Route::middleware(['auth', 'role:resident,gatekeeper,admin,super_admin'])->group(function () {
-    Route::get('/complaints/create', [ComplaintController::class, 'create'])->name('complaints.create');
-    Route::post('/complaints', [ComplaintController::class, 'store'])->name('complaints.store');
-    Route::get('/complaints', [ComplaintController::class, 'index'])->name('complaints.index');
-    Route::get('/complaints/{complaint}', [ComplaintController::class, 'show'])->name('complaints.show');
-
-    Route::get('/complaints/{complaint}/edit', [ComplaintController::class, 'edit'])->name('complaints.edit');
-    Route::patch('/complaints/{complaint}', [ComplaintController::class, 'update'])->name('complaints.update');
-    Route::delete('/complaints/{complaint}', [ComplaintController::class, 'destroy'])->name('complaints.destroy');
-});
+        Route::get('/complaints/{complaint}/edit', 'edit')->name('edit');
+        Route::patch('/complaints/{complaint}', 'update')->name('update');
+        Route::delete('/complaints/{complaint}', 'destroy')->name('destroy');
+    });
 
 Route::middleware(['auth', 'role:admin,resident,gatekeeper'])
     ->controller(VisitorPassController::class)
@@ -78,21 +75,19 @@ Route::middleware(['auth', 'role:admin,resident,gatekeeper'])
         Route::post('passes', 'store')->name('store');
         Route::get('/passes/{visitorLog}/edit', 'edit')->name('edit');
         Route::put('/passes/{visitorLog}', 'update')->name('update');
+        Route::delete('passes/{visitorLog}', 'destroy')->name('destroy');
         Route::get('passes/report', 'report')->name('report');
         Route::get('passes/report/data', 'report')->name('report.data');
         Route::get('passes/{visitorLog}', 'show')->name('show');
         Route::patch('passes/{visitorLog}/cancel', 'cancel')->name('cancel');
     });
 
-Route::view('/test-tables', 'testtable');
-Route::middleware(['auth', 'role:resident'])->group(function () {
-    Route::get('/resident/dashboard', [DashboardController::class, 'resident'])
-        ->name('resident.dashboard');
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::resource('flats', FlatController::class);
 });
 
-Route::middleware(['auth', 'role:gatekeeper'])->group(function () {
-    Route::get('/gatekeeper/dashboard', [DashboardController::class, 'gatekeeper'])
-        ->name('gatekeeper.dashboard');
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::resource('residents', ResidentController::class);
 });
 
 Route::get('deliveries/data', [DeliveryController::class, 'data'])
@@ -118,16 +113,5 @@ Route::prefix('reports')
         Route::get('/visitors', fn () => 'Visitor Report')
             ->name('visitors');
     });
-
-Route::view('/test-form', 'testform');
-Route::view('/test-tables', 'testtable');
-
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::resource('flats', FlatController::class);
-});
-
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::resource('residents', ResidentController::class);
-});
 
 require __DIR__.'/auth.php';
