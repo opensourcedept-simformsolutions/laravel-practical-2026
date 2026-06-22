@@ -35,7 +35,9 @@
 
 .sidebar-brand-text,
 .sidebar-link-label {
-    transition: opacity 0.2s ease, visibility 0.2s ease;
+    transition:
+        opacity 0.2s ease,
+        visibility 0.2s ease;
 }
 
 .sidebar-menu {
@@ -99,8 +101,8 @@
 }
 
 .sidebar-link.active,
-.sidebar-link[aria-current='page'],
-.sidebar-link[data-active='true'] {
+.sidebar-link[aria-current="page"],
+.sidebar-link[data-active="true"] {
     background: linear-gradient(135deg, var(--sidebar-active), #60a5fa);
     border-color: rgba(255, 255, 255, 0.18);
     color: #ffffff;
@@ -109,15 +111,15 @@
 }
 
 .sidebar-link.active i,
-.sidebar-link[aria-current='page'] i,
-.sidebar-link[data-active='true'] i {
+.sidebar-link[aria-current="page"] i,
+.sidebar-link[data-active="true"] i {
     color: #ffffff;
 }
 
 .sidebar-link.active::before,
-.sidebar-link[aria-current='page']::before,
-.sidebar-link[data-active='true']::before {
-    content: '';
+.sidebar-link[aria-current="page"]::before,
+.sidebar-link[data-active="true"]::before {
+    content: "";
     position: absolute;
     left: -12px;
     top: 10px;
@@ -146,20 +148,67 @@
     gap: 0;
 }
 
+.sidebar-dropdown-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sidebar-dropdown-toggle:hover {
+    background: var(--sidebar-hover);
+    color: #fff;
+}
+
+.sidebar-dropdown-toggle span:first-child {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sidebar-dropdown-menu {
+    padding-left: 16px;
+}
+
+.sidebar-dropdown-menu .sidebar-link {
+    margin-bottom: 4px;
+}
+
+.sidebar-dropdown-toggle {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rotate-180 {
+    transform: rotate(180deg);
+}
+
+#reportsArrow {
+    transition: transform 0.2s ease;
+}
+
 @media (max-width: 991.98px) {
     .sidebar-container {
         position: fixed;
-        inset: 0 auto 0 0;
+        top: 0;
+        left: 0;
+        width: 260px;
         height: 100vh;
+        z-index: 1050;
+        transition: transform 0.3s ease;
     }
 
     .sidebar-container.collapsed {
-        margin-left: -260px;
-        width: 260px;
-    }
-
-    .main-content-area {
-        min-width: 0;
-        width: 100%;
+        transform: translateX(-100%);
     }
 }

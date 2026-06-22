@@ -1,5 +1,5 @@
 <button
     type="submit"
-    {{ $attributes->merge(['class' => 'form-button form-button-primary']) }}>
+    {{ $attributes->class(['btn', 'btn-primary', 'px-4', 'py-2']) }}>
     {{ $slot }}
 </button>

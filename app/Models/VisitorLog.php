@@ -29,12 +29,12 @@ class VisitorLog extends Model
 
     public function visitor()
     {
-        return $this->belongsTo(Visitor::class);
+        return $this->belongsTo(Visitor::class)->withTrashed();
     }
 
     public function flat()
     {
-        return $this->belongsTo(Flat::class);
+        return $this->belongsTo(Flat::class)->withTrashed();
     }
 
     public function gatekeeper()

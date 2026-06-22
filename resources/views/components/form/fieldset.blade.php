@@ -3,20 +3,20 @@
     'description' => null,
 ])
 
-<fieldset {{ $attributes->merge(['class' => 'form-fieldset']) }}>
+<fieldset {{ $attributes->class(['border rounded-3 p-3 p-md-4']) }}>
     @if ($legend || $description)
-        <div class="form-fieldset-head">
+        <div class="mb-3">
             @if ($legend)
-                <legend class="form-fieldset-legend">{{ $legend }}</legend>
+                <legend class="fs-6 fw-semibold mb-1">{{ $legend }}</legend>
             @endif
 
             @if ($description)
-                <p class="form-fieldset-description">{{ $description }}</p>
+                <p class="text-muted mb-0">{{ $description }}</p>
             @endif
         </div>
     @endif
 
-    <div class="form-fieldset-body">
+    <div class="d-grid gap-3">
         {{ $slot }}
     </div>
 </fieldset>

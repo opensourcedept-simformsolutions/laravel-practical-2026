@@ -15,4 +15,4 @@
     @if ($name) name="{{ $name }}" @endif
     @if ($fieldId) id="{{ $fieldId }}" @endif
     rows="{{ $rows }}"
-    {{ $attributes->merge(['class' => 'form-control form-textarea' . ($hasError ? ' is-invalid' : '')]) }}>{{ old($name, $value) }}</textarea>
+    {{ $attributes->merge(['class' => 'form-control' . ($hasError ? ' is-invalid' : '')]) }}>{{ old($name, $value) }}</textarea>
