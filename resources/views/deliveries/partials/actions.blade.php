@@ -5,7 +5,7 @@
     </a>
     @cannot('is-resident')
         <a href="{{ route('deliveries.edit', $delivery) }}"
-            class="btn btn-sm btn-outline-warning rounded">
+            class="btn btn-sm btn-warning rounded">
             <i class="bi bi-pencil"></i> Edit
         </a>
         <form action="{{ route('deliveries.destroy', $delivery) }}"
@@ -14,7 +14,7 @@
             @csrf
             @method('DELETE')
             <button type="submit"
-                class="btn btn-sm btn-outline-danger rounded">
+                class="btn btn-sm btn-danger rounded">
                 <i class="bi bi-trash"></i> Delete
             </button>
         </form>
@@ -25,7 +25,7 @@
                 @csrf
                 @method('PATCH')
                 <button type="submit"
-                    class="btn btn-sm btn-outline-success rounded">
+                    class="btn btn-sm btn-success rounded">
                     <i class="bi bi-check-circle"></i>
                     Mark Delivered
                 </button>

@@ -334,7 +334,6 @@ class DeliveryController extends Controller
                 ->with(['status' => 'error', 'message' => 'Failed to update delivery.']);
         }
     }
-
     public function destroy(Delivery $delivery)
     {
         $this->authorize('delete', $delivery);

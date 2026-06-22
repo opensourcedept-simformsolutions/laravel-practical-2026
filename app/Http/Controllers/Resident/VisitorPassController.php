@@ -446,6 +446,7 @@ class VisitorPassController extends Controller
         $query = $this->getReportQuery($request);
 
         return DataTables::of($query)
+            ->addIndexColumn()
 
             ->addColumn('visitor', fn ($row) => $row->visitor_name ?? '-')
             ->addColumn('phone', fn ($row) => $row->visitor_phone ?? '-')
