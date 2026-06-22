@@ -20,6 +20,15 @@
 
             <div class="row g-3">
                 <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select id="status-filter" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="received">Received</option>
+                        <option value="delivered">Delivered</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
                     <label class="form-label">Flat</label>
                     <select id="flat-filter" class="form-control">
                         <option value="">All Flats</option>
@@ -47,13 +56,8 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label">From Date</label>
-                    <input type="date" id="from-date" class="form-control">
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">To Date</label>
-                    <input type="date" id="to-date" class="form-control">
+                    <label class="form-label">Date Range</label>
+                    <input type="text" id="date-range" class="form-control" placeholder="Select Date Range" readonly>
                 </div>
             </div>
             <div class="col-md-12 pt-3 text-end">
@@ -87,6 +91,34 @@
 @push('scripts')
     <script>
         $(function() {
+            let fromDate = '';
+            let toDate = '';
+
+            $('#date-range').daterangepicker({
+                autoUpdateInput: false,
+                locale: {
+                    cancelLabel: 'Clear',
+                    format: 'YYYY-MM-DD'
+                }
+            });
+
+            $('#date-range').on('apply.daterangepicker', function(ev, picker) {
+                fromDate = picker.startDate.format('YYYY-MM-DD');
+                toDate = picker.endDate.format('YYYY-MM-DD');
+                $(this).val(
+                    fromDate + ' - ' + toDate
+                );
+
+                table.draw();
+            });
+
+            $('#date-range').on('cancel.daterangepicker', function() {
+                fromDate = '';
+                toDate = '';
+                $(this).val('');
+
+                table.draw();
+            });
 
             let table = $('#deliveries-table').DataTable({
                 processing: true,
@@ -96,10 +128,11 @@
                 ajax: {
                     url: '{{ route('reports.deliveries.data') }}',
                     data: function(d) {
+                        d.status = $('#status-filter').val();
                         d.flat_id = $('#flat-filter').val();
                         d.vendor = $('#vendor-filter').val();
-                        d.from_date = $('#from-date').val();
-                        d.to_date = $('#to-date').val();
+                        d.from_date = fromDate;
+                        d.to_date = toDate;
                     }
                 },
 
@@ -140,6 +173,13 @@
                 ]
             });
 
+            $('#status-filter').select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Select Status',
+                allowClear: true,
+                width: '100%'
+            });
+
             $('#flat-filter').select2({
                 theme: 'bootstrap-5',
                 placeholder: 'Select Flat',
@@ -153,32 +193,32 @@
                 allowClear: true,
                 width: '100%'
             });
-            $('#vendor-filter').on('change', function() {
+
+            $('#status-filter, #vendor-filter, #flat-filter').on('change', function() {
                 table.draw();
             });
 
-            $('#from-date, #to-date').change(function() {
+            $('#from-date, #to-date').on('change', function() {
                 table.draw();
             });
 
             $('#export-btn').click(function() {
-
                 let params = $.param({
                     flat_id: $('#flat-filter').val(),
                     vendor: $('#vendor-filter').val(),
-                    from_date: $('#from-date').val(),
-                    to_date: $('#to-date').val()
+                    from_date: fromDate,
+                    to_date: toDate
                 });
 
-                window.location =
-                    "{{ route('reports.deliveries.export') }}?" + params;
+                window.location = "{{ route('reports.deliveries.export') }}?" + params;
             });
 
             $('#reset-filters').click(function() {
                 $('#flat-filter').val(null).trigger('change');
                 $('#vendor-filter').val(null).trigger('change');
-                $('#from-date').val('');
-                $('#to-date').val('');
+                $('#date-range').val('');
+                fromDate = '';
+                toDate = '';
 
                 table.draw();
             });

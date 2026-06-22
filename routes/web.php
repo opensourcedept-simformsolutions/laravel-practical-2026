@@ -56,6 +56,7 @@ Route::patch('deliveries/{delivery}/deliver', [DeliveryController::class, 'markD
 
 Route::prefix('reports')
     ->name('reports.')
+    ->middleware('auth')
     ->group(function () {
         Route::get('/deliveries', [DeliveryController::class, 'report'])
             ->name('deliveries');
@@ -64,11 +65,15 @@ Route::prefix('reports')
         Route::get('/deliveries/export',[DeliveryController::class, 'export'])
             ->name('deliveries.export');
 
-        Route::get('/complaints', fn() => 'Complaint Report')
-            ->name('complaints');
+        Route::get('/passes', [VisitorPassController::class, 'report'])
+            ->name('passes');
+        Route::get('/passes/data', [VisitorPassController::class, 'reportData'])
+            ->name('passes.data');
+        Route::get('/passes/export',[VisitorPassController::class, 'export'])
+            ->name('passes.export');
 
-        Route::get('/visitors', fn() => 'Visitor Report')
-            ->name('visitors');
+        Route::get('/complaints', fn() => 'complaints Report')
+            ->name('complaints');
     });
 
 Route::view('/test-tables', 'testtable');

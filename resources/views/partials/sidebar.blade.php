@@ -45,7 +45,7 @@
                     <span class="sidebar-link-label">Complaint Report</span>
                 </x-sidebar-link>
 
-                <x-sidebar-link :href="route('reports.visitors')">
+                <x-sidebar-link :href="route('reports.passes')">
                     <i class="bi bi-person-vcard"></i>
                     <span class="sidebar-link-label">Visitor Report</span>
                 </x-sidebar-link>
