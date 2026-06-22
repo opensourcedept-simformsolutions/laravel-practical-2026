@@ -53,6 +53,13 @@
             <i class="bi bi-truck"></i>
             <span class="sidebar-link-label">Delivery</span>
         </x-sidebar-link>
+        {{-- user management --}}
+        @can('is-admin')
+            <x-sidebar-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('users.index')">
+                <i class="bi bi-people"></i>
+                <span class="sidebar-link-label"> Users Management</span>
+            </x-sidebar-link>
+        @endcan
 
         {{-- Reports --}}
         <div class="sidebar-dropdown">
@@ -83,8 +90,7 @@
                 </x-sidebar-link>
 
             </div>
-        </div>
 
-    </div>
+        </div>
 
 </aside>

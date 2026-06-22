@@ -4,19 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <title>@yield('title', 'Dashboard')</title>
 
-    {{-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"> --}}
-
-    {{-- <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.min.css"> --}}
-
-    <!-- Bootstrap 5 -->
+    <!-- Bootstrap -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <!-- DataTables Bootstrap 5 CSS -->
+    <!-- DataTables -->
     <link href="https://cdn.datatables.net/2.3.8/css/dataTables.bootstrap5.css" rel="stylesheet">
+
+    <!-- Buttons -->
+    <link href="https://cdn.datatables.net/buttons/3.2.5/css/buttons.bootstrap5.min.css" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -28,7 +29,7 @@
         .table tbody tr {
             background: #fff;
             border-radius: 10px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .05);
         }
 
         .table td,
@@ -45,7 +46,7 @@
 
         .table tbody tr:hover {
             background: #f1f5ff !important;
-            transition: 0.2s;
+            transition: .2s;
         }
 
         .table .btn {
@@ -62,43 +63,52 @@
     <div class="app-layout">
 
         <div class="sidebar-container bg-dark min-vh-100 p-0" id="sidebarContainer">
+
             @include('partials.sidebar')
+
         </div>
 
         <div class="main-content-area">
+
             @include('partials.navbar')
 
             <div class="content-wrapper">
+
+
                 @yield('content')
+
+
+
             </div>
+
         </div>
+
     </div>
 
-    {{-- <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> --}}
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-    <!-- jQuery (required for DataTables) -->
-    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-
-    <!-- Bootstrap 5 JS -->
+    <!-- Bootstrap -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
-    {{-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> --}}
 
-    <!-- DataTables JS -->
+    <!-- DataTables -->
     <script src="https://cdn.datatables.net/2.3.8/js/dataTables.js"></script>
     <script src="https://cdn.datatables.net/2.3.8/js/dataTables.bootstrap5.js"></script>
 
-    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+    <!-- Buttons -->
+    <script src="https://cdn.datatables.net/buttons/3.2.5/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.html5.min.js"></script>
 
-    <!-- for PDF + Excel -->
+    <!-- Excel Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <!-- PDF Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 
-    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- SweetAlert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         var table = null;
@@ -121,11 +131,13 @@
             position: 'top-end',
             showConfirmButton: false,
             timer: 3000,
-            timerProgressBar: true,
+            timerProgressBar: true
         });
     </script>
 
     @stack('scripts')
+
+    @yield('scripts')
 
     <script>
         $(document).on('click', '.btn-action', function() {
@@ -137,8 +149,9 @@
 
             let title = btn.data('title') || 'Are you sure?';
             let text = btn.data('text') || '';
-            let confirmText = btn.data('confirm') || 'Yes';
-            let successText = btn.data('success') || 'Success';
+
+            let confirmText =
+                btn.data('confirm') || 'Yes';
 
             Swal.fire({
                 title: title,
@@ -156,7 +169,9 @@
                 $.ajax({
                     url: url,
                     type: method,
+
                     success: function(response) {
+
                         let successText = btn.data('success');
 
                         Toast.fire({
@@ -166,25 +181,30 @@
 
                         rd();
                     },
+
                     error: function(xhr) {
-                        let message = 'Something went wrong.';
-                        if (xhr.responseJSON?.message) {
-                            message = xhr.responseJSON.message;
-                        }
+
+                        let message =
+                            xhr.responseJSON?.message ||
+                            'Something went wrong';
+
                         Toast.fire({
                             icon: 'error',
                             title: message
                         });
                     }
                 });
+
             });
+
         });
 
         @if (Session::has('message'))
+
             Toast.fire({
                 icon: "{{ Session::get('status', 'info') }}",
                 title: "{{ Session::get('message') }}"
-            })
+            });
         @endif
     </script>
 
