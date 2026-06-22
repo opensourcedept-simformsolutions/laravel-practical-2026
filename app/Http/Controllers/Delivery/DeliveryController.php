@@ -163,12 +163,31 @@ class DeliveryController extends Controller
 
     public function report()
     {
-        $flats = Flat::orderBy('wing')
+        $user = auth()->user();
+
+        $flats = Flat::query()
+            ->when(! $user->isSuperAdmin(), function ($query) use ($user) {
+                if ($user->isResident()) {
+                    $query->where('id', $user->resident->flat_id);
+                } else {
+                    $query->where('society_id', $user->society_id);
+                }
+            })
+            ->orderBy('wing')
             ->orderBy('floor')
             ->orderBy('flat_number')
             ->get();
 
         $vendors = Delivery::query()
+            ->when(! $user->isSuperAdmin(), function ($query) use ($user) {
+                if ($user->isResident()) {
+                    $query->where('flat_id', $user->resident->flat_id);
+                } else {
+                    $query->whereHas('flat', function ($q) use ($user) {
+                        $q->where('society_id', $user->society_id);
+                    });
+                }
+            })
             ->whereNotNull('vendor')
             ->distinct()
             ->orderBy('vendor')
