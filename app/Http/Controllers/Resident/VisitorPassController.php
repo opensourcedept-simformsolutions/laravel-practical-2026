@@ -8,7 +8,6 @@ use App\Http\Requests\UpdateVisitorPassRequest;
 use App\Models\Flat;
 use App\Models\Visitor;
 use App\Models\VisitorLog;
-use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -57,7 +56,7 @@ class VisitorPassController extends Controller
 
                     if (
                         ($column['searchable'] ?? 'false') === 'true'
-                        && !empty($column['name'])
+                        && ! empty($column['name'])
                     ) {
                         $q->orWhere(
                             $column['name'],
@@ -99,10 +98,10 @@ class VisitorPassController extends Controller
             ->get();
 
         return response()->json([
-            "draw" => intval($request->draw),
-            "recordsTotal" => $total,
-            "recordsFiltered" => $filtered,
-            "data" => $data
+            'draw' => intval($request->draw),
+            'recordsTotal' => $total,
+            'recordsFiltered' => $filtered,
+            'data' => $data,
         ]);
     }
 
@@ -132,43 +131,39 @@ class VisitorPassController extends Controller
         return DataTables::of($query)
             ->addIndexColumn()
 
-            ->editColumn('visitor', fn($row) => $row->visitor_name ?? '-')
-            ->editColumn('phone', fn($row) => $row->visitor_phone ?? '-')
+            ->editColumn('visitor', fn ($row) => $row->visitor_name ?? '-')
+            ->editColumn('phone', fn ($row) => $row->visitor_phone ?? '-')
 
             ->editColumn(
                 'flat',
-                fn($row) =>
-                $row->flat_wing && $row->flat_number
-                    ? $row->flat_wing . '-' . $row->flat_number
+                fn ($row) => $row->flat_wing && $row->flat_number
+                    ? $row->flat_wing.'-'.$row->flat_number
                     : '-'
             )
 
-            ->editColumn('creator', fn($row) => $row->creator_name ?? '-')
-            ->editColumn('gatekeeper', fn($row) => $row->gatekeeper_name ?? '-')
+            ->editColumn('creator', fn ($row) => $row->creator_name ?? '-')
+            ->editColumn('gatekeeper', fn ($row) => $row->gatekeeper_name ?? '-')
 
-            ->editColumn('purpose', fn($row) => $row->purpose ?? '-')
-            ->editColumn('status', fn($row) => ucfirst($row->status))
+            ->editColumn('purpose', fn ($row) => $row->purpose ?? '-')
+            ->editColumn('status', fn ($row) => ucfirst($row->status))
 
             ->editColumn(
                 'entry_time',
-                fn($row) =>
-                $row->entry_time
+                fn ($row) => $row->entry_time
                     ? format_date($row->entry_time)
                     : '-'
             )
 
             ->editColumn(
                 'exit_time',
-                fn($row) =>
-                $row->exit_time
+                fn ($row) => $row->exit_time
                     ? format_date($row->exit_time)
                     : '-'
             )
 
             ->editColumn(
                 'visit_date',
-                fn($row) =>
-                $row->visit_date
+                fn ($row) => $row->visit_date
                     ? format_date($row->visit_date, 'd M Y')
                     : '-'
             )
@@ -178,14 +173,14 @@ class VisitorPassController extends Controller
                 $actions = '<div class="d-flex justify-content-center gap-2">';
 
                 $actions .= '
-                    <a href="' . route('passes.show', $row->id) . '" class="btn btn-info text-white">
+                    <a href="'.route('passes.show', $row->id).'" class="btn btn-info text-white">
                         <i class="bi bi-eye"></i>
                     </a>
                 ';
 
                 if ($row->status === 'pending') {
                     $actions .= '
-                        <a href="' . route('passes.edit', $row->id) . '" class="btn btn-primary">
+                        <a href="'.route('passes.edit', $row->id).'" class="btn btn-primary">
                             <i class="bi bi-pencil-square"></i>
                         </a>
                     ';
@@ -195,7 +190,7 @@ class VisitorPassController extends Controller
                     $actions .= '
                         <button
                             class="btn btn-danger btn-action"
-                            data-url="' . route('passes.cancel', $row->id) . '"
+                            data-url="'.route('passes.cancel', $row->id).'"
                             data-method="PATCH"
                             data-title="Cancel Visitor Pass?"
                             data-text="This action cannot be undone."
@@ -219,10 +214,15 @@ class VisitorPassController extends Controller
     {
         $this->authorize('create', VisitorLog::class);
 
-        $flats = [];
+        $flats = collect();
 
         if (auth()->user()->isGatekeeper()) {
-            $flats = Flat::orderBy('flat_number')->get();
+
+            $flats = Flat::where('society_id', auth()->user()->society_id)
+                ->orderBy('wing')
+                ->orderBy('floor')
+                ->orderBy('flat_number')
+                ->get();
         }
 
         return view('passes.create', compact('flats'));
@@ -249,9 +249,20 @@ class VisitorPassController extends Controller
                     ]
                 );
 
-                $visitorLog = new VisitorLog();
+                if ($user->isGatekeeper()) {
 
-                $flatId = $user->isGatekeeper() ? $validated['flat_id'] : $user->resident->flat_id;
+                    $flat = Flat::where('id', $validated['flat_id'])
+                        ->where('society_id', $user->society_id)
+                        ->firstOrFail();
+
+                    $flatId = $flat->id;
+
+                } else {
+
+                    $flatId = $user->resident->flat_id;
+                }
+
+                $visitorLog = new VisitorLog;
 
                 $visitorLog->visitor_id = $visitor->id;
                 $visitorLog->flat_id = $flatId;
@@ -269,7 +280,9 @@ class VisitorPassController extends Controller
             if ($user->isGatekeeper()) {
                 return redirect()->route('gatekeeper.visitor-logs.pending');
             }
-                return redirect()->route('passes.index');
+
+            return redirect()->route('passes.index');
+
         } catch (Exception $e) {
             Session::flash('message', 'Something went wrong.');
             Session::flash('status', 'error');
@@ -324,16 +337,16 @@ class VisitorPassController extends Controller
                     'vehicle_number' => $validated['vehicle_number'] ?? null,
                 ]);
 
-            $visitorLog->created_by = $user->id;
+                $visitorLog->created_by = $user->id;
 
-            if ( $user->isGatekeeper() && ! empty($validated['flat_id'])) {
-                $visitorLog->flat_id = $validated['flat_id'];
-            }
+                if ($user->isGatekeeper() && ! empty($validated['flat_id'])) {
+                    $visitorLog->flat_id = $validated['flat_id'];
+                }
 
-            $visitorLog->purpose = $validated['purpose'];
-            $visitorLog->visit_date = $validated['visit_date'];
+                $visitorLog->purpose = $validated['purpose'];
+                $visitorLog->visit_date = $validated['visit_date'];
 
-            $visitorLog->save();
+                $visitorLog->save();
             });
 
             Session::flash('message', 'Visitor Pass updated successfully.');
@@ -342,11 +355,12 @@ class VisitorPassController extends Controller
             if ($user->isGatekeeper()) {
                 return redirect()->route('gatekeeper.visitor-logs.pending');
             }
-            
+
             return redirect()->route('passes.index');
         } catch (Exception $e) {
             Session::flash('message', 'Something went wrong.');
             Session::flash('status', 'error');
+
             return redirect()->back()->withInput();
         }
     }
@@ -359,12 +373,12 @@ class VisitorPassController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Only pending visitor passes can be cancelled.'
+                'message' => 'Only pending visitor passes can be cancelled.',
             ], 422);
         }
 
         $visitorLog->update([
-            'status' => 'cancelled'
+            'status' => 'cancelled',
         ]);
 
         return response()->json([
@@ -471,17 +485,15 @@ class VisitorPassController extends Controller
 
                 ->addColumn(
                     'exit_time',
-                    fn($row) =>
-                    $row->exit_time ? format_date($row->exit_time) : '-'
+                    fn ($row) => $row->exit_time ? format_date($row->exit_time) : '-'
                 )
 
                 ->addColumn(
                     'visit_date',
-                    fn($row) =>
-                    $row->visit_date ? format_date($row->visit_date, 'd M Y') : '-'
+                    fn ($row) => $row->visit_date ? format_date($row->visit_date, 'd M Y') : '-'
                 )
 
-                ->addColumn('gatekeeper', fn($row) => $row->gatekeeper_name ?? '-')
+                ->addColumn('gatekeeper', fn ($row) => $row->gatekeeper_name ?? '-')
 
                 ->rawColumns([])
 
