@@ -20,28 +20,28 @@ class DemoDataSeeder extends Seeder
 {
     public function run(): void
     {
-        $today = now();
-
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-
-        Complaint::truncate();
-        Delivery::truncate();
-        VisitorLog::truncate();
-        Visitor::truncate();
-        Resident::truncate();
-        User::truncate();
-        Flat::truncate();
-        Society::truncate();
-        Role::truncate();
-
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-
         // Roles
-        $roles = [
-            'super_admin' => Role::create(['name' => 'super_admin']),
-            'admin' => Role::create(['name' => 'admin']),
-            'resident' => Role::create(['name' => 'resident']),
-            'gatekeeper' => Role::create(['name' => 'gatekeeper']),
+        $superAdminRole = Role::firstOrCreate(['name' => 'super_admin']);
+        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $residentRole = Role::firstOrCreate(['name' => 'resident']);
+        $gatekeeperRole = Role::firstOrCreate(['name' => 'gatekeeper']);
+
+        // Societies
+        $societies = [
+            [
+                'name' => 'Green Valley Society',
+                'address' => 'SG Highway',
+                'city' => 'Ahmedabad',
+                'state' => 'Gujarat',
+                'pincode' => '380015',
+            ],
+            [
+                'name' => 'Sunshine Residency',
+                'address' => 'Vesu',
+                'city' => 'Surat',
+                'state' => 'Gujarat',
+                'pincode' => '395007',
+            ],
         ];
 
         // Admin users (fixed small count)

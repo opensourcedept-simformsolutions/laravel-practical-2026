@@ -13,7 +13,7 @@
         @csrf
         @method('DELETE')
         <button type="submit"
-            class="btn btn-sm btn-outline-danger">
+            class="btn btn-sm btn-outline-danger rounded">
             <i class="bi bi-trash"></i> Delete
         </button>
     </form>
@@ -24,7 +24,7 @@
             @csrf
             @method('PATCH')
             <button type="submit"
-                class="btn btn-sm btn-outline-success">
+                class="btn btn-sm btn-outline-success rounded">
                 <i class="bi bi-check-circle"></i>
                 Mark Delivered
             </button>
