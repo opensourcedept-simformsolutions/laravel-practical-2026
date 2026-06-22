@@ -35,6 +35,11 @@
             </x-form.field>
 
             <div class="d-flex justify-content-end">
+                <a href="{{ route('deliveries.index') }}" class="btn btn-secondary mx-2">
+                    <i class="bi bi-arrow-left"></i>
+                    Back
+                </a>
+
                 <x-form.submit-button>
                     Save Delivery
                 </x-form.submit-button>

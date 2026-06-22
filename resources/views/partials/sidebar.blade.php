@@ -62,17 +62,17 @@
 
             <div class="sidebar-dropdown-menu d-none" id="reportsMenu">
 
-                <x-sidebar-link :href="route('reports.deliveries')">
+                <x-sidebar-link :href="route('reports.deliveries.')">
                     <i class="bi bi-box-seam"></i>
                     <span class="sidebar-link-label">Delivery Report</span>
                 </x-sidebar-link>
 
-                <x-sidebar-link :href="route('reports.complaints')">
+                <x-sidebar-link :href="route('reports.complaints.')">
                     <i class="bi bi-chat-square-text"></i>
                     <span class="sidebar-link-label">Complaint Report</span>
                 </x-sidebar-link>
 
-                <x-sidebar-link :href="route('reports.passes')">
+                <x-sidebar-link :href="route('reports.passes.')">
                     <i class="bi bi-person-vcard"></i>
                     <span class="sidebar-link-label">Visitor Report</span>
                 </x-sidebar-link>

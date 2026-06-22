@@ -71,44 +71,50 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('residents', ResidentController::class);
 });
 
-Route::get('deliveries/data', [DeliveryController::class, 'data'])
-    ->middleware(['auth'])
-    ->name('deliveries.data');
-
-Route::resource('/deliveries', DeliveryController::class)
-    ->middleware(['auth']);
-
-Route::patch('deliveries/{delivery}/deliver', [DeliveryController::class, 'markDelivered'])
-    ->middleware(['auth'])
-    ->name('deliveries.deliver');
-
-Route::prefix('deliveries')
-    ->middleware('auth')
+Route::middleware('auth')
     ->controller(DeliveryController::class)
-    ->name('deliveries.')
     ->group(function () {
-        Route::get('/data', 'data')->name('data');
-        Route::get('/', 'index')->name('index');
-        Route::get('/create', 'create')->name('create');
-        Route::post('/', 'store')->name('store');
-        Route::get('/{delivery}', 'show')->name('show');
-        Route::get('/{delivery}/edit', 'edit')->name('edit');
-        Route::put('/{delivery}', 'update')->name('update');
-        Route::delete('/{delivery}', 'destroy')->name('destroy');
-        Route::patch('/{delivery}/deliver', 'markDelivered')->name('deliver');
+        Route::get('deliveries/data', 'data')
+            ->name('deliveries.data');
+
+        Route::resource('deliveries', DeliveryController::class);
+
+        Route::patch('deliveries/{delivery}/deliver', 'markDelivered')
+            ->name('deliveries.deliver');
     });
 
 Route::prefix('reports')
     ->name('reports.')
+    ->middleware('auth')
     ->group(function () {
-        Route::get('/deliveries', fn () => 'Delivery Report')
-            ->name('deliveries');
 
-        Route::get('/complaints', fn () => 'Complaint Report')
-            ->name('complaints');
+        Route::prefix('deliveries')
+            ->name('deliveries.')
+            ->controller(DeliveryController::class)
+            ->group(function () {
+                Route::get('/', 'report')->name('');
+                Route::get('/data', 'reportData')->name('data');
+                Route::get('/export', 'export')->name('export');
+            });
 
-        Route::get('/visitors', fn () => 'Visitor Report')
-            ->name('visitors');
+        Route::prefix('passes')
+            ->name('passes.')
+            ->controller(VisitorPassController::class)
+            ->group(function () {
+                Route::get('/', 'report')->name('');
+                Route::get('/data', 'reportData')->name('data');
+                Route::get('/export', 'export')->name('export');
+            });
+
+        Route::prefix('complaints')
+            ->name('complaints.')
+            ->controller(ComplaintController::class)
+            ->group(function () {
+                Route::get('/', 'report')->name('');
+                Route::get('/data', 'reportData')->name('data');
+                Route::get('/export', 'export')->name('export');
+            });
+
     });
 
 require __DIR__.'/auth.php';
