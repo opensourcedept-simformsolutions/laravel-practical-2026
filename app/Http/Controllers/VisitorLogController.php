@@ -14,14 +14,28 @@ class VisitorLogController extends Controller
 {
     public function pending(Request $request)
     {
+        $this->authorize('viewAny', VisitorLog::class);
+
         try {
             if ($request->ajax()) {
 
-                $query = VisitorLog::query()
-                    ->withTrashed()
-                    ->whereIn('status', ['pending', 'entered'])
-                    ->with(['visitor', 'flat'])
-                    ->select('visitor_logs.*');
+            $user = auth()->user();
+
+            $query = VisitorLog::query()
+                ->withTrashed()
+                ->whereIn('status', ['pending', 'entered'])
+                ->with([
+                    'visitor',
+                    'flat',
+                ])
+                ->select('visitor_logs.*');
+
+            if (!$user->isSuperAdmin()) {
+
+                $query->whereHas('flat', function ($q) use ($user) {
+                    $q->where('society_id', $user->society_id);
+                });
+            }
 
                 return DataTables::of($query)
 
@@ -48,25 +62,34 @@ class VisitorLogController extends Controller
 
                     ->addColumn('action', function ($log) {
 
+                        $user = auth()->user();
+
                         if ($log->status === 'pending') {
 
-                            $buttons = '
+                            $buttons = '';
+
+                            if ($user->can('markEntry', $log)) {
+                                $buttons .= '
                                     <button
                                         type="button"
                                         class="btn btn-success btn-sm entry-btn"
                                         data-id="'.$log->id.'">
                                         Entry
                                     </button>
-                            ';
+                                ';
+                            }
 
-                            if ($log->created_by === auth()->id()) {
-
+                            if ($user->can('update', $log)) {
                                 $buttons .= '
                                     <a href="'.route('passes.edit', $log->id).'"
                                         class="btn btn-warning btn-sm">
                                         Edit
                                     </a>
+                                ';
+                            }
 
+                            if ($user->can('delete', $log)) {
+                                $buttons .= '
                                     <form action="'.route('passes.destroy', $log->id).'"
                                         method="POST"
                                         onsubmit="return confirm(\'Delete this pass?\')">
@@ -86,16 +109,19 @@ class VisitorLogController extends Controller
 
                         if ($log->status === 'entered') {
 
-                            return '
-                                <form action="'.route('gatekeeper.visitor-logs.mark-exit', $log).'" method="POST">
-                                    '.csrf_field().'
-                                    <input type="hidden" name="_method" value="PATCH">
+                            if ($user->can('markExit', $log)) {
 
-                                    <button class="btn btn-danger btn-sm">
-                                        Mark Exit
-                                    </button>
-                                </form>
-                            ';
+                                return '
+                                    <form action="'.route('gatekeeper.visitor-logs.mark-exit', $log).'" method="POST">
+                                        '.csrf_field().'
+                                        <input type="hidden" name="_method" value="PATCH">
+
+                                        <button class="btn btn-danger btn-sm">
+                                            Mark Exit
+                                        </button>
+                                    </form>
+                                ';
+                            }
                         }
 
                         return '<span class="badge bg-secondary">Exited</span>';
@@ -134,9 +160,9 @@ class VisitorLogController extends Controller
 
     public function markEntry(Request $request, VisitorLog $visitorLog)
     {
-        try {
-            $this->authorize('markEntry', $visitorLog);
+        $this->authorize('markEntry', $visitorLog);
 
+        try {
             $request->validate([
                 'photo' => ['required'],
             ]);
@@ -190,7 +216,7 @@ class VisitorLogController extends Controller
             ]);
 
             return redirect()->back()->with([
-                'message' => 'You Are Not Authorized To Perform This Action',
+                'message' => 'Something Went Wrong While Mark Entry',
                 'status' => 'error',
             ]);
         }
@@ -198,9 +224,8 @@ class VisitorLogController extends Controller
 
     public function markExit(VisitorLog $visitorLog)
     {
+        $this->authorize('markExit', $visitorLog);
         try {
-            $this->authorize('markExit', $visitorLog);
-
             if ($visitorLog->status !== 'entered') {
                 return redirect()->back()->with([
                     'message' => 'Only Entered Visitors Can Exit!',
@@ -226,7 +251,7 @@ class VisitorLogController extends Controller
             ]);
 
             return redirect()->back()->with([
-                'message' => 'You Are Not Authorized To Perform This Action',
+                'message' => 'Something Went Wrong While Mark Exit',
                 'status' => 'error',
             ]);
         }
@@ -234,12 +259,23 @@ class VisitorLogController extends Controller
 
     public function exited(Request $request)
     {
+        $this->authorize('viewAny', VisitorLog::class);
+
         if ($request->ajax()) {
 
-            $query = VisitorLog::with([
-                'visitor',
-                'flat',
-            ])->where('status', 'exited');
+        $user = auth()->user();
+
+        $query = VisitorLog::with([
+            'visitor',
+            'flat',
+        ])->where('status', 'exited');
+
+        if (!$user->isSuperAdmin()) {
+
+            $query->whereHas('flat', function ($q) use ($user) {
+                $q->where('society_id', $user->society_id);
+            });
+        }
 
             return DataTables::of($query)
                 ->addColumn('visitor_name', fn ($row) => $row->visitor?->name ?? 'N/A')
