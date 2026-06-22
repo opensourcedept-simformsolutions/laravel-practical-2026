@@ -42,7 +42,7 @@ class StoreUserRequest extends FormRequest
             ],
             'phone' => [
                 'required',
-                'min:10',
+                'digits_between:10,15',
                 'unique:users,phone'
             ],
             
