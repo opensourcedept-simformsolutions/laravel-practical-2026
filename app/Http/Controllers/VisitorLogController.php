@@ -7,6 +7,8 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class VisitorLogController extends Controller
 {
@@ -49,14 +51,12 @@ class VisitorLogController extends Controller
                         if ($log->status === 'pending') {
 
                             $buttons = '
-                                <form action="'.route('gatekeeper.visitor-logs.mark-entry', $log).'" method="POST">
-                                    '.csrf_field().'
-                                    <input type="hidden" name="_method" value="PATCH">
-
-                                    <button class="btn btn-success btn-sm">
+                                    <button
+                                        type="button"
+                                        class="btn btn-success btn-sm entry-btn"
+                                        data-id="'.$log->id.'">
                                         Entry
                                     </button>
-                                </form>
                             ';
 
                             if ($log->created_by === auth()->id()) {
@@ -131,11 +131,14 @@ class VisitorLogController extends Controller
         }
     }
 
-    public function markEntry(VisitorLog $visitorLog)
+    public function markEntry(Request $request, VisitorLog $visitorLog)
     {
-        $this->authorize('markEntry', $visitorLog);
-
         try {
+            $this->authorize('markEntry', $visitorLog);
+
+            $request->validate([
+                'photo' => ['required'],
+            ]);
 
             if ($visitorLog->status !== 'pending') {
                 return redirect()->back()->with([
@@ -144,10 +147,33 @@ class VisitorLogController extends Controller
                 ]);
             }
 
+            $photoPath = null;
+
+            if ($request->filled('photo')) {
+
+                $image = preg_replace(
+                    '#^data:image/\w+;base64,#i',
+                    '',
+                    $request->photo
+                );
+
+                $image = str_replace(' ', '+', $image);
+
+                $fileName = 'visitor_' . Str::uuid() . '.jpg';
+
+                Storage::disk('public')->put(
+                    'visitor_photos/' . $fileName,
+                    base64_decode($image)
+                );
+
+                $photoPath = 'visitor_photos/' . $fileName;
+            }
+
             $visitorLog->update([
                 'entry_time' => now(),
                 'gatekeeper_id' => auth()->id(),
                 'status' => 'entered',
+                'photo_path' => $photoPath,
             ]);
 
             return redirect()->back()->with([
@@ -163,7 +189,7 @@ class VisitorLogController extends Controller
             ]);
 
             return redirect()->back()->with([
-                'message' => 'Something went wrong while marking visitor entry.',
+                'message' => 'You Are Not Authorized To Perform This Action',
                 'status' => 'error',
             ]);
         }
@@ -171,9 +197,8 @@ class VisitorLogController extends Controller
 
     public function markExit(VisitorLog $visitorLog)
     {
-        $this->authorize('markExit', $visitorLog);
-
         try {
+            $this->authorize('markExit', $visitorLog);
 
             if ($visitorLog->status !== 'entered') {
                 return redirect()->back()->with([
@@ -200,7 +225,7 @@ class VisitorLogController extends Controller
             ]);
 
             return redirect()->back()->with([
-                'message' => 'Something went wrong while marking visitor exit.',
+                'message' => 'You Are Not Authorized To Perform This Action',
                 'status' => 'error',
             ]);
         }
