@@ -7,8 +7,19 @@ use App\Http\Controllers\FlatController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Resident\VisitorPassController;
 use App\Http\Controllers\ResidentController;
-use App\Http\Controllers\VisitorLogController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+
+// login or dashboard page redirect
+Route::get('/', function () {
+
+    if (! Auth::check()) {
+        return redirect()->route('login');
+    }
+
+    return redirect()->route('dashboard');
+});
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -21,6 +32,14 @@ Route::middleware('auth')
         Route::delete('/profile', 'destroy')->name('profile.destroy');
     });
 
+Route::middleware(['auth', 'role:admin'])
+    ->name('admin.')
+    ->prefix('admin')
+    ->group(function () {
+
+        Route::resource('users', UserController::class);
+    });
+    
 Route::middleware(['auth', 'role:admin,gatekeeper'])
     ->controller(VisitorLogController::class)
     ->name('gatekeeper.')
