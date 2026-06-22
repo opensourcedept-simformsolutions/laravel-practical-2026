@@ -6,11 +6,17 @@ use App\Http\Requests\StoreResidentRequest;
 use App\Http\Requests\UpdateResidentRequest;
 use App\Models\Flat;
 use App\Models\Resident;
+use App\Models\Role;
 use App\Models\User;
-use Exception;
+use App\Notifications\ResidentWelcomeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
+use Exception;
+use Illuminate\Support\Str;
+use Throwable;
 use Yajra\DataTables\Facades\DataTables;
 
 class ResidentController extends Controller
@@ -79,42 +85,99 @@ class ResidentController extends Controller
 
     public function store(StoreResidentRequest $request)
     {
+        Gate::authorize('create', Resident::class);
+
         try {
 
-            $validated = $request->validated();
+            $data = $request->validated();
 
-            $user = User::create([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'phone' => $validated['phone'],
-                'password' => bcrypt('password123'),
-                'role_id' => 3,
-                'society_id' => auth()->user()->society_id,
-            ]);
+            $user = null;
 
-            Resident::create([
-                'user_id' => $user->id,
-                'flat_id' => $validated['flat_id'],
-                'resident_type' => $validated['resident_type'],
-            ]);
+            $residentRoleId = Role::where(
+                'name',
+                'resident'
+            )->value('id');
 
-            Session::flash('message', 'Resident Created Successfully.');
-            Session::flash('status', 'success');
+            DB::transaction(function () use (
+                $data,
+                $residentRoleId,
+                &$user
+            ) {
+
+                $user = User::create([
+                    'name' => $data['name'],
+                    'email' => $data['email'],
+                    'phone' => $data['phone'],
+                    'password' => Str::password(32),
+                    'role_id' => $residentRoleId,
+                    'society_id' => auth()->user()->society_id,
+                ]);
+
+                Resident::create([
+                    'user_id' => $user->id,
+                    'flat_id' => $data['flat_id'],
+                    'resident_type' => $data['resident_type'],
+                ]);
+
+            });
+
+            DB::afterCommit(function () use ($user) {
+
+                if ($user) {
+                    $user->notify(
+                        new ResidentWelcomeNotification($user)
+                    );
+                }
+
+            });
+
+            Session::flash(
+                'message',
+                'Resident created successfully.'
+            );
+
+            Session::flash(
+                'status',
+                'success'
+            );
 
             return redirect()->route('residents.index');
 
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
 
-            Session::flash('message', $e->getMessage());
-            Session::flash('status', 'error');
+            Log::error($e);
+
+            Session::flash(
+                'message',
+                'Unable to create resident.'
+            );
+
+            Session::flash(
+                'status',
+                'error'
+            );
 
             return back()->withInput();
+
         }
     }
 
+    /**
+     * Display the specified resource.
+     */
+    public function show() {}
+
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function edit(Resident $resident)
     {
-        $flats = Flat::where('society_id', auth()->user()->society_id)->get();
+        Gate::authorize('update', $resident);
+
+        $flats = Flat::where(
+            'society_id',
+            auth()->user()->society_id
+        )->get();
 
         return view('residents.edit', compact('resident', 'flats'));
     }
@@ -123,38 +186,92 @@ class ResidentController extends Controller
         UpdateResidentRequest $request,
         Resident $resident
     ) {
-        $data = $request->validated();
+        Gate::authorize('update', $resident);
 
-        if ($resident->user) {
-            $resident->user->update([
-                'name' => $data['name'],
-                'email' => $data['email'],
-                'phone' => $data['phone'],
-            ]);
+        try {
+
+            $data = $request->validated();
+
+            DB::transaction(function () use (
+                $resident,
+                $data
+            ) {
+
+                $resident->user->update([
+                    'name' => $data['name'],
+                    'email' => $data['email'],
+                    'phone' => $data['phone'],
+                ]);
+
+                $resident->update([
+                    'flat_id' => $data['flat_id'],
+                    'resident_type' => $data['resident_type'],
+                ]);
+
+            });
+
+            Session::flash(
+                'message',
+                'Resident updated successfully.'
+            );
+
+            Session::flash(
+                'status',
+                'success'
+            );
+
+            return redirect()->route('residents.index');
+
+        } catch (Throwable $e) {
+
+            Log::error($e);
+
+            Session::flash(
+                'message',
+                'Unable to update resident.'
+            );
+
+            Session::flash(
+                'status',
+                'error'
+            );
+
+            return back()->withInput();
+
         }
-
-        $resident->update([
-            'flat_id' => $data['flat_id'],
-            'resident_type' => $data['resident_type'],
-        ]);
-
-        Session::flash('message', 'Resident Updated Successfully.');
-        Session::flash('status', 'success');
-
-        return redirect()->route('residents.index');
     }
 
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(Resident $resident)
     {
-        if ($resident->user) {
-            $resident->user->delete();
+        Gate::authorize('delete', $resident);
+        try {
+
+            DB::transaction(function () use ($resident) {
+
+                $resident->user->delete();
+
+            });
+
+            return redirect()
+                ->route('residents.index')
+                ->with(
+                    'success',
+                    'Resident deleted successfully'
+                );
+
+        } catch (Throwable $e) {
+
+            Log::error($e);
+
+            return back()
+                ->with(
+                    'error',
+                    'Unable to delete resident'
+                );
         }
 
-        $resident->delete();
-
-        Session::flash('message', 'Resident Deleted Successfully.');
-        Session::flash('status', 'success');
-
-        return redirect()->route('residents.index');
     }
 }

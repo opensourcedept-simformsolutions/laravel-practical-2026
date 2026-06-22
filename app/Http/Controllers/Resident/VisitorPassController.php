@@ -214,10 +214,15 @@ class VisitorPassController extends Controller
     {
         $this->authorize('create', VisitorLog::class);
 
-        $flats = [];
+        $flats = collect();
 
         if (auth()->user()->isGatekeeper()) {
-            $flats = Flat::orderBy('flat_number')->get();
+
+            $flats = Flat::where('society_id', auth()->user()->society_id)
+                ->orderBy('wing')
+                ->orderBy('floor')
+                ->orderBy('flat_number')
+                ->get();
         }
 
         return view('passes.create', compact('flats'));
@@ -244,9 +249,20 @@ class VisitorPassController extends Controller
                     ]
                 );
 
-                $visitorLog = new VisitorLog;
+                if ($user->isGatekeeper()) {
 
-                $flatId = $user->isGatekeeper() ? $validated['flat_id'] : $user->resident->flat_id;
+                    $flat = Flat::where('id', $validated['flat_id'])
+                        ->where('society_id', $user->society_id)
+                        ->firstOrFail();
+
+                    $flatId = $flat->id;
+
+                } else {
+
+                    $flatId = $user->resident->flat_id;
+                }
+
+                $visitorLog = new VisitorLog;
 
                 $visitorLog->visitor_id = $visitor->id;
                 $visitorLog->flat_id = $flatId;
@@ -264,7 +280,9 @@ class VisitorPassController extends Controller
             if ($user->isGatekeeper()) {
                 return redirect()->route('gatekeeper.visitor-logs.pending');
             }
-                return redirect()->route('passes.index');
+
+            return redirect()->route('passes.index');
+
         } catch (Exception $e) {
             Session::flash('message', 'Something went wrong.');
             Session::flash('status', 'error');
@@ -320,16 +338,16 @@ class VisitorPassController extends Controller
                     'vehicle_number' => $validated['vehicle_number'] ?? null,
                 ]);
 
-            $visitorLog->created_by = $user->id;
+                $visitorLog->created_by = $user->id;
 
-            if ( $user->isGatekeeper() && ! empty($validated['flat_id'])) {
-                $visitorLog->flat_id = $validated['flat_id'];
-            }
+                if ($user->isGatekeeper() && ! empty($validated['flat_id'])) {
+                    $visitorLog->flat_id = $validated['flat_id'];
+                }
 
-            $visitorLog->purpose = $validated['purpose'];
-            $visitorLog->visit_date = $validated['visit_date'];
+                $visitorLog->purpose = $validated['purpose'];
+                $visitorLog->visit_date = $validated['visit_date'];
 
-            $visitorLog->save();
+                $visitorLog->save();
             });
 
             Session::flash('message', 'Visitor Pass updated successfully.');

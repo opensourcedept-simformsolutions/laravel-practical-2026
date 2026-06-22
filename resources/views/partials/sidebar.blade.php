@@ -37,6 +37,14 @@
             <span class="sidebar-link-label">Residents</span>
         </x-sidebar-link>
 
+        {{-- user management --}}
+        @can('is-admin')
+        <x-sidebar-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('users.index')">
+            <i class="bi bi-people"></i>
+            <span class="sidebar-link-label"> Users Management</span>
+        </x-sidebar-link>
+        @endcan
+
         {{-- Complaints --}}
         <x-sidebar-link :href="route('complaints.index')" :active="request()->routeIs('complaints.*')">
             <i class="bi bi-exclamation-circle"></i>

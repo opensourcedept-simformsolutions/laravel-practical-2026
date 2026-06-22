@@ -48,6 +48,7 @@
                             <th>Phone</th>
                             <th>Flat</th>
                             <th>Purpose</th>
+                            <th>Entry Date</th>
                             <th>Entry Time</th>
                             <th>Exit Date</th>
                             <th>Exit Time</th>
@@ -81,41 +82,45 @@
 
         columns: [
             {
-                data: 'id',
-                name: 'id'
+            data: 'id',
+            name: 'id'
             },
             {
-                data: 'visitor_name',
-                name: 'visitor.name'
+            data: 'visitor_name',
+            name: 'visitor.name'
             },
             {
-                data: 'phone',
-                name: 'visitor.phone'
+            data: 'phone',
+            name: 'visitor.phone'
             },
             {
-                data: 'flat_details',
-                name: 'flat.flat_number',
-                orderable: false
+            data: 'flat_details',
+            name: 'flat.flat_number',
+            orderable: false
             },
             {
-                data: 'purpose',
-                name: 'purpose'
+            data: 'purpose',
+            name: 'purpose'
             },
             {
-                data: 'entry_time',
-                name: 'entry_time'
+            data: 'entry_date',
+            name: 'entry_time'
             },
             {
-                data: 'exit_date',
-                name: 'exit_time'
+            data: 'entry_time',
+            name: 'entry_time'
             },
             {
-                data: 'exit_time',
-                name: 'exit_time'
+            data: 'exit_date',
+            name: 'exit_time'
             },
             {
-                data: 'status',
-                name: 'status'
+            data: 'exit_time',
+            name: 'exit_time'
+            },
+            {
+            data: 'status',
+            name: 'status'
             }
         ]
     });

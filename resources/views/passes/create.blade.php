@@ -40,6 +40,8 @@
                                                     'selected' : '' }}>
                                                     {{ $flat->wing }}
                                                     -
+                                                    Floor {{$flat->floor  }}
+                                                    -
                                                     {{ $flat->flat_number }}
                                                 </option>
                                                 @endforeach
