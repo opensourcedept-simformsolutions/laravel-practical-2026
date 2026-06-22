@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreVisitorPassRequest extends FormRequest
 {
@@ -23,7 +23,15 @@ class StoreVisitorPassRequest extends FormRequest
         ];
 
         if (auth()->check() && auth()->user()->role->name === 'gatekeeper') {
-            $rules['flat_id'] = ['required', 'exists:flats,id'];
+            $rules['flat_id'] = [
+                'required',
+                Rule::exists('flats', 'id')->where(function ($query) {
+                    $query->where(
+                        'society_id',
+                        auth()->user()->society_id
+                    );
+                }),
+            ];
         }
 
         return $rules;

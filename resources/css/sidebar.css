@@ -35,9 +35,7 @@
 
 .sidebar-brand-text,
 .sidebar-link-label {
-    transition:
-        opacity 0.2s ease,
-        visibility 0.2s ease;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
 .sidebar-menu {
@@ -101,8 +99,8 @@
 }
 
 .sidebar-link.active,
-.sidebar-link[aria-current="page"],
-.sidebar-link[data-active="true"] {
+.sidebar-link[aria-current='page'],
+.sidebar-link[data-active='true'] {
     background: linear-gradient(135deg, var(--sidebar-active), #60a5fa);
     border-color: rgba(255, 255, 255, 0.18);
     color: #ffffff;
@@ -111,15 +109,15 @@
 }
 
 .sidebar-link.active i,
-.sidebar-link[aria-current="page"] i,
-.sidebar-link[data-active="true"] i {
+.sidebar-link[aria-current='page'] i,
+.sidebar-link[data-active='true'] i {
     color: #ffffff;
 }
 
 .sidebar-link.active::before,
-.sidebar-link[aria-current="page"]::before,
-.sidebar-link[data-active="true"]::before {
-    content: "";
+.sidebar-link[aria-current='page']::before,
+.sidebar-link[data-active='true']::before {
+    content: '';
     position: absolute;
     left: -12px;
     top: 10px;
@@ -194,7 +192,7 @@
 }
 
 #reportsArrow {
-    transition: transform 0.2s ease;
+    transition: transform .2s ease;
 }
 
 @media (max-width: 991.98px) {
@@ -205,7 +203,7 @@
         width: 260px;
         height: 100vh;
         z-index: 1050;
-        transition: transform 0.3s ease;
+        transition: transform .3s ease;
     }
 
     .sidebar-container.collapsed {

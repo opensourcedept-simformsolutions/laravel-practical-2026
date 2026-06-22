@@ -101,7 +101,11 @@
                     <tr>
                         <th>ID</th>
 
-                        @if(auth()->user()->role->name === 'super_admin')
+                        @if(auth()->user()->isAdmin())
+                        <th>Resident</th>
+                        @endif
+
+                        @if(auth()->user()->isSuperAdmin())
                         <th>Society</th>
                         @endif
 
@@ -151,7 +155,16 @@
                 name: 'id'
             },
 
-            @if(auth()->user()->role->name === 'super_admin')
+            @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
+            {
+                data: 'resident_name',
+                name: 'user.name',
+                orderable: false,
+                searchable: false
+            },
+            @endif
+
+            @if(auth()->user()->isSuperAdmin())
             {
                 data: 'society',
                 name: 'society',

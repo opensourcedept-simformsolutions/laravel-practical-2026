@@ -55,12 +55,12 @@
         </x-sidebar-link>
         {{-- user management --}}
         @can('is-admin')
-            <x-sidebar-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('users.index')">
-                <i class="bi bi-people"></i>
-                <span class="sidebar-link-label"> Users Management</span>
-            </x-sidebar-link>
+        <x-sidebar-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('users.index')">
+            <i class="bi bi-people"></i>
+            <span class="sidebar-link-label"> Users Management</span>
+        </x-sidebar-link>
         @endcan
-
+        
         {{-- Reports --}}
         <div class="sidebar-dropdown">
             <button type="button" class="sidebar-dropdown-toggle" id="reportsToggle">
@@ -74,17 +74,17 @@
 
             <div class="sidebar-dropdown-menu d-none" id="reportsMenu">
 
-                <x-sidebar-link :href="route('reports.deliveries')">
+                <x-sidebar-link :href="route('reports.deliveries.')">
                     <i class="bi bi-box-seam"></i>
                     <span class="sidebar-link-label">Delivery Report</span>
                 </x-sidebar-link>
 
-                <x-sidebar-link :href="route('reports.complaints')">
+                <x-sidebar-link :href="route('reports.complaints.')">
                     <i class="bi bi-chat-square-text"></i>
                     <span class="sidebar-link-label">Complaint Report</span>
                 </x-sidebar-link>
 
-                <x-sidebar-link :href="route('passes.report')">
+                <x-sidebar-link :href="route('reports.passes.')">
                     <i class="bi bi-person-vcard"></i>
                     <span class="sidebar-link-label">Visitor Report</span>
                 </x-sidebar-link>

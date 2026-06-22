@@ -222,7 +222,9 @@ class VisitorLogController extends Controller
                     ($row->flat?->floor ?? '-').'-'.
                     ($row->flat?->flat_number ?? '-')
                 )
-                ->addColumn('entry_time', fn ($row) => $row->entry_time?->format('d M Y h:i A') ?? '-'
+                ->addColumn('entry_date', fn ($row) => $row->entry_time?->format('d M Y') ?? '-'
+                )
+                ->addColumn('entry_time', fn ($row) => $row->entry_time?->format('h:i A') ?? '-'
                 )
                 ->addColumn('exit_date', fn ($row) => $row->exit_time?->format('d M Y') ?? '-'
                 )
