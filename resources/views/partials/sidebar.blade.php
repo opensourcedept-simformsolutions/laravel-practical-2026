@@ -12,6 +12,14 @@
       <span class="sidebar-link-label">Dashboard</span>
     </x-sidebar-link>
 
+    @can('is-super-admin')
+    {{-- Society --}}
+    <x-sidebar-link :href="route('societies.index')" :active="request()->routeIs('societies.index')">
+      <i class="bi bi-buildings"></i>
+      <span class="sidebar-link-label">Society</span>
+    </x-sidebar-link>
+    @endcan
+
     {{-- Passes --}}
     @canany(['is-admin', 'is-resident'])
       <x-sidebar-link :href="route('passes.index')" :active="request()->routeIs('passes.*')">

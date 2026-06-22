@@ -7,6 +7,7 @@ use App\Http\Controllers\FlatController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Resident\VisitorPassController;
 use App\Http\Controllers\ResidentController;
+use App\Http\Controllers\SocietyController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitorLogController;
 use Illuminate\Support\Facades\Auth;
@@ -40,7 +41,7 @@ Route::middleware(['auth', 'role:admin'])
 
         Route::resource('users', UserController::class);
     });
-    
+
 Route::middleware(['auth', 'role:admin,gatekeeper'])
     ->controller(VisitorLogController::class)
     ->name('gatekeeper.')
@@ -91,6 +92,29 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('residents', ResidentController::class);
 });
 
+Route::middleware(['auth', 'role:super_admin'])
+    ->controller(SocietyController::class)
+    ->name('societies.')
+    ->group(function () {
+
+        Route::get('societies', 'index')->name('index');
+        Route::get('societies/data', 'data')->name('data');
+
+        Route::get('societies/create', 'create')->name('create');
+        Route::post('societies', 'store')->name('store');
+
+        Route::get('societies/{society}', 'show')->name('show');
+        Route::get('societies/{society}/edit', 'edit')->name('edit');
+        Route::put('societies/{society}', 'update')->name('update');
+
+        Route::delete('societies/{society}', 'destroy')->name('destroy');
+
+        Route::patch(
+            'societies/{id}/restore',
+            'restore'
+        )->name('restore');
+    });
+
 Route::get('deliveries/data', [DeliveryController::class, 'data'])
     ->middleware(['auth'])
     ->name('deliveries.data');
@@ -105,14 +129,14 @@ Route::patch('deliveries/{delivery}/deliver', [DeliveryController::class, 'markD
 Route::prefix('reports')
     ->name('reports.')
     ->group(function () {
-        Route::get('/deliveries', fn () => 'Delivery Report')
+        Route::get('/deliveries', fn() => 'Delivery Report')
             ->name('deliveries');
 
-        Route::get('/complaints', fn () => 'Complaint Report')
+        Route::get('/complaints', fn() => 'Complaint Report')
             ->name('complaints');
 
-        Route::get('/visitors', fn () => 'Visitor Report')
+        Route::get('/visitors', fn() => 'Visitor Report')
             ->name('visitors');
     });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
