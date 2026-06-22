@@ -96,6 +96,9 @@ public function index(Request $request)
             }
 
             return DataTables::of($query)
+                ->addColumn('resident_name', function ($complaint) {
+                    return $complaint->user?->name ?? 'N/A';
+                })
 
                 ->addColumn('society', function ($complaint) {
                     return $complaint->user->society?->name ?? 'N/A';
@@ -117,16 +120,16 @@ public function index(Request $request)
 
                     $buttons = '
                         <a href="' . route('complaints.show', $complaint) . '"
-                           class="btn btn-primary btn-sm me-1">
-                            View
+                           class="btn btn-primary btn-sm" title="view">
+                            <i class="bi bi-eye"></i>
                         </a>
                     ';
 
                     if (auth()->user()->can('update', $complaint)) {
                         $buttons .= '
                             <a href="' . route('complaints.edit', $complaint) . '"
-                               class="btn btn-warning btn-sm me-1">
-                                Edit
+                               class="btn btn-warning btn-sm" title="Edit">
+                                <i class="bi bi-pencil-square"></i>
                             </a>
                         ';
                     }
@@ -139,14 +142,18 @@ public function index(Request $request)
                                   onsubmit="return confirm(\'Are you sure you want to delete this complaint?\');">
                                 ' . csrf_field() . '
                                 ' . method_field('DELETE') . '
-                                <button type="submit" class="btn btn-danger btn-action btn-sm">
-                                    Delete
+                                <button type="submit" class="btn btn-danger btn-sm" title="Delete">
+                                    <i class="bi bi-x-lg"></i>
                                 </button>
                             </form>
                         ';
                     }
 
-                    return $buttons;
+                    return '
+                    <div class="d-flex flex-nowrap justify-content-center gap-1">
+                        '.$buttons.'
+                    </div>
+                    ';
                 })
 
                 ->rawColumns(['action'])
