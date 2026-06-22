@@ -9,62 +9,197 @@ use App\Http\Requests\UpdateDeliveryRequest;
 use App\Models\Delivery;
 use App\Models\Flat;
 use App\Models\Resident;
+use App\Services\DeliveryNotificationService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Session;
 use Yajra\DataTables\Facades\DataTables;
 
 class DeliveryController extends Controller
 {
+    public function __construct(private DeliveryNotificationService $notificationService) {}
+
     public function data()
     {
-        $query = Delivery::with([
+        try {
+            $query = Delivery::with([
+                'flat' => fn ($q) => $q->withTrashed(),
+                'resident' => fn ($q) => $q->withTrashed(),
+                'resident.user' => fn ($q) => $q->withTrashed(),
+            ]);
 
-            'flat' => fn ($q) => $q->withTrashed(),
+            $user = auth()->user();
 
-            'resident' => fn ($q) => $q->withTrashed(),
-
-            'resident.user' => fn ($q) => $q->withTrashed(),
-
-        ]);
-
-        $user = auth()->user();
-
-        if (! $user->isSuperAdmin()) {
-            if ($user->isResident()) {
-                $query->where('flat_id', $user->resident->flat_id);
-            } else {
-                $query->whereHas('flat', function ($query) use ($user) {
-                    $query->where('society_id', $user->society_id);
-                });
+            if (! $user->isSuperAdmin()) {
+                if ($user->isResident()) {
+                    $query->where('flat_id', $user->resident->flat_id);
+                } else {
+                    $query->whereHas('flat', function ($query) use ($user) {
+                        $query->where('society_id', $user->society_id);
+                    });
+                }
             }
+
+            return DataTables::eloquent($query)
+                ->addColumn('flat', function ($delivery) {
+                    return $delivery->flat->wing.' - Floor '.$delivery->flat->floor.' - '.$delivery->flat->flat_number;
+                })
+                ->addColumn('resident', function ($delivery) {
+                    return $delivery->resident->user->name;
+                })
+                ->editColumn('status', function ($delivery) {
+                    $class = $delivery->status === 'delivered'
+                        ? 'text-bg-success'
+                        : 'text-bg-primary';
+
+                    return '<span class="badge rounded-pill '.$class.'">'
+                        .ucfirst($delivery->status)
+                        .'</span>';
+                })
+                ->editColumn('received_at', function ($delivery) {
+                    return $delivery->received_at?->format('d M Y H:i');
+                })
+                ->addColumn('actions', function ($delivery) {
+                    return view(
+                        'deliveries.partials.actions',
+                        compact('delivery')
+                    )->render();
+                })
+                ->rawColumns(['status', 'actions'])
+                ->toJson();
+        } catch (\Throwable $e) {
+
+            $this->notificationService->failed(
+                'load delivery datatable',
+                $e
+            );
+
+            abort(500);
         }
-
-        return DataTables::eloquent($query)
-            ->addColumn('flat', fn ($delivery) => $delivery->flat->flat_number)
-            ->addColumn('resident', fn ($delivery) => $delivery->resident->user->name)
-            ->editColumn('status', function ($delivery) {
-                $class = $delivery->status === 'delivered'
-                    ? 'text-bg-success'
-                    : 'text-bg-primary';
-
-                return '<span class="badge rounded-pill '.$class.'">'
-                    .ucfirst($delivery->status)
-                    .'</span>';
-            })
-            ->editColumn('received_at', function ($delivery) {
-                return $delivery->received_at?->format('d M Y H:i');
-            })
-            ->addColumn('actions', function ($delivery) {
-                return view(
-                    'deliveries.partials.actions',
-                    compact('delivery')
-                )->render();
-            })
-            ->rawColumns(['status', 'actions'])
-            ->toJson();
     }
 
-    public function index(Request $request)
+    public function reportData(Request $request)
+    {
+        try {
+            $query = $this->getReportQuery($request);
+
+            return DataTables::eloquent($query)
+                ->addIndexColumn()
+                ->addColumn('society', function ($delivery) {
+                    return $delivery->flat->society->name;
+                })
+                ->addColumn('flat', function ($delivery) {
+                    return $delivery->flat->wing.' - Floor '.$delivery->flat->floor.' - '.$delivery->flat->flat_number;
+                })
+                ->addColumn('resident', function ($delivery) {
+                    return $delivery->resident->user->name;
+                })
+                ->editColumn('status', function ($delivery) {
+                    return ucfirst($delivery->status);
+                })
+                ->editColumn('received_at', function ($delivery) {
+                    return $delivery->received_at->format('d M Y H:i');
+                })
+                ->editColumn('delivered_at', function ($delivery) {
+                    return $delivery->delivered_at?->format('d M Y H:i') ?? '-';
+                })
+                ->toJson();
+        } catch (\Throwable $e) {
+
+            $this->notificationService->failed(
+                'load delivery datatable',
+                $e
+            );
+
+            abort(500);
+        }
+    }
+
+    public function export(Request $request)
+    {
+        try {
+            $query = $this->getReportQuery($request);
+
+            return response()->streamDownload(function () use ($query) {
+                $handle = fopen('php://output', 'w');
+
+                fputcsv($handle, [
+                    'ID',
+                    'Society ID',
+                    'Society Name',
+                    'Flat',
+                    'Resident',
+                    'Vendor',
+                    'Status',
+                    'Received At',
+                    'Delivered At',
+                ]);
+
+                foreach ($query->get() as $delivery) {
+                    fputcsv($handle, [
+                        $delivery->id,
+                        $delivery->flat->society_id,
+                        $delivery->flat->society->name,
+                        $delivery->flat->wing.' - Floor '.$delivery->flat->floor.' - '.$delivery->flat->flat_number,
+                        $delivery->resident->user->name,
+                        $delivery->vendor,
+                        ucfirst($delivery->status),
+                        $delivery->received_at->format('Y-m-d H:i:s'),
+                        $delivery->delivered_at?->format('Y-m-d H:i:s') ?? '-',
+                    ]);
+                }
+
+                fclose($handle);
+            }, 'delivery-report.csv');
+
+        } catch (\Throwable $e) {
+            $this->notificationService
+                ->failed('export delivery report', $e);
+
+            return back()->with([
+                'status' => 'error',
+                'message' => 'Failed to export delivery report.',
+            ]);
+        }
+    }
+
+    public function report()
+    {
+        $user = auth()->user();
+
+        $flats = Flat::query()
+            ->when(! $user->isSuperAdmin(), function ($query) use ($user) {
+                if ($user->isResident()) {
+                    $query->where('id', $user->resident->flat_id);
+                } else {
+                    $query->where('society_id', $user->society_id);
+                }
+            })
+            ->orderBy('wing')
+            ->orderBy('floor')
+            ->orderBy('flat_number')
+            ->get();
+
+        $vendors = Delivery::query()
+            ->when(! $user->isSuperAdmin(), function ($query) use ($user) {
+                if ($user->isResident()) {
+                    $query->where('flat_id', $user->resident->flat_id);
+                } else {
+                    $query->whereHas('flat', function ($q) use ($user) {
+                        $q->where('society_id', $user->society_id);
+                    });
+                }
+            })
+            ->whereNotNull('vendor')
+            ->distinct()
+            ->orderBy('vendor')
+            ->pluck('vendor');
+
+        return view('deliveries.report', compact(
+            'flats',
+            'vendors'
+        ));
+    }
+
+    public function index()
     {
         $this->authorize('viewAny', Delivery::class);
 
@@ -75,32 +210,41 @@ class DeliveryController extends Controller
     {
         $this->authorize('create', Delivery::class);
 
-        return view('deliveries.create', [
-            'flatOptions' => $this->getFlatOptions(),
-            'residentOptions' => $this->getResidentOptions(),
-        ]);
+        return view('deliveries.create', ['residentOptions' => $this->getResidentOptions()]);
     }
 
     public function store(StoreDeliveryRequest $request)
     {
         $this->authorize('create', Delivery::class);
 
-        $validatedData = $request->validated();
+        try {
+            $validatedData = $request->validated();
 
-        $delivery = Delivery::create([
-            'flat_id' => $validatedData['flat_id'],
-            'resident_id' => $validatedData['resident_id'],
-            'vendor' => $validatedData['vendor'],
-            'package_details' => $validatedData['package_details'],
-            'status' => DeliveryStatus::RECEIVED->value,
-            'received_at' => now(),
-            'delivered_at' => null,
-        ]);
+            $resident = Resident::findOrFail(
+                $validatedData['resident_id']
+            );
 
-        Session::flash('message', 'Delivery recorded successfully.');
-        Session::flash('status', 'success');
+            $delivery = Delivery::create([
+                'flat_id' => $resident->flat_id,
+                'resident_id' => $resident->id,
+                'vendor' => $validatedData['vendor'],
+                'package_details' => $validatedData['package_details'],
+                'status' => DeliveryStatus::RECEIVED->value,
+                'received_at' => now(),
+                'delivered_at' => null,
+            ]);
 
-        return redirect()->route('deliveries.index');
+            $this->notificationService->notify($delivery, 'Delivery received');
+
+            return redirect()->route('deliveries.index')
+                ->with(['status' => 'success', 'message' => 'Delivery recorded successfully.']);
+        } catch (\Throwable $e) {
+            $this->notificationService->failed('create delivery', $e);
+
+            return back()
+                ->withInput()
+                ->with(['status' => 'error', 'message' => 'Failed to create delivery.']);
+        }
     }
 
     public function show(Delivery $delivery)
@@ -116,14 +260,29 @@ class DeliveryController extends Controller
     {
         $this->authorize('markDelivered', $delivery);
 
-        $delivery->update([
-            'status' => DeliveryStatus::DELIVERED->value,
-            'delivered_at' => now()]);
+        try {
+            if ($delivery->status === DeliveryStatus::DELIVERED->value) {
+                return back()->with([
+                    'status' => 'warning',
+                    'message' => 'Delivery is already marked as delivered.',
+                ]);
+            }
+            $delivery->update([
+                'status' => DeliveryStatus::DELIVERED->value,
+                'delivered_at' => now(),
+            ]);
 
-        Session::flash('message', 'Delivery marked as delivered.');
-        Session::flash('status', 'success');
+            $this->notificationService->notify($delivery, 'Delivery delivered');
 
-        return redirect()->back();
+            return back()
+                ->with(['status' => 'success', 'message' => 'Delivery marked as delivered.']);
+        } catch (\Throwable $e) {
+            $this->notificationService->failed('mark delivery as delivered', $e);
+
+            return back()
+                ->withInput()
+                ->with(['status' => 'error', 'message' => 'Failed to mark delivery as delivered']);
+        }
     }
 
     public function edit(Delivery $delivery)
@@ -132,7 +291,6 @@ class DeliveryController extends Controller
 
         return view('deliveries.edit', [
             'delivery' => $delivery,
-            'flatOptions' => $this->getFlatOptions(),
             'residentOptions' => $this->getResidentOptions(),
         ]);
     }
@@ -141,47 +299,67 @@ class DeliveryController extends Controller
     {
         $this->authorize('update', $delivery);
 
-        $delivery->update($request->validated());
+        try {
+            $oldValues = $delivery->only([
+                'flat_id',
+                'resident_id',
+                'vendor',
+                'package_details',
+                'status',
+            ]);
 
-        Session::flash('message', 'Delivery updated successfully.');
-        Session::flash('status', 'success');
+            $delivery->update($request->validated());
 
-        return redirect()->route('deliveries.index');
+            $newValues = $delivery->only([
+                'flat_id',
+                'resident_id',
+                'vendor',
+                'package_details',
+                'status',
+            ]);
+
+            $this->notificationService->notify($delivery, 'Delivery updated', [
+                'before' => $oldValues,
+                'after' => $newValues,
+            ]);
+
+            return redirect()
+                ->route('deliveries.index')
+                ->with(['status' => 'success', 'message' => 'Delivery updated successfully.']);
+        } catch (\Throwable $e) {
+            $this->notificationService->failed('update delivery', $e);
+
+            return back()
+                ->withInput()
+                ->with(['status' => 'error', 'message' => 'Failed to update delivery.']);
+        }
     }
-
     public function destroy(Delivery $delivery)
     {
         $this->authorize('delete', $delivery);
 
-        $delivery->delete();
+        try {
+            $this->notificationService->notify($delivery, 'Delivery deleted');
 
-        Session::flash('message', 'Delivery Deleted successfully.');
-        Session::flash('status', 'success');
+            $delivery->delete();
 
-        return redirect()->route('deliveries.index');
-    }
+            return redirect()
+                ->route('deliveries.index')
+                ->with(['status' => 'success', 'message' => 'Delivery deleted successfully.']);
+        } catch (\Throwable $e) {
+            $this->notificationService->failed('delete delivery', $e);
 
-    private function getFlatOptions()
-    {
-        $user = auth()->user();
-
-        return Flat::query()
-            ->when(! $user->isSuperAdmin(), function ($query) use ($user) {
-                $query->where('society_id', $user->society_id);
-            })
-            ->get()
-            ->mapWithKeys(function ($flat) {
-                return [
-                    $flat->id => $flat->wing.'-'.$flat->flat_number,
-                ];
-            });
+            return back()
+                ->withInput()
+                ->with(['status' => 'error', 'message' => 'Failed to delete delivery.']);
+        }
     }
 
     private function getResidentOptions()
     {
         $user = auth()->user();
 
-        return Resident::with('user')
+        return Resident::with(['user', 'flat'])
             ->when(! $user->isSuperAdmin(), function ($query) use ($user) {
                 $query->whereHas('flat', function ($q) use ($user) {
                     $q->where('society_id', $user->society_id);
@@ -190,8 +368,52 @@ class DeliveryController extends Controller
             ->get()
             ->mapWithKeys(function ($resident) {
                 return [
-                    $resident->id => $resident->user->name,
+                    $resident->id => $resident->flat->wing.'-'.$resident->flat->flat_number
+                        .' - '.$resident->user->name,
                 ];
             });
+    }
+
+    private function getReportQuery(Request $request)
+    {
+        $query = Delivery::with([
+            'flat' => fn ($q) => $q->withTrashed(),
+            'flat.society' => fn ($q) => $q->withTrashed(),
+            'resident' => fn ($q) => $q->withTrashed(),
+            'resident.user' => fn ($q) => $q->withTrashed(),
+        ]);
+
+        $user = auth()->user();
+
+        if (! $user->isSuperAdmin()) {
+            if ($user->isResident()) {
+                $query->where('flat_id', $user->resident->flat_id);
+            } else {
+                $query->whereHas('flat', function ($query) use ($user) {
+                    $query->where('society_id', $user->society_id);
+                });
+            }
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('flat_id')) {
+            $query->where('flat_id', $request->flat_id);
+        }
+
+        if ($request->filled('vendor')) {
+            $query->where('vendor', 'like', '%'.$request->vendor.'%');
+        }
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('received_at', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('received_at', '<=', $request->to_date);
+        }
+
+        return $query;
     }
 }

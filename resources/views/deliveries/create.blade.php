@@ -5,20 +5,14 @@
 @section('content')
     <x-form.form :action="route('deliveries.store')" method="POST" class="mx-auto w-100" style="max-width: 760px;">
         <x-form.form-section title="Add Delivery">
-            <x-form.field name="flat_id" label="Flat">
-                <x-form.select
-                    name="flat_id"
-                    :options="$flatOptions"
-                    placeholder="Select Flat Number"
-                 />
-            </x-form.field>
 
             <x-form.field name="resident_id" label="Resident">
-                <x-form.select
+            <x-form.select
                     name="resident_id"
+                    id="resident_id"
                     :options="$residentOptions"
-                    placeholder="Select Resident"
-                 />
+                    placeholder="Search Resident"
+                />
             </x-form.field>
 
             <x-form.field name="vendor" label="Vendor">
@@ -45,3 +39,15 @@
         </x-form.form-section>
     </x-form.form>
 @endsection
+
+@push('scripts')
+    <script>
+        $(function () {
+            $('#resident_id').select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Search Resident',
+                width: '100%'
+            });
+        });
+    </script>
+@endpush

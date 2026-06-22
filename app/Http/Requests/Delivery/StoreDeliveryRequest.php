@@ -23,7 +23,6 @@ class StoreDeliveryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'flat_id' => ['required', 'exists:flats,id'],
             'resident_id' => ['required', 'exists:residents,id'],
             'vendor' => ['required', 'string', 'max:255'],
             'package_details' => ['required', 'string', 'min:3'],
