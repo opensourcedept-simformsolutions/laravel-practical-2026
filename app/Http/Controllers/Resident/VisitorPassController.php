@@ -214,7 +214,13 @@ class VisitorPassController extends Controller
     {
         $this->authorize('create', VisitorLog::class);
 
-        return view('passes.create');
+        $flats = [];
+
+        if (auth()->user()->isGatekeeper()) {
+            $flats = Flat::orderBy('flat_number')->get();
+        }
+
+        return view('passes.create', compact('flats'));
     }
 
     public function store(StoreVisitorPassRequest $request)
@@ -240,8 +246,10 @@ class VisitorPassController extends Controller
 
                 $visitorLog = new VisitorLog;
 
+                $flatId = $user->isGatekeeper() ? $validated['flat_id'] : $user->resident->flat_id;
+
                 $visitorLog->visitor_id = $visitor->id;
-                $visitorLog->flat_id = $user->resident->flat_id;
+                $visitorLog->flat_id = $flatId;
                 $visitorLog->created_by = $user->id;
                 $visitorLog->purpose = $validated['purpose'];
                 $visitorLog->status = 'pending';
@@ -253,10 +261,14 @@ class VisitorPassController extends Controller
             Session::flash('message', 'Visitor Pass Created Successfully.');
             Session::flash('status', 'success');
 
-            return redirect()->route('passes.index');
+            if ($user->isGatekeeper()) {
+                return redirect()->route('gatekeeper.visitor-logs.pending');
+            }
+                return redirect()->route('passes.index');
         } catch (Exception $e) {
             Session::flash('message', 'Something went wrong.');
             Session::flash('status', 'error');
+
 
             return redirect()->back()->withInput();
         }
@@ -279,7 +291,16 @@ class VisitorPassController extends Controller
     {
         $this->authorize('update', $visitorLog);
 
-        return view('passes.edit', compact('visitorLog'));
+        $flats = [];
+
+        if (auth()->user()->isGatekeeper()) {
+            $flats = Flat::orderBy('flat_number')->get();
+        }
+
+        return view('passes.edit', compact(
+            'visitorLog',
+            'flats'
+        ));
     }
 
     public function update(UpdateVisitorPassRequest $request, VisitorLog $visitorLog)
@@ -299,14 +320,24 @@ class VisitorPassController extends Controller
                     'vehicle_number' => $validated['vehicle_number'] ?? null,
                 ]);
 
-                $visitorLog->created_by = $user->id;
-                $visitorLog->purpose = $validated['purpose'];
-                $visitorLog->visit_date = $validated['visit_date'];
-                $visitorLog->save();
+            $visitorLog->created_by = $user->id;
+
+            if ( $user->isGatekeeper() && ! empty($validated['flat_id'])) {
+                $visitorLog->flat_id = $validated['flat_id'];
+            }
+
+            $visitorLog->purpose = $validated['purpose'];
+            $visitorLog->visit_date = $validated['visit_date'];
+
+            $visitorLog->save();
             });
 
             Session::flash('message', 'Visitor Pass updated successfully.');
             Session::flash('status', 'success');
+
+            if ($user->isGatekeeper()) {
+                return redirect()->route('gatekeeper.visitor-logs.pending');
+            }
 
             return redirect()->route('passes.index');
         } catch (Exception $e) {
@@ -505,5 +536,24 @@ class VisitorPassController extends Controller
         }
 
         return $query;
+    }
+
+    public function destroy(VisitorLog $visitorLog)
+    {
+        $this->authorize('delete', $visitorLog);
+
+        if ($visitorLog->status !== 'pending') {
+            return redirect()->back()->with([
+                'message' => 'Only pending passes can be deleted.',
+                'status' => 'error',
+            ]);
+        }
+
+        $visitorLog->delete();
+
+        return redirect()->back()->with([
+            'message' => 'Visitor pass deleted successfully.',
+            'status' => 'success',
+        ]);
     }
 }

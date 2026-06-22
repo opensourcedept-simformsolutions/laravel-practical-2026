@@ -1,13 +1,13 @@
-const SIDEBAR_STORAGE_KEY = 'sidebar-collapsed';
+const SIDEBAR_STORAGE_KEY = "sidebar-collapsed";
 
 function applySidebarState($sidebarContainer, $toggleButton, isCollapsed) {
-    $sidebarContainer.toggleClass('collapsed', isCollapsed);
-    $toggleButton.attr('aria-expanded', String(!isCollapsed));
+    $sidebarContainer.toggleClass("collapsed", isCollapsed);
+    $toggleButton.attr("aria-expanded", String(!isCollapsed));
 }
 
 $(function () {
-    const $sidebarContainer = $('#sidebarContainer');
-    const $toggleButton = $('#sidebarToggle');
+    const $sidebarContainer = $("#sidebarContainer");
+    const $toggleButton = $("#sidebarToggle");
 
     if (!$sidebarContainer.length || !$toggleButton.length) {
         return;
@@ -19,7 +19,7 @@ $(function () {
             applySidebarState($sidebarContainer, $toggleButton, true);
         } else {
             const isCollapsed =
-                localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true';
+                localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true";
 
             applySidebarState($sidebarContainer, $toggleButton, isCollapsed);
         }
@@ -27,25 +27,22 @@ $(function () {
 
     syncSidebarState();
 
-    $(window).on('resize', syncSidebarState);
+    $(window).on("resize", syncSidebarState);
 
-    $toggleButton.on('click', function () {
-        const nextState = !$sidebarContainer.hasClass('collapsed');
+    $toggleButton.on("click", function () {
+        const nextState = !$sidebarContainer.hasClass("collapsed");
 
         applySidebarState($sidebarContainer, $toggleButton, nextState);
 
         if (window.innerWidth >= 992) {
-            localStorage.setItem(
-                SIDEBAR_STORAGE_KEY,
-                String(nextState)
-            );
+            localStorage.setItem(SIDEBAR_STORAGE_KEY, String(nextState));
         }
     });
 });
 
 $(function () {
-    $('#reportsToggle').click(function () {
-        $('#reportsMenu').toggleClass('d-none');
-        $('#reportsArrow').toggleClass('rotate-180');
+    $("#reportsToggle").click(function () {
+        $("#reportsMenu").toggleClass("d-none");
+        $("#reportsArrow").toggleClass("rotate-180");
     });
 });

@@ -11,6 +11,7 @@ use App\Models\Society;
 use App\Models\User;
 use App\Models\Visitor;
 use App\Models\VisitorLog;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -145,7 +146,20 @@ class DemoDataSeeder extends Seeder
             // Visitor Logs (100)
             for ($i = 0; $i < 100; $i++) {
 
-                $entryTime = fake()->dateTimeBetween($today->copy()->subDays(30), $today);
+                $entryTime = Carbon::instance(
+                    fake()->dateTimeBetween($today->copy()->subDays(30), $today)
+                );
+
+                $status = fake()->randomElement(['entered', 'pending', 'exited']);
+
+                $exitTime = null;
+
+                if ($status === 'exited') {
+                    $exitTime = fake()->dateTimeBetween(
+                        $entryTime,
+                        $entryTime->copy()->addHours(12)
+                    );
+                }
 
                 VisitorLog::create([
                     'visitor_id' => $visitors[array_rand($visitors)]->id,
@@ -160,7 +174,8 @@ class DemoDataSeeder extends Seeder
                     ]),
                     'visit_date' => $entryTime->format('Y-m-d'),
                     'entry_time' => $entryTime,
-                    'status' => fake()->randomElement(['entered', 'pending', 'exited']),
+                    'exit_time' => $exitTime,
+                    'status' => $status,
                 ]);
             }
             $this->command->info("✔ Visitor Logs done for Society {$society->id}");
@@ -196,7 +211,7 @@ class DemoDataSeeder extends Seeder
                 'security',
                 'cleaning',
                 'water',
-                'parking'
+                'parking',
             ];
 
             for ($i = 0; $i < 40; $i++) {
@@ -210,8 +225,7 @@ class DemoDataSeeder extends Seeder
                     'category' => fake()->randomElement($categories),
                     'description' => fake()->paragraph(),
                     'status' => $status,
-                    'admin_notes' =>
-                    $status === 'in_progress'
+                    'admin_notes' => $status === 'in_progress'
                         ? 'Admin is working on it'
                         : ($status === 'resolved'
                             ? 'Issue resolved successfully'

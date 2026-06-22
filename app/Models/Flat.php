@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Society;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -39,11 +38,18 @@ class Flat extends Model
         return $this->belongsTo(Society::class);
     }
 
+    protected static function booted()
+    {
+        static::deleting(function ($flat) {
+            $flat->residents()->delete();
+        });
+    }
+
     protected function wing(): Attribute
     {
         return Attribute::make(
-            set: fn(string $value) => strtoupper($value),
-            get: fn(string $value) => strtoupper($value),
+            set: fn (string $value) => strtoupper($value),
+            get: fn (string $value) => strtoupper($value),
         );
     }
 }
