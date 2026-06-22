@@ -15,7 +15,7 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table id="deliveries-table" class='table table-hover align-middle mb-0'>
+                <table id="deliveries-table" class='table table-hover table-striped align-middle mb-0'>
                     <thead>
                         <tr>
                             <th>ID</th>
