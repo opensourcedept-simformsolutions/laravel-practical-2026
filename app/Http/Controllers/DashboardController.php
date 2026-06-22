@@ -57,26 +57,63 @@ class DashboardController extends Controller
             'role' => 'admin',
 
             'stats' => [
-                'residents'  => Resident::whereHas('user', fn($q) => $q->where('society_id', $societyId))->count(),
-                'gatekeepers' => User::where('society_id', $societyId)->whereHas('role', fn($q) => $q->where('name', 'gatekeeper'))->count(),
-                'flats'      => Flat::where('society_id', $societyId)->count(),
-                'complaints' => Complaint::whereHas('user', fn($q) => $q->where('society_id', $societyId))->count(),
-                'deliveries' => Delivery::whereHas('flat', fn($q) => $q->where('society_id', $societyId))->count(),
-                'visitors_today' => VisitorLog::whereDate('created_at', today())->count(),
+                'residents' => Resident::whereHas(
+                    'user',
+                    fn($q) => $q->where('society_id', $societyId)
+                )->count(),
+
+                'gatekeepers' => User::where('society_id', $societyId)
+                    ->whereHas(
+                        'role',
+                        fn($q) => $q->where('name', 'gatekeeper')
+                    )
+                    ->count(),
+
+                'flats' => Flat::whereHas(
+                    'wing',
+                    fn($q) => $q->where('society_id', $societyId)
+                )->count(),
+
+                'complaints' => Complaint::whereHas(
+                    'user',
+                    fn($q) => $q->where('society_id', $societyId)
+                )->count(),
+
+                'deliveries' => Delivery::whereHas(
+                    'flat.wing',
+                    fn($q) => $q->where('society_id', $societyId)
+                )->count(),
+
+                'visitors_today' => VisitorLog::whereHas(
+                    'flat.wing',
+                    fn($q) => $q->where('society_id', $societyId)
+                )
+                    ->whereDate('created_at', today())
+                    ->count(),
             ],
 
-            'pending_complaints' => Complaint::whereHas('user', fn($q) => $q->where('society_id', $societyId))
+            'pending_complaints' => Complaint::whereHas(
+                'user',
+                fn($q) => $q->where('society_id', $societyId)
+            )
                 ->where('status', 'open')
                 ->latest()
                 ->take(5)
                 ->get(),
 
-            'today_visitors' => VisitorLog::whereDate('created_at', today())
+            'today_visitors' => VisitorLog::whereHas(
+                'flat.wing',
+                fn($q) => $q->where('society_id', $societyId)
+            )
+                ->whereDate('created_at', today())
                 ->latest()
                 ->take(5)
                 ->get(),
 
-            'recent_deliveries' => Delivery::whereHas('flat', fn($q) => $q->where('society_id', $societyId))
+            'recent_deliveries' => Delivery::whereHas(
+                'flat.wing',
+                fn($q) => $q->where('society_id', $societyId)
+            )
                 ->latest()
                 ->take(5)
                 ->get(),
@@ -139,4 +176,3 @@ class DashboardController extends Controller
         ]);
     }
 }
-

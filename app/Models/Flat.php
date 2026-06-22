@@ -18,6 +18,11 @@ class Flat extends Model
         'flat_number',
     ];
 
+    public function wing()
+    {
+        return $this->belongsTo(Wing::class);
+    }
+
     public function residents()
     {
         return $this->hasMany(Resident::class);
@@ -45,11 +50,9 @@ class Flat extends Model
         });
     }
 
-    protected function wing(): Attribute
+    public function getDisplayNumberAttribute(): string
     {
-        return Attribute::make(
-            set: fn (string $value) => strtoupper($value),
-            get: fn (string $value) => strtoupper($value),
-        );
+        return $this->wing->name . '-' .
+            ($this->floor * 100 + $this->flat_number);
     }
 }

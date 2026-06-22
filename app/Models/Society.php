@@ -27,4 +27,9 @@ class Society extends Model
     {
         return $this->hasMany(Flat::class);
     }
+
+    public function wings()
+    {
+        return $this->hasMany(Wing::class);
+    }
 }

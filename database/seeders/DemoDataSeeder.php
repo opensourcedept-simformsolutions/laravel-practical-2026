@@ -7,6 +7,7 @@ use App\Models\Delivery;
 use App\Models\Flat;
 use App\Models\Resident;
 use App\Models\Role;
+use App\Models\Wing;
 use App\Models\Society;
 use App\Models\User;
 use App\Models\Visitor;
@@ -22,6 +23,14 @@ class DemoDataSeeder extends Seeder
     {
         $today = now();
 
+        $seedMultiplier = 1;
+
+        $societyCount = 3;
+        $visitorCount = 40 * $seedMultiplier;
+        $visitorLogCount = 100 * $seedMultiplier;
+        $deliveryCount = 40 * $seedMultiplier;
+        $complaintCount = 40 * $seedMultiplier;
+
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
         Complaint::truncate();
@@ -29,6 +38,7 @@ class DemoDataSeeder extends Seeder
         VisitorLog::truncate();
         Visitor::truncate();
         Resident::truncate();
+        Wing::truncate();
         User::truncate();
         Flat::truncate();
         Society::truncate();
@@ -57,7 +67,7 @@ class DemoDataSeeder extends Seeder
         // Society
         $societies = [];
 
-        for ($s = 1; $s <= 3; $s++) {
+        for ($s = 1; $s <= $societyCount; $s++) {
             $societies[] = Society::create([
                 'name' => "Green Valley Society $s",
                 'address' => "SG Highway Area $s",
@@ -95,31 +105,63 @@ class DemoDataSeeder extends Seeder
             // Flats
             $flats = [];
 
-            for ($i = 1; $i <= 40; $i++) {
-                $flats[] = Flat::create([
+            $wingConfigurations = [
+                1 => [
+                    ['name' => 'A', 'floors' => 2, 'flats_per_floor' => 4],
+                    ['name' => 'B', 'floors' => 2, 'flats_per_floor' => 4],
+                ],
+
+                2 => [
+                    ['name' => 'A', 'floors' => 4, 'flats_per_floor' => 4],
+                    ['name' => 'B', 'floors' => 3, 'flats_per_floor' => 4],
+                ],
+
+                3 => [
+                    ['name' => 'A', 'floors' => 4, 'flats_per_floor' => 4],
+                    ['name' => 'B', 'floors' => 2, 'flats_per_floor' => 4],
+                ],
+            ];
+
+            $wings = $wingConfigurations[$society->id];
+
+            foreach ($wings as $wingData) {
+                $wing = Wing::create([
                     'society_id' => $society->id,
-                    'wing' => 'A',
-                    'floor' => ceil($i / 10),
-                    'flat_number' => 100 + $i,
+                    'name' => $wingData['name'],
+                    'total_floors' => $wingData['floors'],
+                    'flats_per_floor' => $wingData['flats_per_floor'],
                 ]);
+
+                for ($floor = 1; $floor <= $wingData['floors']; $floor++) {
+
+                    for ($flat = 1; $flat <= $wingData['flats_per_floor']; $flat++) {
+
+                        $flats[] = Flat::create([
+                            'wing_id' => $wing->id,
+                            'floor' => $floor,
+                            'flat_number' => $flat,
+                        ]);
+                    }
+                }
             }
+
             $this->command->info("✔ Flats created for Society {$society->id}");
 
             // Residents Users
             $residentUsers = [];
 
-            for ($i = 1; $i <= 40; $i++) {
+            foreach ($flats as $index => $flat) {
                 $residentUsers[] = User::create([
-                    'name' => "Resident {$society->id}-$i",
-                    'email' => "resident{$society->id}_$i@example.com",
-                    'phone' => '900' . $society->id . str_pad($i, 3, '0', STR_PAD_LEFT),
+                    'name' => "Resident {$society->id}-" . ($index + 1),
+                    'email' => "resident{$society->id}_" . ($index + 1) . "@example.com",
+                    'phone' => '900' . $society->id . str_pad($index + 1, 3, '0', STR_PAD_LEFT),
                     'password' => Hash::make('1'),
                     'role_id' => $roles['resident']->id,
                     'society_id' => $society->id,
                 ]);
             }
 
-            // Residents mapping (40)
+            // Residents mapping
             $residents = [];
 
             foreach ($residentUsers as $i => $user) {
@@ -134,7 +176,7 @@ class DemoDataSeeder extends Seeder
             // Visitors (40)
             $visitors = [];
 
-            for ($i = 1; $i <= 40; $i++) {
+            for ($i = 1; $i <= $visitorCount; $i++) {
                 $visitors[] = Visitor::create([
                     'name' => "Visitor {$society->id}-$i",
                     'phone' => '98765' . $society->id . str_pad($i, 3, '0', STR_PAD_LEFT),
@@ -144,7 +186,7 @@ class DemoDataSeeder extends Seeder
             $this->command->info("✔ Visitors created for Society {$society->id}");
 
             // Visitor Logs (100)
-            for ($i = 0; $i < 100; $i++) {
+            for ($i = 0; $i < $visitorLogCount; $i++) {
 
                 $entryTime = Carbon::instance(
                     fake()->dateTimeBetween($today->copy()->subDays(30), $today)
@@ -181,7 +223,7 @@ class DemoDataSeeder extends Seeder
             $this->command->info("✔ Visitor Logs done for Society {$society->id}");
 
             // Deliveries (40)
-            for ($i = 0; $i < 40; $i++) {
+            for ($i = 0; $i < min($deliveryCount, count($flats)); $i++) {
 
                 $receivedAt = fake()->dateTimeBetween($today->copy()->subDays(30), $today);
 
@@ -214,7 +256,7 @@ class DemoDataSeeder extends Seeder
                 'parking',
             ];
 
-            for ($i = 0; $i < 40; $i++) {
+            for ($i = 0; $i < min($complaintCount, count($residentUsers)); $i++) {
 
                 $createdAt = fake()->dateTimeBetween($today->copy()->subDays(30), $today);
 

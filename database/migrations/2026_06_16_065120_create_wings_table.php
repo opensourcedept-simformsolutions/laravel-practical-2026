@@ -11,24 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('flats', function (Blueprint $table) {
+        Schema::create('wings', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('wing_id')
+            $table->foreignId('society_id')
                 ->constrained()
                 ->cascadeOnDelete();
 
-            $table->unsignedSmallInteger('floor');
+            $table->string('name', 50);
 
-            $table->unsignedSmallInteger('flat_number');
+            $table->unsignedSmallInteger('total_floors');
+
+            $table->unsignedTinyInteger('flats_per_floor');
 
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(
-                ['wing_id', 'floor', 'flat_number'],
-                'flats_wing_floor_flat_unique'
-            );
+            $table->unique(['society_id', 'name']);
         });
     }
 
@@ -37,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('flats');
+        Schema::dropIfExists('wings');
     }
 };
