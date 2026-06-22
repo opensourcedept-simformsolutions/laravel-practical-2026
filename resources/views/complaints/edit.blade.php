@@ -23,7 +23,7 @@
                             <div class="card-body">
 
                                 {{-- ADMIN FORM --}}
-                                @if(auth()->user()->isAdmin())
+                                @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
 
                                 <p class="text-secondary mb-3 text-decoration-underline">
                                     Complaint Status
