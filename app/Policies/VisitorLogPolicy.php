@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\User;
 use App\Models\VisitorLog;
-use Illuminate\Auth\Access\Response;
 
 class VisitorLogPolicy
 {
@@ -19,7 +18,7 @@ class VisitorLogPolicy
             return true;
         }
 
-        if ($user->isAdmin()) {
+        if ($user->isAdmin() && $visitorLog->flat->society_id === $user->society_id) {
             return true;
         }
 
@@ -40,26 +39,43 @@ class VisitorLogPolicy
 
     public function create(User $user): bool
     {
-        return $user->isResident();
+        return $user->isResident() || $user->isGatekeeper();
     }
 
     public function update(User $user, VisitorLog $visitorLog): bool
     {
-        return $user->isResident()
-            && $user->resident
-            && $visitorLog->flat_id === $user->resident->flat_id
-            && $visitorLog->status === 'pending';
+        if ($user->isResident() && $user->resident && $visitorLog->flat_id === $user->resident->flat_id && $visitorLog->status === 'pending') {
+            return true;
+        }
+
+        if ($user->isGatekeeper() && $visitorLog->created_by === $user->id && $visitorLog->status === 'pending' ) {
+            return true;
+        }
+
+        return false;
     }
 
     public function cancel(User $user, VisitorLog $visitorLog): bool
     {
         return $user->isResident()
             && $user->resident
-            && $visitorLog->flat_id === $user->resident->flat_id
-            && $visitorLog->status === 'pending';
+            && $visitorLog->flat_id === $user->resident->flat_id;
     }
 
-    public function delete(User $user): bool
+    public function delete(User $user, VisitorLog $visitorLog): bool
+    {
+        if ($user->isResident() && $user->resident && $visitorLog->flat_id === $user->resident->flat_id && $visitorLog->status === 'pending') {
+            return true;
+        }
+
+        if ( $user->isGatekeeper() && $visitorLog->created_by === $user->id && $visitorLog->status === 'pending' ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function forceDelete(User $user): bool
     {
         return $user->isSuperAdmin();
     }

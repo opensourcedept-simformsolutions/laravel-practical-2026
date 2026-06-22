@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Delivery')
+@section('title', 'Add Delivery')
 
 @section('content')
-    <x-form.form :action="route('deliveries.update', $delivery)" method="PUT" class="mx-auto w-100" style="max-width: 760px;">
+    <x-form.form :action="route('deliveries.store')" method="POST" class="mx-auto w-100" style="max-width: 760px;">
         <x-form.form-section title="Add Delivery">
             <x-form.field name="flat_id" label="Flat" required>
                 <x-form.select

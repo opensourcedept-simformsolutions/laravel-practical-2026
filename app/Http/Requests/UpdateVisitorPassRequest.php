@@ -14,6 +14,12 @@ class UpdateVisitorPassRequest extends FormRequest
     public function rules(): array
     {
         return [
+
+            'flat_id' => [
+                'nullable',
+                'exists:flats,id',
+            ],
+
             'name' => [
                 'required',
                 'string',

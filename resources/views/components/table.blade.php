@@ -22,6 +22,10 @@
         <div class="table-responsive">
             <table
                 id="{{ $tableId }}"
+                data-datatable data-searching="true"
+                data-paging="{{ $paging ? 'true' : 'false' }}"
+                data-ordering="{{ $ordering ? 'true' : 'false' }}"
+                data-page-length="{{ $pageLength }}"
                 {{ $attributes->merge([
                     'class' => 'table table-hover align-middle mb-0',
                 ]) }}>
