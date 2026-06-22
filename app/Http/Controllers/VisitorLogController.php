@@ -104,6 +104,7 @@ class VisitorLogController extends Controller
                     ->rawColumns([
                         'status',
                         'action',
+                        'photo'
                     ])
 
                     ->make(true);
@@ -255,6 +256,17 @@ class VisitorLogController extends Controller
                 )
                 ->addColumn('exit_time', fn ($row) => $row->exit_time?->format('h:i A') ?? '-'
                 )
+                ->addColumn('photo', function ($row) {
+                    if(!$row->photo_path){
+                        return '-';
+                    }
+                    return '
+                        <a href="'.asset('storage/'.$row->photo_path).'" target="_blank" class="btn btn-info btn-sm">
+                            View Photo
+                        </a>
+                    ';
+                })
+                ->rawColumns(['photo'])
                 ->make(true);
         }
 
