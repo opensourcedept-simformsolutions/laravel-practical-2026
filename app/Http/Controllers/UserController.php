@@ -40,7 +40,7 @@ class UserController extends Controller
                 });
 
             return DataTables::of($query)
-
+                ->addIndexColumn()
                 ->addColumn(
                     'role',
                     fn ($row) => ucfirst($row->role_name)

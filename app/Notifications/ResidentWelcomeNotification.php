@@ -6,16 +6,23 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
+use Throwable;
 
 class ResidentWelcomeNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
+    public $tries = 3;
+
+    // here backoff is used to provide a wait between all 3 attempts 1,5,10 minutes respectively
+    public $backoff = [60];
+
     /**
      * Create a new notification instance.
      */
-    public function __construct()
+    public function __construct(public User $resident)
     {
         //
     }
@@ -54,6 +61,19 @@ class ResidentWelcomeNotification extends Notification implements ShouldQueue
                     'url' => $url,
                 ]
             );
+    }
+
+    public function failed(Throwable $exception): void
+    {
+        Log::critical(
+            'Resident welcome email failed permanently',
+            [
+                'resident_id' => $this->resident->id,
+                'resident_name' => $this->resident->name,
+                'resident_email' => $this->resident->email,
+                'error' => $exception->getMessage(),
+            ]
+        );
     }
 
     /**

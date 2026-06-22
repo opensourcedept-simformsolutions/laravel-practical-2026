@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Support\Facades\Route;
 
+// login or dashboard page redirect 
 Route::get('/', function () {
 
     if (! Auth::check()) {
@@ -62,10 +63,6 @@ Route::middleware(['auth', 'role:admin,resident,gatekeeper'])
         Route::patch('passes/{visitorLog}/cancel', 'cancel')->name('cancel');
     });
 
-Route::view('/test-tables', 'testtable');
-
-Route::view('/test-form', 'testform');
-Route::view('/test-tables', 'testtable');
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('flats', FlatController::class);

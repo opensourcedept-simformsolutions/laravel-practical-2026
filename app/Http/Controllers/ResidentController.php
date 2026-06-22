@@ -119,7 +119,7 @@ class ResidentController extends Controller
 
                 if ($user) {
                     $user->notify(
-                        new ResidentWelcomeNotification
+                        new ResidentWelcomeNotification($user)
                     );
                 }
 
