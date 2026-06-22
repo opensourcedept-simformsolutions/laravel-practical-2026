@@ -21,62 +21,68 @@ use Yajra\DataTables\Facades\DataTables;
 
 class ResidentController extends Controller
 {
-    public function index(Request $request)
-    {
-        if ($request->ajax()) {
+  public function index(Request $request)
+{
+    if ($request->ajax()) {
 
-            $query = Resident::with(['user', 'flat']);
-            return DataTables::of($query)
+        $query = Resident::with([
+            'user' => function ($q) {
+                $q->withTrashed();
+            },
+            'flat'
+        ]);
 
-                ->addColumn('name', fn ($row) => $row->user->name)
-                ->addColumn('email', fn ($row) => $row->user->email)
-                ->addColumn('phone', fn ($row) => $row->user->phone)
+        return DataTables::of($query)
 
-                ->addColumn('flat', fn ($row) => $row->flat->flat_number)
-                ->addColumn('wing', fn ($row) => $row->flat->wing)
+            ->addColumn('name', fn ($row) => $row->user?->name ?? '-')
+            ->addColumn('email', fn ($row) => $row->user?->email ?? '-')
+            ->addColumn('phone', fn ($row) => $row->user?->phone ?? '-')
 
-                ->addColumn('type', function ($row) {
-                    return $row->resident_type === 'owner'
-                        ? '<span class="badge bg-success">Owner</span>'
-                        : '<span class="badge bg-info">Tenant</span>';
-                })
+            ->addColumn('flat', fn ($row) => $row->flat?->flat_number ?? '-')
+            ->addColumn('wing', fn ($row) => $row->flat?->wing ?? '-')
 
-                ->addColumn('actions', function ($row) {
+            ->addColumn('type', function ($row) {
+                return $row->resident_type === 'owner'
+                    ? '<span class="badge bg-success">Owner</span>'
+                    : '<span class="badge bg-info">Tenant</span>';
+            })
 
-                    $editUrl = route('residents.edit', $row->id);
-                    $deleteUrl = route('residents.destroy', $row->id);
+            ->addColumn('actions', function ($row) {
 
-                    return '
+                $editUrl = route('residents.edit', $row->id);
+                $deleteUrl = route('residents.destroy', $row->id);
+
+                return '
                     <a href="'.$editUrl.'" class="btn btn-warning btn-sm">Edit</a>
 
                     <form action="'.$deleteUrl.'" method="POST" class="d-inline">
                         '.csrf_field().'
                         '.method_field('DELETE').'
-                        <button class="btn btn-danger btn-sm"
+                        <button type="submit" class="btn btn-danger btn-sm"
                             onclick="return confirm(\'Delete this resident?\')">
                             Delete
                         </button>
                     </form>
                 ';
-                })
+            })
 
-                ->rawColumns(['type', 'actions'])
-                ->make(true);
-        }
-
-        return view('residents.index');
+            ->rawColumns(['type', 'actions'])
+            ->make(true);
     }
+
+    return view('residents.index');
+}
 
     public function create()
     {
-        $flats = Flat::where('society_id', auth()->user()->society_id)->get();
+        $flats = Flat::where(
+            'society_id',
+            auth()->user()->society_id
+        )->get();
 
         return view('residents.create', compact('flats'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreResidentRequest $request)
     {
         Gate::authorize('create', Resident::class);
@@ -176,9 +182,6 @@ class ResidentController extends Controller
         return view('residents.edit', compact('resident', 'flats'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(
         UpdateResidentRequest $request,
         Resident $resident

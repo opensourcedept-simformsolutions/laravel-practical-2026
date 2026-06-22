@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Delivery\DeliveryController;
 use App\Http\Controllers\FlatController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Resident\VisitorPassController;
@@ -46,6 +48,25 @@ Route::middleware(['auth', 'role:admin'])
     });
 
     
+
+Route::middleware(['auth', 'role:gatekeeper'])->name('gatekeeper.')->group(function () {
+    Route::get('/pending-pass', [VisitorLogController::class, 'pending'])->name('visitor-logs.pending');
+    Route::patch('/visitor-logs/{visitorLog}/mark-entry', [VisitorLogController::class, 'markEntry'])->name('visitor-logs.mark-entry');
+    Route::patch('/visitor-logs/{visitorLog}/mark-exit', [VisitorLogController::class, 'markExit'])->name('visitor-logs.mark-exit');
+    Route::get('/visitor-logs/exited', [VisitorLogController::class, 'exited'])->name('visitor-logs.exited');
+});
+
+Route::middleware(['auth', 'role:resident,gatekeeper,admin,super_admin'])->group(function () {
+    Route::get('/complaints/create', [ComplaintController::class, 'create'])->name('complaints.create');
+    Route::post('/complaints', [ComplaintController::class, 'store'])->name('complaints.store');
+    Route::get('/complaints', [ComplaintController::class, 'index'])->name('complaints.index');
+    Route::get('/complaints/{complaint}', [ComplaintController::class, 'show'])->name('complaints.show');
+
+    Route::get('/complaints/{complaint}/edit', [ComplaintController::class, 'edit'])->name('complaints.edit');
+    Route::patch('/complaints/{complaint}', [ComplaintController::class, 'update'])->name('complaints.update');
+    Route::delete('/complaints/{complaint}', [ComplaintController::class, 'destroy'])->name('complaints.destroy');
+});
+
 Route::middleware(['auth', 'role:admin,resident,gatekeeper'])
     ->controller(VisitorPassController::class)
     ->name('passes.')
@@ -63,14 +84,50 @@ Route::middleware(['auth', 'role:admin,resident,gatekeeper'])
         Route::patch('passes/{visitorLog}/cancel', 'cancel')->name('cancel');
     });
 
+Route::view('/test-tables', 'testtable');
+Route::middleware(['auth', 'role:resident'])->group(function () {
+    Route::get('/resident/dashboard', [DashboardController::class, 'resident'])
+        ->name('resident.dashboard');
+});
+
+Route::middleware(['auth', 'role:gatekeeper'])->group(function () {
+    Route::get('/gatekeeper/dashboard', [DashboardController::class, 'gatekeeper'])
+        ->name('gatekeeper.dashboard');
+});
+
+Route::get('deliveries/data', [DeliveryController::class, 'data'])
+    ->middleware(['auth'])
+    ->name('deliveries.data');
+
+Route::resource('/deliveries', DeliveryController::class)
+    ->middleware(['auth']);
+
+Route::patch('deliveries/{delivery}/deliver', [DeliveryController::class, 'markDelivered'])
+    ->middleware(['auth'])
+    ->name('deliveries.deliver');
+
+Route::prefix('reports')
+    ->name('reports.')
+    ->group(function () {
+        Route::get('/deliveries', fn () => 'Delivery Report')
+            ->name('deliveries');
+
+        Route::get('/complaints', fn () => 'Complaint Report')
+            ->name('complaints');
+
+        Route::get('/visitors', fn () => 'Visitor Report')
+            ->name('visitors');
+    });
+
+Route::view('/test-form', 'testform');
+Route::view('/test-tables', 'testtable');
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('flats', FlatController::class);
 });
 
-
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('residents', ResidentController::class);
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

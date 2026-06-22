@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\User;
 use App\Models\VisitorLog;
-use Illuminate\Auth\Access\Response;
 
 class VisitorLogPolicy
 {
@@ -45,16 +44,11 @@ class VisitorLogPolicy
 
     public function update(User $user, VisitorLog $visitorLog): bool
     {
-        if (
-            $user->isResident()
-            && $user->resident
-            && $visitorLog->flat_id === $user->resident->flat_id
-            && $visitorLog->status === 'pending'
-        ) {
+        if ($user->isResident() && $user->resident && $visitorLog->flat_id === $user->resident->flat_id && $visitorLog->status === 'pending') {
             return true;
         }
 
-        if ($user->isGatekeeper()) {
+        if ($user->isGatekeeper() && $visitorLog->created_by === $user->id && $visitorLog->status === 'pending' ) {
             return true;
         }
 
@@ -68,9 +62,17 @@ class VisitorLogPolicy
             && $visitorLog->flat_id === $user->resident->flat_id;
     }
 
-    public function delete(User $user): bool
+    public function delete(User $user, VisitorLog $visitorLog): bool
     {
-        return $user->isSuperAdmin();
+        if ($user->isResident() && $user->resident && $visitorLog->flat_id === $user->resident->flat_id && $visitorLog->status === 'pending') {
+            return true;
+        }
+
+        if ( $user->isGatekeeper() && $visitorLog->created_by === $user->id && $visitorLog->status === 'pending' ) {
+            return true;
+        }
+
+        return false;
     }
 
     public function forceDelete(User $user): bool

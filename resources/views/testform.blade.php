@@ -3,20 +3,16 @@
 @section('title', 'Login')
 
 @section('content')
-    <x-form.form :action="route('login')" method="POST" class="form-contained">
+    <x-form.form :action="route('login')" method="POST" class="mx-auto w-100" style="max-width: 760px;">
         <x-form.form-section title="Login">
             <x-form.fieldset legend="Account Access">
                 <x-form.field name="email" label="Email" required>
-                    <x-form.input name="email" id="email" type="email" :error="$errors->has('email')"
-                        placeholder="name@example.com" />
-                        {{ $errors->first('email') }}
-                    </x-form.error name="email" />
+                    <x-form.input name="email" id="email" type="email" placeholder="name@example.com" />
                 </x-form.field>
 
 
                 <x-form.field name="password" label="Password" required>
-                    <x-form.input name="password" id="password" type="password" :error="$errors->has('password')"
-                        placeholder="Enter your password" />
+                    <x-form.input name="password" id="password" type="password" placeholder="Enter your password" />
                 </x-form.field>
 
                 <x-form.checkbox name="remember" id="remember" :checked="old('remember')">
