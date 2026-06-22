@@ -8,6 +8,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Resident\VisitorPassController;
 use App\Http\Controllers\ResidentController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VisitorLogController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
