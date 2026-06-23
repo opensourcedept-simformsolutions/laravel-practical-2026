@@ -207,7 +207,7 @@ php artisan queue:work --queue=emails
 
 These commands are required for:
 
-* Serving uploaded files (visitor photos, QR codes, etc.)
+* Serving uploaded files (visitor photos etc.)
 * Processing queued email notifications
 ---
 
