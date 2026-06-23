@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\VisitorEntered;
+use App\Events\VisitorExited;
 use App\Models\VisitorLog;
 use Exception;
 use Illuminate\Http\Request;
@@ -53,7 +55,7 @@ class VisitorLogController extends Controller
                     })
 
                     ->addColumn('flat_details', function ($log) {
-                        return ($log->flat?->wing ?? '-').' - '.($log->flat?->flat_number ?? '-');
+                        return ($log->flat?->wing ?? '-') . ' - ' . ($log->flat?->flat_number ?? '-');
                     })
 
                     ->editColumn('status', function ($log) {
@@ -71,7 +73,10 @@ class VisitorLogController extends Controller
 
                         if ($log->status === 'pending') {
 
-                            $buttons = '';
+                            $buttons = '
+                                <form action="' . route('gatekeeper.visitor-logs.mark-entry', $log) . '" method="POST">
+                                    ' . csrf_field() . '
+                                    <input type="hidden" name="_method" value="PATCH">
 
                             if ($user->can('markEntry', $log)) {
                                 $buttons .= '
@@ -86,20 +91,18 @@ class VisitorLogController extends Controller
 
                             if ($user->can('update', $log)) {
                                 $buttons .= '
-                                    <a href="'.route('passes.edit', $log->id).'"
+                                    <a href="' . route('passes.edit', $log->id) . '"
                                         class="btn btn-warning btn-sm">
                                         Edit
                                     </a>
                                 ';
                             }
 
-                            if ($user->can('delete', $log)) {
-                                $buttons .= '
-                                    <form action="'.route('passes.destroy', $log->id).'"
+                                    <form action="' . route('passes.destroy', $log->id) . '"
                                         method="POST"
                                         onsubmit="return confirm(\'Delete this pass?\')">
 
-                                        '.csrf_field().'
+                                        ' . csrf_field() . '
                                         <input type="hidden" name="_method" value="DELETE">
 
                                         <button class="btn btn-danger btn-sm">
@@ -109,12 +112,15 @@ class VisitorLogController extends Controller
                                 ';
                             }
 
-                            return '<div class="d-flex gap-1">'.$buttons.'</div>';
+                            return '<div class="d-flex gap-1">' . $buttons . '</div>';
                         }
 
                         if ($log->status === 'entered') {
 
-                            if ($user->can('markExit', $log)) {
+                            return '
+                                <form action="' . route('gatekeeper.visitor-logs.mark-exit', $log) . '" method="POST">
+                                    ' . csrf_field() . '
+                                    <input type="hidden" name="_method" value="PATCH">
 
                                 return '
                                     <form action="'.route('gatekeeper.visitor-logs.mark-exit', $log).'" method="POST">
@@ -141,10 +147,9 @@ class VisitorLogController extends Controller
             }
 
             return view('visitor-logs.pending');
-
         } catch (Exception $e) {
 
-            Log::error('Visitor Log Pending Error: '.$e->getMessage(), [
+            Log::error('Visitor Log Pending Error: ' . $e->getMessage(), [
                 'exception' => $e,
             ]);
 
@@ -178,23 +183,31 @@ class VisitorLogController extends Controller
                 ], 422);
             }
 
-            $photoPath = $request->file('photo')->store('visitor_photos', 'public');
+            $visitorLog->entry_time = now();
+            $visitorLog->gatekeeper_id = auth()->id();
+            $visitorLog->status = 'entered';
+            $visitorLog->photo_path = $request->file('photo')->store('visitor_photos', 'public');
+            $visitorLog->save();
 
-            $visitorLog->update([
-                'entry_time' => now(),
-                'gatekeeper_id' => auth()->id(),
-                'status' => 'entered',
-                'photo_path' => $photoPath,
+            Log::info('VisitorEntered event dispatching', [
+                'visitor_log_id' => $visitorLog->id,
             ]);
 
+            event(
+                new VisitorEntered($visitorLog)
+            );
+
+            Log::info('VisitorEntered event dispatched', [
+                'visitor_log_id' => $visitorLog->id,
+            ]);
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Visitor Entry Marked Successfully!',
             ]);
-
         } catch (Exception $e) {
 
-            Log::error('Visitor Entry Error: '.$e->getMessage(), [
+            Log::error('Visitor Entry Error: ' . $e->getMessage(), [
                 'visitor_log_id' => $visitorLog->id,
                 'exception' => $e,
             ]);
@@ -217,19 +230,29 @@ class VisitorLogController extends Controller
                 ]);
             }
 
-            $visitorLog->update([
-                'exit_time' => now(),
-                'status' => 'exited',
+            $visitorLog->exit_time = now();
+            $visitorLog->status = 'exited';
+            $visitorLog->save();
+
+            Log::info('VisitorExited event dispatching', [
+                'visitor_log_id' => $visitorLog->id,
+            ]);
+
+            event(
+                new VisitorExited($visitorLog)
+            );
+
+            Log::info('VisitorExited event dispatched', [
+                'visitor_log_id' => $visitorLog->id,
             ]);
 
             return redirect()->back()->with([
                 'message' => 'Visitor Exit Marked Successfully!',
                 'status' => 'success',
             ]);
-
         } catch (Exception $e) {
 
-            Log::error('Visitor Exit Error: '.$e->getMessage(), [
+            Log::error('Visitor Exit Error: ' . $e->getMessage(), [
                 'visitor_log_id' => $visitorLog->id,
                 'exception' => $e,
             ]);
@@ -262,19 +285,29 @@ class VisitorLogController extends Controller
         }
 
             return DataTables::of($query)
-                ->addColumn('visitor_name', fn ($row) => $row->visitor?->name ?? 'N/A')
-                ->addColumn('phone', fn ($row) => $row->visitor?->phone ?? 'N/A')
-                ->addColumn('flat_details', fn ($row) => ($row->flat?->wing ?? '-').'-'.
-                    ($row->flat?->floor ?? '-').'-'.
-                    ($row->flat?->flat_number ?? '-')
+                ->addColumn('visitor_name', fn($row) => $row->visitor?->name ?? 'N/A')
+                ->addColumn('phone', fn($row) => $row->visitor?->phone ?? 'N/A')
+                ->addColumn(
+                    'flat_details',
+                    fn($row) => ($row->flat?->wing ?? '-') . '-' .
+                        ($row->flat?->floor ?? '-') . '-' .
+                        ($row->flat?->flat_number ?? '-')
                 )
-                ->addColumn('entry_date', fn ($row) => $row->entry_time?->format('d M Y') ?? '-'
+                ->addColumn(
+                    'entry_date',
+                    fn($row) => $row->entry_time?->format('d M Y') ?? '-'
                 )
-                ->addColumn('entry_time', fn ($row) => $row->entry_time?->format('h:i A') ?? '-'
+                ->addColumn(
+                    'entry_time',
+                    fn($row) => $row->entry_time?->format('h:i A') ?? '-'
                 )
-                ->addColumn('exit_date', fn ($row) => $row->exit_time?->format('d M Y') ?? '-'
+                ->addColumn(
+                    'exit_date',
+                    fn($row) => $row->exit_time?->format('d M Y') ?? '-'
                 )
-                ->addColumn('exit_time', fn ($row) => $row->exit_time?->format('h:i A') ?? '-'
+                ->addColumn(
+                    'exit_time',
+                    fn($row) => $row->exit_time?->format('h:i A') ?? '-'
                 )
                 ->addColumn('photo', function ($row) {
                     if(!$row->photo_path){
