@@ -1,5 +1,4 @@
 <aside class="sidebar" id="appSidebar">
-
     <div class="sidebar-header">
         <i class="bi bi-buildings"></i>
         <span class="sidebar-brand-text">SocietyMS</span>
@@ -12,6 +11,14 @@
             <i class="bi bi-speedometer2"></i>
             <span class="sidebar-link-label">Dashboard</span>
         </x-sidebar-link>
+
+        @can('is-super-admin')
+            {{-- Society --}}
+            <x-sidebar-link :href="route('societies.index')" :active="request()->routeIs('societies.index')">
+                <i class="bi bi-buildings"></i>
+                <span class="sidebar-link-label">Society</span>
+            </x-sidebar-link>
+        @endcan
 
         {{-- Passes --}}
         @canany(['is-admin', 'is-resident'])
@@ -26,7 +33,7 @@
                 <i class="bi bi-person-check"></i>
                 <span class="sidebar-link-label">Pending Passes</span>
             </x-sidebar-link>
-            
+
             {{-- qr code scanner  --}}
             <x-sidebar-link :href="route('gatekeeper.scan')" :active="request()->routeIs('gatekeeper.scan')">
 
@@ -53,6 +60,14 @@
             </x-sidebar-link>
         @endcan
 
+        {{-- user management --}}
+        @can('is-admin')
+            <x-sidebar-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('users.index')">
+                <i class="bi bi-people"></i>
+                <span class="sidebar-link-label"> Users Management</span>
+            </x-sidebar-link>
+        @endcan
+
         {{-- Complaints --}}
         <x-sidebar-link :href="route('complaints.index')" :active="request()->routeIs('complaints.*')">
             <i class="bi bi-exclamation-circle"></i>
@@ -65,21 +80,12 @@
             <span class="sidebar-link-label">Delivery</span>
         </x-sidebar-link>
 
-        {{-- user management --}}
-        @can('is-admin')
-            <x-sidebar-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('users.index')">
-                <i class="bi bi-people"></i>
-                <span class="sidebar-link-label"> Users Management</span>
-            </x-sidebar-link>
-        @endcan
-
         {{-- Reports --}}
         @php
             $reportsActive = request()->routeIs('reports.*');
         @endphp
         <div class="sidebar-dropdown">
-            <button type="button" class="sidebar-dropdown-toggle {{ $reportsActive ? 'active' : '' }}"
-                id="reportsToggle">
+            <button type="button" class="sidebar-dropdown-toggle" id="reportsToggle">
                 <span>
                     <i class="bi bi-file-earmark-bar-graph"></i>
                     <span class="sidebar-link-label">Reports</span>
@@ -108,4 +114,5 @@
 
         </div>
 
+    </div>
 </aside>

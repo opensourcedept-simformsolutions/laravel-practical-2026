@@ -8,6 +8,7 @@ use App\Http\Controllers\GateKeeperController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Resident\VisitorPassController;
 use App\Http\Controllers\ResidentController;
+use App\Http\Controllers\SocietyController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitorLogController;
 use Illuminate\Support\Facades\Auth;
@@ -92,6 +93,29 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('residents', ResidentController::class);
 });
 
+Route::middleware(['auth', 'role:super_admin'])
+    ->controller(SocietyController::class)
+    ->name('societies.')
+    ->group(function () {
+
+        Route::get('societies', 'index')->name('index');
+        Route::get('societies/data', 'data')->name('data');
+
+        Route::get('societies/create', 'create')->name('create');
+        Route::post('societies', 'store')->name('store');
+
+        Route::get('societies/{society}', 'show')->name('show');
+        Route::get('societies/{society}/edit', 'edit')->name('edit');
+        Route::put('societies/{society}', 'update')->name('update');
+
+        Route::delete('societies/{society}', 'destroy')->name('destroy');
+
+        Route::patch(
+            'societies/{society}/restore',
+            'restore'
+        )->name('restore');
+    });
+
 Route::middleware('auth')
     ->controller(DeliveryController::class)
     ->group(function () {
@@ -135,7 +159,6 @@ Route::prefix('reports')
                 Route::get('/data', 'reportData')->name('data');
                 Route::get('/export', 'export')->name('export');
             });
-
     });
 Route::middleware(['auth'])->group(function () {
 

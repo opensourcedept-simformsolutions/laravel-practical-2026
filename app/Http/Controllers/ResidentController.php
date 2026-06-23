@@ -22,6 +22,8 @@ class ResidentController extends Controller
 {
     public function index(Request $request)
     {
+        Gate::authorize('viewAny', Resident::class);
+
         if ($request->ajax()) {
 
             $query = Resident::with([
@@ -246,6 +248,7 @@ class ResidentController extends Controller
             DB::transaction(function () use ($resident) {
 
                 $user = $resident->user;
+        Gate::authorize('create', Resident::class);
 
                 $resident->delete();
 
