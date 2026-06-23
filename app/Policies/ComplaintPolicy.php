@@ -2,9 +2,9 @@
 
 namespace App\Policies;
 
+use App\Enums\ComplaintStatus;
 use App\Models\Complaint;
 use App\Models\User;
-use App\Enums\ComplaintStatus;
 
 class ComplaintPolicy
 {
@@ -68,6 +68,6 @@ class ComplaintPolicy
         }
 
         return $complaint->user_id === $user->id
-            && $complaint->status === (ComplaintStatus::OPEN->value || ComplaintStatus::RESOLVED->value);
+            && in_array($complaint->status, [ComplaintStatus::OPEN->value, ComplaintStatus::RESOLVED->value]);
     }
 }
