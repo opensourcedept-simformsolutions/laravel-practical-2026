@@ -1,18 +1,23 @@
 @extends('layouts.app')
 
-@section('title', 'Visitor Report')
+@section('title', 'Complaints')
 
 @section('content')
     <div class="card shadow-sm border-0">
+
         <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
             <h2 class="h3 fw-bold mb-0">
-                Visitor Report
+                Complaints Report
             </h2>
 
-            <a id="export-btn" class="btn btn-success">
-                <i class="bi bi-download"></i>
-                Export CSV
-            </a>
+            <div class="d-flex gap-2">
+
+                <a id="export-btn" class="btn btn-success">
+                    <i class="bi bi-download"></i>
+                    Export CSV
+                </a>
+
+            </div>
         </div>
 
         <div class="card-body border-bottom">
@@ -21,34 +26,34 @@
                 Report Filters
             </h5>
 
-            <div class="row g-3 align-items-end">
+            <div class="row g-3">
 
                 <div class="col-md-4">
-                    <label class="form-label">Status</label>
-                    <select id="status-filter" class="form-select">
-                        <option value="">All Statuses</option>
-                        <option value="pending">Pending</option>
-                        <option value="entered">Entered</option>
-                        <option value="exited">Exited</option>
-                        <option value="cancelled">Cancelled</option>
+                    <label class="form-label">Category</label>
+
+                    <select id="category-filter" class="form-select">
+                        <option value="">All Categories</option>
+                        <option value="security">Security</option>
+                        <option value="cleaning">Cleaning</option>
+                        <option value="water">Water</option>
+                        <option value="parking">Parking</option>
                     </select>
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label">Flat</label>
-                    <select id="flat-filter" class="form-select">
-                        <option value="">All Flats</option>
+                    <label class="form-label">Status</label>
 
-                        @foreach ($flats as $flat)
-                            <option value="{{ $flat->id }}">
-                                {{ $flat->wing }} - Floor {{ $flat->floor }} - {{ $flat->flat_number }}
-                            </option>
-                        @endforeach
+                    <select id="status-filter" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="open">Open</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="resolved">Resolved</option>
                     </select>
                 </div>
 
                 <div class="col-md-4">
                     <label class="form-label">Date Range</label>
+
                     <input type="text" id="date-range" class="form-control" placeholder="Select Date Range" readonly>
                 </div>
 
@@ -63,25 +68,34 @@
         </div>
 
         <div class="card-body">
+
+            @if (session('success'))
+                <div class="alert alert-success">
+                    {{ session('success') }}
+                </div>
+            @endif
+
             <div class="table-responsive">
-                <table id="reportTable" class="table table-hover align-middle mb-0">
+                <table id="complaintsTable" class="table table-hover align-middle mb-0 w-100">
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Visitor</th>
-                            <th>Phone</th>
-                            <th>Flat</th>
-                            <th>Purpose</th>
+                            @if (auth()->user()->isSuperAdmin())
+                                <th>Society</th>
+                            @endif
+                            <th>User</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Admin Notes</th>
                             <th>Status</th>
-                            <th>Entry</th>
-                            <th>Exit</th>
-                            <th>Visit Date</th>
-                            <th>Gatekeeper</th>
+                            <th>Created At</th>
                         </tr>
                     </thead>
                 </table>
             </div>
+
         </div>
+
     </div>
 @endsection
 
@@ -102,7 +116,9 @@
             $('#date-range').on('apply.daterangepicker', function(ev, picker) {
                 fromDate = picker.startDate.format('YYYY-MM-DD');
                 toDate = picker.endDate.format('YYYY-MM-DD');
-                $(this).val(fromDate + ' - ' + toDate);
+                $(this).val(
+                    fromDate + ' - ' + toDate
+                );
 
                 table.draw();
             });
@@ -115,16 +131,16 @@
                 table.draw();
             });
 
-            let table = $('#reportTable').DataTable({
+            let table = $('#complaintsTable').DataTable({
                 processing: true,
                 serverSide: true,
                 responsive: true,
 
                 ajax: {
-                    url: "{{ route('reports.passes.data') }}",
+                    url: "{{ route('reports.complaints.data') }}",
                     data: function(d) {
+                        d.category = $('#category-filter').val();
                         d.status = $('#status-filter').val();
-                        d.flat_id = $('#flat-filter').val();
                         d.from_date = fromDate;
                         d.to_date = toDate;
                     }
@@ -136,48 +152,45 @@
                         orderable: false,
                         searchable: false
                     },
-                    {
-                        data: 'visitor',
-                        name: 'visitors.name'
+                    @if (auth()->user()->isSuperAdmin())
+                        {
+                            data: 'society',
+                            name: 'society',
+                            orderable: false,
+                            searchable: false
+                        },
+                    @endif {
+                        data: 'user_name',
+                        name: 'user.name'
                     },
                     {
-                        data: 'phone',
-                        name: 'visitors.phone'
+                        data: 'category',
+                        name: 'category'
                     },
                     {
-                        data: null,
-                        name: 'flats.flat_number',
-                        render: function(data, type, row) {
-                            return row.flat_wing && row.flat_number ?
-                                row.flat_wing + '-' + row.flat_number :
-                                '-';
-                        }
+                        data: 'description',
+                        name: 'description'
                     },
                     {
-                        data: 'purpose',
-                        name: 'visitor_logs.purpose'
+                        data: 'admin_notes',
+                        name: 'admin_notes'
                     },
                     {
                         data: 'status',
-                        name: 'visitor_logs.status'
+                        name: 'status'
                     },
                     {
-                        data: 'entry_time',
-                        name: 'visitor_logs.entry_time'
-                    },
-                    {
-                        data: 'exit_time',
-                        name: 'visitor_logs.exit_time'
-                    },
-                    {
-                        data: 'visit_date',
-                        name: 'visitor_logs.visit_date'
-                    },
-                    {
-                        data: 'gatekeeper',
-                        name: 'users.name'
+                        data: 'created_at',
+                        name: 'created_at'
                     }
                 ]
+            });
+
+            $('#category-filter').select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Select Category',
+                allowClear: true,
+                width: '100%'
             });
 
             $('#status-filter').select2({
@@ -187,21 +200,13 @@
                 width: '100%'
             });
 
-            $('#flat-filter').select2({
-                theme: 'bootstrap-5',
-                placeholder: 'Select Flat',
-                allowClear: true,
-                width: '100%'
-            });
-
-            $('#status-filter, #flat-filter').on('change', function() {
+            $('#category-filter, #status-filter').on('change', function() {
                 table.draw();
             });
 
             $('#reset-filters').on('click', function() {
+                $('#category-filter').val(null).trigger('change');
                 $('#status-filter').val(null).trigger('change');
-                $('#flat-filter').val(null).trigger('change');
-
                 $('#date-range').val('');
                 fromDate = '';
                 toDate = '';
@@ -209,17 +214,17 @@
                 table.draw();
             });
 
-            $('#export-btn').on('click', function() {
+            $('#export-btn').click(function() {
 
                 let params = $.param({
+                    category: $('#category-filter').val(),
                     status: $('#status-filter').val(),
-                    flat_id: $('#flat-filter').val(),
                     from_date: fromDate,
                     to_date: toDate
                 });
 
                 window.location =
-                    "{{ route('reports.passes.export') }}?" + params;
+                    "{{ route('reports.complaints.export') }}?" + params;
             });
 
         });

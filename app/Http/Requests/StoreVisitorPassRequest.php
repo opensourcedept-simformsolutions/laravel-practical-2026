@@ -22,7 +22,7 @@ class StoreVisitorPassRequest extends FormRequest
             'vehicle_number' => ['nullable', 'string', 'max:50'],
         ];
 
-        if (auth()->check() && auth()->user()->role->name === 'gatekeeper') {
+        if (auth()->check() && auth()->user()->isAdmin() || auth()->user()->isGatekeeper()) {
             $rules['flat_id'] = [
                 'required',
                 Rule::exists('flats', 'id')->where(function ($query) {

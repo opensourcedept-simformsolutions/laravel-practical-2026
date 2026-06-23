@@ -4,152 +4,134 @@
 
 @section('content')
 
-  <div class="container-fluid">
+    <div class="container-fluid">
 
-    <div class="row g-3 mb-4">
+        <div class="mb-4">
+            <h2 class="fw-bold">Dashboard</h2>
+            <p class="text-muted mb-0">
+                Welcome back, {{ auth()->user()->name }}
+            </p>
+        </div>
 
-      @foreach ($stats as $key => $value)
-        <div class="col-xl-3 col-md-6">
-          <div class="card shadow-sm border-0">
-            <div class="card-body">
-              <div class="d-flex justify-content-between">
-                <div>
-                  <h6 class="text-muted text-uppercase">{{ str_replace('_', ' ', $key) }}</h6>
-                  <h3 class="mb-0">{{ $value }}</h3>
+        @if (auth()->user()->isSuperAdmin())
+            <div class="row g-4">
+                <x-dashboard-card title="Total Societies" value="12"
+                    icon="bi-buildings" bg="bg-primary-subtle"/>
+
+                <x-dashboard-card title="Total Users" value="1524"
+                    icon="bi-people-fill" bg="bg-success-subtle"/>
+
+                <x-dashboard-card title="Total Residents" value="1245"
+                    icon="bi-people" bg="bg-info-subtle"/>
+
+                <x-dashboard-card title="Total Gatekeepers" value="38"
+                    icon="bi-shield-check" bg="bg-warning-subtle"/>
+
+                <x-dashboard-card title="Visitors Today" value="143"
+                    icon="bi-person-check" bg="bg-primary-subtle"/>
+
+                <x-dashboard-card title="Active Visitors" value="31"
+                    icon="bi-door-open" bg="bg-success-subtle"/>
+
+                <x-dashboard-card title="Open Complaints" value="17"
+                    icon="bi-exclamation-circle" bg="bg-danger-subtle"/>
+
+                <x-dashboard-card title="Pending Deliveries" value="26"
+                    icon="bi-truck" bg="bg-secondary-subtle"/>
+            </div>
+        @else
+            {{-- ADMIN DASHBOARD --}}
+            @can('is-admin')
+                <div class="row g-4">
+                    <x-dashboard-card title="Total Residents" value="245"
+                        icon="bi-people" bg="bg-primary-subtle"/>
+
+                    <x-dashboard-card title="Total Flats" value="180"
+                        icon="bi-house-door" bg="bg-success-subtle"/>
+
+                    <x-dashboard-card title="Visitors Today" value="18"
+                        icon="bi-person-check" bg="bg-info-subtle"/>
+
+                    <x-dashboard-card title="Visitors Inside Now" value="7"
+                        icon="bi-door-open" bg="bg-warning-subtle"/>
+
+                    <x-dashboard-card title="Deliveries Today" value="12"
+                        icon="bi-box-seam" bg="bg-primary-subtle"/>
+
+                    <x-dashboard-card title="Pending Deliveries" value="5"
+                        icon="bi-truck" bg="bg-danger-subtle"/>
+
+                    <x-dashboard-card title="Open Complaints" value="9"
+                        icon="bi-exclamation-circle" bg="bg-warning-subtle"/>
+
+                    <x-dashboard-card title="Resolved Complaints" value="42"
+                        icon="bi-check-circle" bg="bg-success-subtle"/>
                 </div>
-                <i class="bi bi-bar-chart fs-2 text-primary"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      @endforeach
 
+            @endcan
+
+            {{-- RESIDENT DASHBOARD --}}
+            @can('is-resident')
+                <div class="row g-4">
+
+                    <x-dashboard-card title="My Visitor Passes" value="24"
+                        icon="bi-qr-code" bg="bg-primary-subtle"/>
+
+                    <x-dashboard-card title="Visitors Expected Today" value="3"
+                        icon="bi-calendar-check" bg="bg-success-subtle"/>
+
+                    <x-dashboard-card title="Active Visitors" value="1"
+                        icon="bi-person-badge" bg="bg-info-subtle"/>
+
+                    <x-dashboard-card title="My Deliveries" value="16"
+                        icon="bi-box-seam" bg="bg-warning-subtle"/>
+
+                    <x-dashboard-card title="Pending Deliveries" value="2"
+                        icon="bi-truck" bg="bg-danger-subtle"/>
+
+                    <x-dashboard-card title="My Complaints" value="6"
+                        icon="bi-chat-left-text" bg="bg-primary-subtle"/>
+
+                    <x-dashboard-card title="Pending Complaints" value="2"
+                        icon="bi-exclamation-triangle" bg="bg-warning-subtle"/>
+
+                    <x-dashboard-card title="Resolved Complaints" value="4"
+                        icon="bi-check-circle" bg="bg-success-subtle"/>
+
+                </div>
+            @endcan
+
+            {{-- GATEKEEPER DASHBOARD --}}
+            @can('is-gatekeeper')
+                <div class="row g-4">
+
+                    <x-dashboard-card title="Visitors Expected Today" value="14"
+                        icon="bi-calendar-check" bg="bg-primary-subtle"/>
+
+                    <x-dashboard-card title="Entries Today" value="10"
+                        icon="bi-box-arrow-in-right" bg="bg-success-subtle"/>
+
+                    <x-dashboard-card title="Exits Today" value="8"
+                        icon="bi-box-arrow-right" bg="bg-info-subtle"/>
+
+                    <x-dashboard-card title="Visitors Inside Now" value="6"
+                        icon="bi-door-open" bg="bg-warning-subtle"/>
+
+                    <x-dashboard-card title="Pending Deliveries" value="9"
+                        icon="bi-truck" bg="bg-danger-subtle"/>
+
+                    <x-dashboard-card title="Deliveries Received" value="12"
+                        icon="bi-box-seam" bg="bg-primary-subtle"/>
+
+                    <x-dashboard-card title="Passes Verified" value="18"
+                        icon="bi-patch-check" bg="bg-success-subtle"/>
+
+                    <x-dashboard-card title="Rejected Entries" value="3"
+                        icon="bi-x-circle" bg="bg-danger-subtle"/>
+
+                </div>
+            @endcan
+        @endif
     </div>
-
-    @if ($role === 'super_admin')
-
-      <div class="row">
-        <div class="col-md-6">
-          <div class="card mb-3">
-            <div class="card-header">Latest Societies</div>
-            <div class="card-body">
-              <ul class="list-group">
-                @foreach ($latest_societies as $society)
-                  <li class="list-group-item">{{ $society->name }}</li>
-                @endforeach
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-6">
-          <div class="card mb-3">
-            <div class="card-header">Recent Complaints</div>
-            <div class="card-body">
-              <ul class="list-group">
-                @foreach ($latest_complaints as $c)
-                  <li class="list-group-item">{{ $c->category }} - {{ $c->status }}</li>
-                @endforeach
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    @endif
-
-    @if ($role === 'admin')
-
-      <div class="row">
-
-        <div class="col-md-6">
-          <div class="card">
-            <div class="card-header">Pending Complaints</div>
-            <div class="card-body">
-              <ul class="list-group">
-                @foreach ($pending_complaints as $c)
-                  <li class="list-group-item">{{ $c->category }} - {{ $c->status }}</li>
-                @endforeach
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-6">
-          <div class="card">
-            <div class="card-header">Today's Visitors</div>
-            <div class="card-body">
-              <ul class="list-group">
-                @foreach ($today_visitors as $v)
-                  <li class="list-group-item">{{ $v->visitor->name ?? 'N/A' }}</li>
-                @endforeach
-              </ul>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-    @endif
-
-    @if ($role === 'gatekeeper')
-
-      <div class="card">
-        <div class="card-header">Active Visitors</div>
-        <div class="card-body">
-          <ul class="list-group">
-            @foreach ($active_visitors as $v)
-              <li class="list-group-item">
-                {{ $v->visitor->name ?? 'N/A' }} - {{ $v->status }}
-              </li>
-            @endforeach
-          </ul>
-        </div>
-      </div>
-
-    @endif
-
-    @if ($role === 'resident')
-
-      <div class="row">
-
-        <div class="col-md-4">
-          <div class="card">
-            <div class="card-header">My Visitors</div>
-            <div class="card-body">
-              @foreach ($my_visitors as $v)
-                <div>{{ $v->visitor->name ?? 'N/A' }}</div>
-              @endforeach
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-4">
-          <div class="card">
-            <div class="card-header">My Deliveries</div>
-            <div class="card-body">
-              @foreach ($my_deliveries as $d)
-                <div>{{ $d->vendor ?? 'Vendor' }}</div>
-              @endforeach
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-4">
-          <div class="card">
-            <div class="card-header">My Complaints</div>
-            <div class="card-body">
-              @foreach ($my_complaints as $c)
-                <div>{{ $c->category }} - {{ $c->status }}</div>
-              @endforeach
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-    @endif
-
-  </div>
 
 @endsection

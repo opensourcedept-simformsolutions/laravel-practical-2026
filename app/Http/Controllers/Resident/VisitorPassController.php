@@ -216,7 +216,7 @@ class VisitorPassController extends Controller
 
         $flats = collect();
 
-        if (auth()->user()->isGatekeeper()) {
+        if (! auth()->user()->isResident()) {
 
             $flats = Flat::where('society_id', auth()->user()->society_id)
                 ->orderBy('wing')
@@ -249,7 +249,7 @@ class VisitorPassController extends Controller
                     ]
                 );
 
-                if ($user->isGatekeeper()) {
+                if (! $user->isResident()) {
 
                     $flat = Flat::where('id', $validated['flat_id'])
                         ->where('society_id', $user->society_id)
@@ -287,6 +287,7 @@ class VisitorPassController extends Controller
             Session::flash('message', 'Something went wrong.');
             Session::flash('status', 'error');
 
+
             return redirect()->back()->withInput();
         }
     }
@@ -310,7 +311,7 @@ class VisitorPassController extends Controller
 
         $flats = [];
 
-        if (auth()->user()->isGatekeeper()) {
+        if (! auth()->user()->isResident()) {
             $flats = Flat::orderBy('flat_number')->get();
         }
 
@@ -432,75 +433,128 @@ class VisitorPassController extends Controller
 
     public function report(Request $request)
     {
+        $flats = Flat::orderBy('wing')
+            ->orderBy('floor')
+            ->orderBy('flat_number')
+            ->get();
 
-        if ($request->ajax()) {
+        return view('passes.report', compact('flats'));
+    }
 
-            $query = VisitorLog::query()
-                ->select([
-                    'visitor_logs.*',
-                    'visitors.name as visitor_name',
-                    'visitors.phone as visitor_phone',
-                    'flats.wing as flat_wing',
-                    'flats.flat_number as flat_number',
-                    'users.name as gatekeeper_name',
-                ])
-                ->leftJoin('visitors', 'visitors.id', '=', 'visitor_logs.visitor_id')
-                ->leftJoin('flats', 'flats.id', '=', 'visitor_logs.flat_id')
-                ->leftJoin('users', 'users.id', '=', 'visitor_logs.gatekeeper_id')
-                ->latest();
+    public function reportData(Request $request)
+    {
+        $query = $this->getReportQuery($request);
 
-            if ($request->filled('status')) {
-                $query->where('visitor_logs.status', $request->status);
+        return DataTables::of($query)
+            ->addIndexColumn()
+
+            ->addColumn('visitor', fn ($row) => $row->visitor_name ?? '-')
+            ->addColumn('phone', fn ($row) => $row->visitor_phone ?? '-')
+
+            ->addColumn('flat', function ($row) {
+                return $row->flat_wing && $row->flat_number
+                    ? $row->flat_wing.'-'.$row->flat_number
+                    : '-';
+            })
+
+            ->addColumn('status', fn ($row) => ucfirst($row->status))
+
+            ->addColumn(
+                'entry_time',
+                fn ($row) => $row->entry_time ? format_date($row->entry_time) : '-'
+            )
+
+            ->addColumn(
+                'exit_time',
+                fn ($row) => $row->exit_time ? format_date($row->exit_time) : '-'
+            )
+
+            ->addColumn(
+                'visit_date',
+                fn ($row) => $row->visit_date ? format_date($row->visit_date, 'd M Y') : '-'
+            )
+
+            ->addColumn('gatekeeper', fn ($row) => $row->gatekeeper_name ?? '-')
+
+            ->rawColumns([])
+
+            ->make(true);
+
+    }
+
+    public function export(Request $request)
+    {
+        $query = $this->getReportQuery($request);
+
+        return response()->streamDownload(function () use ($query) {
+            $handle = fopen('php://output', 'w');
+
+            fputcsv($handle, [
+                'ID',
+                'Visitor',
+                'Phone',
+                'Flat',
+                'Purpose',
+                'Status',
+                'Entry Time',
+                'Exit Time',
+                'Visit Date',
+                'Gatekeeper',
+            ]);
+
+            foreach ($query->get() as $visitorLog) {
+                fputcsv($handle, [
+                    $visitorLog->id,
+                    $visitorLog->visitor_name ?? '-',
+                    $visitorLog->visitor_phone ?? '-',
+                    $visitorLog->flat_wing && $visitorLog->flat_number
+                        ? $visitorLog->flat_wing.'-'.$visitorLog->flat_number : '-',
+                    $visitorLog->purpose ?? '-',
+                    ucfirst($visitorLog->status),
+                    $visitorLog->entry_time ? date('Y-m-d H:i:s', strtotime($visitorLog->entry_time)) : '-',
+                    $visitorLog->exit_time ? date('Y-m-d H:i:s', strtotime($visitorLog->exit_time)) : '-',
+                    $visitorLog->visit_date ? date('Y-m-d', strtotime($visitorLog->visit_date)) : '-',
+                    $visitorLog->gatekeeper_name ?? '-',
+                ]);
             }
 
-            if ($request->filled('flat_id')) {
-                $query->where('visitor_logs.flat_id', $request->flat_id);
-            }
+            fclose($handle);
+        }, 'visitor-report.csv');
+    }
 
-            if ($request->filled('from_date')) {
-                $query->whereDate('visitor_logs.visit_date', '>=', $request->from_date);
-            }
+    private function getReportQuery(Request $request)
+    {
+        $query = VisitorLog::query()
+            ->select([
+                'visitor_logs.*',
+                'visitors.name as visitor_name',
+                'visitors.phone as visitor_phone',
+                'flats.wing as flat_wing',
+                'flats.flat_number as flat_number',
+                'users.name as gatekeeper_name',
+            ])
+            ->leftJoin('visitors', 'visitors.id', '=', 'visitor_logs.visitor_id')
+            ->leftJoin('flats', 'flats.id', '=', 'visitor_logs.flat_id')
+            ->leftJoin('users', 'users.id', '=', 'visitor_logs.gatekeeper_id')
+            ->latest();
 
-            if ($request->filled('to_date')) {
-                $query->whereDate('visitor_logs.visit_date', '<=', $request->to_date);
-            }
-
-            return DataTables::of($query)
-
-                ->addColumn('visitor', fn ($row) => $row->visitor_name ?? '-')
-                ->addColumn('phone', fn ($row) => $row->visitor_phone ?? '-')
-
-                ->addColumn('flat', function ($row) {
-                    return $row->flat_wing && $row->flat_number
-                        ? $row->flat_wing.'-'.$row->flat_number
-                        : '-';
-                })
-
-                ->addColumn('status', fn ($row) => ucfirst($row->status))
-
-                ->addColumn(
-                    'entry_time',
-                    fn ($row) => $row->entry_time ? format_date($row->entry_time) : '-'
-                )
-
-                ->addColumn(
-                    'exit_time',
-                    fn ($row) => $row->exit_time ? format_date($row->exit_time) : '-'
-                )
-
-                ->addColumn(
-                    'visit_date',
-                    fn ($row) => $row->visit_date ? format_date($row->visit_date, 'd M Y') : '-'
-                )
-
-                ->addColumn('gatekeeper', fn ($row) => $row->gatekeeper_name ?? '-')
-
-                ->rawColumns([])
-
-                ->make(true);
+        if ($request->filled('status')) {
+            $query->where('visitor_logs.status', $request->status);
         }
 
-        return view('passes.report');
+        if ($request->filled('flat_id')) {
+            $query->where('visitor_logs.flat_id', $request->flat_id);
+        }
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('visitor_logs.visit_date', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('visitor_logs.visit_date', '<=', $request->to_date);
+        }
+
+        return $query;
     }
 
     public function destroy(VisitorLog $visitorLog)

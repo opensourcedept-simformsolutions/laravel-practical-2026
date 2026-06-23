@@ -53,6 +53,7 @@
                             <th>Exit Date</th>
                             <th>Exit Time</th>
                             <th>Status</th>
+                            <th>Photo</th>
                         </tr>
                     </thead>
 
@@ -82,45 +83,51 @@
 
         columns: [
             {
-            data: 'id',
-            name: 'id'
+                data: 'id',
+                name: 'id'
             },
             {
-            data: 'visitor_name',
-            name: 'visitor.name'
+                data: 'visitor_name',
+                name: 'visitor.name'
             },
             {
-            data: 'phone',
-            name: 'visitor.phone'
+                data: 'phone',
+                name: 'visitor.phone'
             },
             {
-            data: 'flat_details',
-            name: 'flat.flat_number',
-            orderable: false
+                data: 'flat_details',
+                name: 'flat.flat_number',
+                orderable: false
             },
             {
-            data: 'purpose',
-            name: 'purpose'
+                data: 'purpose',
+                name: 'purpose'
             },
             {
-            data: 'entry_date',
-            name: 'entry_time'
+                data: 'entry_date',
+                name: 'entry_time'
             },
             {
-            data: 'entry_time',
-            name: 'entry_time'
+                data: 'entry_time',
+                name: 'entry_time'
             },
             {
-            data: 'exit_date',
-            name: 'exit_time'
+                data: 'exit_date',
+                name: 'exit_time'
             },
             {
-            data: 'exit_time',
-            name: 'exit_time'
+                data: 'exit_time',
+                name: 'exit_time'
             },
             {
-            data: 'status',
-            name: 'status'
+                data: 'status',
+                name: 'status'
+            },
+            {
+                data: 'photo',
+                name: 'photo',
+                searchable: false,
+                orderable: false
             }
         ]
     });

@@ -8,6 +8,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
+use App\Models\User;
 use Throwable;
 
 class ResidentWelcomeNotification extends Notification implements ShouldQueue
@@ -34,7 +35,7 @@ class ResidentWelcomeNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     /**

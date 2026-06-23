@@ -23,7 +23,7 @@
                             <div class="card-body">
 
                                 {{-- ADMIN FORM --}}
-                                @if(auth()->user()->isAdmin())
+                                @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
 
                                 <p class="text-secondary mb-3 text-decoration-underline">
                                     Complaint Status
@@ -40,20 +40,17 @@
 
                                             <select name="status" class="form-select">
 
-                                                <option value="open" {{ old('status', $complaint->status) === 'open' ?
-                                                    'selected' : '' }}>
-                                                    Open
+                                                <option value="{{ $complaint->status }}" selected>
+                                                    {{ ucwords(str_replace('_', ' ', $complaint->status)) }}
                                                 </option>
 
-                                                <option value="in_progress" {{ old('status', $complaint->status) ===
-                                                    'in_progress' ? 'selected' : '' }}>
-                                                    In Progress
-                                                </option>
+                                                @if($complaint->status === 'open')
+                                                <option value="in_progress">In Progress</option>
+                                                @endif
 
-                                                <option value="resolved" {{ old('status', $complaint->status) ===
-                                                    'resolved' ? 'selected' : '' }}>
-                                                    Resolved
-                                                </option>
+                                                @if($complaint->status === 'in_progress')
+                                                <option value="resolved">Resolved</option>
+                                                @endif
 
                                             </select>
 
@@ -105,7 +102,7 @@
 
                                             <select name="category" class="form-select">
 
-                                                @foreach(\App\Enum\ComplaintCategory::cases() as $category)
+                                                @foreach(\App\Enums\ComplaintCategory::cases() as $category)
                                                 <option value="{{ $category->value }}" {{ old('category', $complaint->
                                                     category) === $category->value ? 'selected' : '' }}
                                                     >

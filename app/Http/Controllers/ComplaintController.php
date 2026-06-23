@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Enum\ComplaintCategory;
-use App\Enum\ComplaintStatus;
+use App\Enums\ComplaintCategory;
+use App\Enums\ComplaintStatus;
 use App\Http\Requests\StoreComplaintRequest;
 use App\Http\Requests\UpdateComplaintRequest;
 use App\Models\Complaint;
@@ -60,131 +60,131 @@ class ComplaintController extends Controller
         }
     }
 
-public function index(Request $request)
-{
-    $this->authorize('viewAny', Complaint::class);
+    public function index(Request $request)
+    {
+        $this->authorize('viewAny', Complaint::class);
 
-    try {
+        try {
 
-        if ($request->ajax()) {
+            if ($request->ajax()) {
 
-            $query = Complaint::with('user.society');
+                $query = Complaint::with('user.society');
 
-            $user = auth()->user();
+                $user = auth()->user();
 
-            if ($user->isResident() || $user->isGatekeeper()) {
+                if ($user->isResident() || $user->isGatekeeper()) {
 
-                $query->where('user_id', $user->id);
+                    $query->where('user_id', $user->id);
 
-            } elseif ($user->isAdmin()) {
+                } elseif ($user->isAdmin()) {
 
-                $query->whereHas('user', function ($q) use ($user) {
-                    $q->where('society_id', $user->society_id);
-                });
-            }
+                    $query->whereHas('user', function ($q) use ($user) {
+                        $q->where('society_id', $user->society_id);
+                    });
+                }
 
-            if ($request->filled('category')) {
-                $query->where('category', $request->category);
-            }
+                if ($request->filled('category')) {
+                    $query->where('category', $request->category);
+                }
 
-            if ($request->filled('status')) {
-                $query->where('status', $request->status);
-            }
+                if ($request->filled('status')) {
+                    $query->where('status', $request->status);
+                }
 
-            if ($request->filled('date')) {
-                $query->whereDate('created_at', $request->date);
-            }
+                if ($request->filled('date')) {
+                    $query->whereDate('created_at', $request->date);
+                }
 
-            return DataTables::of($query)
-                ->addColumn('resident_name', function ($complaint) {
-                    return $complaint->user?->name ?? 'N/A';
-                })
+                return DataTables::of($query)
+                    ->addColumn('resident_name', function ($complaint) {
+                        return $complaint->user?->name ?? 'N/A';
+                    })
 
-                ->addColumn('society', function ($complaint) {
-                    return $complaint->user->society?->name ?? 'N/A';
-                })
+                    ->addColumn('society', function ($complaint) {
+                        return $complaint->user->society?->name ?? 'N/A';
+                    })
 
-                ->editColumn('category', function ($complaint) {
-                    return ucfirst($complaint->category);
-                })
+                    ->editColumn('category', function ($complaint) {
+                        return ucfirst($complaint->category);
+                    })
 
-                ->editColumn('status', function ($complaint) {
-                    return ucwords(str_replace('_', ' ', $complaint->status));
-                })
+                    ->editColumn('status', function ($complaint) {
+                        return ucwords(str_replace('_', ' ', $complaint->status));
+                    })
 
-                ->editColumn('created_at', function ($complaint) {
-                    return $complaint->created_at->format('d M Y');
-                })
+                    ->editColumn('created_at', function ($complaint) {
+                        return $complaint->created_at->format('d M Y');
+                    })
 
-                ->addColumn('action', function ($complaint) {
+                    ->addColumn('action', function ($complaint) {
 
-                    $buttons = '
-                        <a href="' . route('complaints.show', $complaint) . '"
+                        $buttons = '
+                        <a href="'.route('complaints.show', $complaint).'"
                            class="btn btn-primary btn-sm" title="view">
                             <i class="bi bi-eye"></i>
                         </a>
                     ';
 
-                    if (auth()->user()->can('update', $complaint)) {
-                        $buttons .= '
-                            <a href="' . route('complaints.edit', $complaint) . '"
+                        if (auth()->user()->can('update', $complaint)) {
+                            $buttons .= '
+                            <a href="'.route('complaints.edit', $complaint).'"
                                class="btn btn-warning btn-sm" title="Edit">
                                 <i class="bi bi-pencil-square"></i>
                             </a>
                         ';
-                    }
+                        }
 
-                    if (auth()->user()->can('delete', $complaint)) {
-                        $buttons .= '
-                            <form action="' . route('complaints.destroy', $complaint) . '"
+                        if (auth()->user()->can('delete', $complaint)) {
+                            $buttons .= '
+                            <form action="'.route('complaints.destroy', $complaint).'"
                                   method="POST"
                                   class="d-inline"
                                   onsubmit="return confirm(\'Are you sure you want to delete this complaint?\');">
-                                ' . csrf_field() . '
-                                ' . method_field('DELETE') . '
+                                '.csrf_field().'
+                                '.method_field('DELETE').'
                                 <button type="submit" class="btn btn-danger btn-sm" title="Delete">
                                     <i class="bi bi-x-lg"></i>
                                 </button>
                             </form>
                         ';
-                    }
+                        }
 
-                    return '
+                        return '
                     <div class="d-flex flex-nowrap justify-content-center gap-1">
                         '.$buttons.'
                     </div>
                     ';
-                })
+                    })
 
-                ->rawColumns(['action'])
-                ->make(true);
-        }
+                    ->rawColumns(['action'])
+                    ->make(true);
+            }
 
-        return view('complaints.index');
+            return view('complaints.index');
 
-    } catch (Exception $e) {
+        } catch (Exception $e) {
 
-        Log::error('Complaint Listing Error', [
-            'user_id' => auth()->id(),
-            'error' => $e->getMessage(),
-            'exception' => $e,
-        ]);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load complaints.',
-            ], 500);
-        }
-
-        return redirect()
-            ->back()
-            ->with([
-                'message' => 'Something went wrong while loading complaints.',
-                'status' => 'error',
+            Log::error('Complaint Listing Error', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'exception' => $e,
             ]);
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to load complaints.',
+                ], 500);
+            }
+
+            return redirect()
+                ->back()
+                ->with([
+                    'message' => 'Something went wrong while loading complaints.',
+                    'status' => 'error',
+                ]);
+        }
     }
-}
 
     public function show(Complaint $complaint)
     {
@@ -301,5 +301,107 @@ public function index(Request $request)
                 'status' => 'error',
             ]);
         }
+    }
+
+    public function report()
+    {
+        return view('complaints.report');
+    }
+
+    public function reportData(Request $request)
+    {
+        $query = $this->getReportQuery($request);
+
+        return DataTables::of($query)
+            ->addIndexColumn()
+            ->addColumn('society', function ($complaint) {
+                return $complaint->user->society?->name ?? 'N/A';
+            })
+            ->addColumn('user_name', function ($complaint) {
+                return $complaint->user?->name ?? '-';
+            })
+            ->editColumn('category', function ($complaint) {
+                return ucfirst($complaint->category);
+            })
+            ->editColumn('status', function ($complaint) {
+                return ucwords(str_replace('_', ' ', $complaint->status));
+            })
+            ->editColumn('created_at', function ($complaint) {
+                return $complaint->created_at->format('d M Y');
+            })
+            ->make(true);
+
+    }
+
+    public function export(Request $request)
+    {
+        $query = $this->getReportQuery($request);
+
+        return response()->streamDownload(function () use ($query) {
+            $handle = fopen('php://output', 'w');
+
+            fputcsv($handle, [
+                'ID',
+                'User',
+                'Society',
+                'Category',
+                'Description',
+                'Admin Notes',
+                'Status',
+                'Created At',
+            ]);
+
+            foreach ($query->get() as $complaint) {
+                fputcsv($handle, [
+                    $complaint->id,
+                    $complaint->user?->name ?? '-',
+                    $complaint->user?->society?->name ?? '-',
+                    ucfirst($complaint->category),
+                    $complaint->description,
+                    $complaint->admin_notes ?? '-',
+                    ucwords(str_replace('_', ' ', $complaint->status)),
+                    $complaint->created_at->format('Y-m-d H:i:s'),
+                ]);
+            }
+
+            fclose($handle);
+
+        }, 'complaints-report.csv');
+    }
+
+    private function getReportQuery(Request $request)
+    {
+        $query = Complaint::with('user.society');
+
+        $user = auth()->user();
+
+        if ($user->isResident() || $user->isGatekeeper()) {
+
+            $query->where('user_id', $user->id);
+
+        } elseif ($user->isAdmin()) {
+
+            $query->whereHas('user', function ($q) use ($user) {
+                $q->where('society_id', $user->society_id);
+            });
+        }
+
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->to_date);
+        }
+
+        return $query;
     }
 }
