@@ -22,9 +22,9 @@ class SocietyController extends Controller
 
     public function data(Request $request)
     {
-        try {
+        $this->authorize('viewAny', Society::class);
 
-            $this->authorize('viewAny', Society::class);
+        try {
 
             $societies = Society::withTrashed();
 
@@ -121,9 +121,9 @@ class SocietyController extends Controller
 
     public function store(StoreSocietyRequest $request)
     {
-        try {
+        $this->authorize('create', Society::class);
 
-            $this->authorize('create', Society::class);
+        try {
 
             Society::create($request->validated());
 
@@ -147,15 +147,17 @@ class SocietyController extends Controller
 
     public function show(Society $society)
     {
-        try {
+        $this->authorize('view', $society);
 
-            $this->authorize('view', $society);
+        try {
 
             $society = Society::withTrashed()
                 ->findOrFail($society->id);
 
             return view('societies.show', compact('society'));
         } catch (Exception $e) {
+
+            Log::error($e->getMessage());
 
             return back()->with([
                 'status' => 'error',
@@ -174,9 +176,9 @@ class SocietyController extends Controller
 
     public function update(UpdateSocietyRequest $request, Society $society)
     {
-        try {
+        $this->authorize('update', $society);
 
-            $this->authorize('update', $society);
+        try {
 
             $society->update(
                 $request->validated()
@@ -203,9 +205,9 @@ class SocietyController extends Controller
 
     public function destroy(Society $society)
     {
-        try {
+        $this->authorize('delete', $society);
 
-            $this->authorize('delete', $society);
+        try {
 
             $society->delete();
 
@@ -214,6 +216,8 @@ class SocietyController extends Controller
                 'message' => 'Society deleted successfully.'
             ]);
         } catch (Exception $e) {
+
+            Log::error($e->getMessage());
 
             return response()->json([
                 'success' => false,
@@ -224,9 +228,9 @@ class SocietyController extends Controller
 
     public function restore(Society $society)
     {
-        try {
+        $this->authorize('restore', $society);
 
-            $this->authorize('restore', $society);
+        try {
 
             $society->restore();
 
@@ -235,6 +239,8 @@ class SocietyController extends Controller
                 'message' => 'Society restored successfully.'
             ]);
         } catch (Exception $e) {
+
+            Log::error($e->getMessage());
 
             return response()->json([
                 'success' => false,
