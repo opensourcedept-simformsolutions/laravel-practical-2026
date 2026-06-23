@@ -15,8 +15,7 @@ class UserSeeder extends Seeder
         $superAdminRole = Role::where('name', 'super_admin')->firstOrFail();
         $adminRole = Role::where('name', 'admin')->firstOrFail();
         $gatekeeperRole = Role::where('name', 'gatekeeper')->firstOrFail();
-        $ownerRole = Role::where('name', 'owner')->firstOrFail();
-        $tenantRole = Role::where('name', 'tenant')->firstOrFail();
+        $residentRole = Role::where('name', 'resident')->firstOrFail();
 
         /*
          * Super Admin
@@ -62,30 +61,15 @@ class UserSeeder extends Seeder
             }
 
             /*
-             * Owners
+             * Resident
              */
-            foreach (range(1, 3) as $i) {
+            foreach (range(1, 5) as $i) {
                 User::create([
                     'name' => fake()->name(),
-                    'email' => "owner{$society->id}_{$i}@societyms.test",
+                    'email' => "resident{$society->id}_{$i}@societyms.test",
                     'phone' => fake()->numerify('9#########'),
                     'password' => Hash::make('1'),
-                    'role_id' => $ownerRole->id,
-                    'society_id' => $society->id,
-                    'email_verified_at' => now(),
-                ]);
-            }
-
-            /*
-             * Tenants
-             */
-            foreach (range(1, 2) as $i) {
-                User::create([
-                    'name' => fake()->name(),
-                    'email' => "tenant{$society->id}_{$i}@societyms.test",
-                    'phone' => fake()->numerify('9#########'),
-                    'password' => Hash::make('1'),
-                    'role_id' => $tenantRole->id,
+                    'role_id' => $residentRole->id,
                     'society_id' => $society->id,
                     'email_verified_at' => now(),
                 ]);

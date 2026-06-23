@@ -12,12 +12,9 @@ class ResidentSeeder extends Seeder
 {
     public function run(): void
     {
-        $residentRoleIds = Role::whereIn('name', [
-            'owner',
-            'tenant',
-        ])->pluck('id');
+        $residentRole = Role::where('name', 'resident')->firstOrFail();
 
-        $users = User::whereIn('role_id', $residentRoleIds)->get();
+        $users = User::where('role_id', $residentRole->id)->get();
 
         foreach ($users as $user) {
 
@@ -33,7 +30,10 @@ class ResidentSeeder extends Seeder
             Resident::create([
                 'user_id' => $user->id,
                 'flat_id' => $flat->id,
-                'resident_type' => $user->role->name,
+                'resident_type' => fake()->randomElement([
+                    'owner',
+                    'tenant',
+                ]),
             ]);
         }
     }
