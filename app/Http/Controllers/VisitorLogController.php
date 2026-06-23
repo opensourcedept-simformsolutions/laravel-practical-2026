@@ -69,16 +69,11 @@ class VisitorLogController extends Controller
 
                     ->addColumn('action', function ($log) {
 
-                        $user = auth()->user();
+                        $buttons = '';
 
                         if ($log->status === 'pending') {
 
-                            $buttons = '
-                                <form action="' . route('gatekeeper.visitor-logs.mark-entry', $log) . '" method="POST">
-                                    ' . csrf_field() . '
-                                    <input type="hidden" name="_method" value="PATCH">
-
-                            if ($user->can('markEntry', $log)) {
+                            if (auth()->user()->can('markEntry', $log)) {
                                 $buttons .= '
                                     <button
                                         type="button"
@@ -89,60 +84,63 @@ class VisitorLogController extends Controller
                                 ';
                             }
 
-                            if ($user->can('update', $log)) {
+                            if (auth()->user()->can('update', $log)) {
                                 $buttons .= '
-                                    <a href="' . route('passes.edit', $log->id) . '"
-                                        class="btn btn-warning btn-sm">
+                                    <a href="'.route('passes.edit', $log).'"
+                                    class="btn btn-warning btn-sm">
                                         Edit
                                     </a>
                                 ';
                             }
 
-                                    <form action="' . route('passes.destroy', $log->id) . '"
+                            if (auth()->user()->can('delete', $log)) {
+                                $buttons .= '
+                                    <form action="'.route('passes.destroy', $log).'"
                                         method="POST"
-                                        onsubmit="return confirm(\'Delete this pass?\')">
+                                        class="d-inline"
+                                        onsubmit="return confirm(\'Delete this pass?\');">
 
-                                        ' . csrf_field() . '
-                                        <input type="hidden" name="_method" value="DELETE">
+                                        '.csrf_field().'
+                                        '.method_field('DELETE').'
 
-                                        <button class="btn btn-danger btn-sm">
+                                        <button type="submit"
+                                                class="btn btn-danger btn-sm">
                                             Delete
                                         </button>
                                     </form>
                                 ';
                             }
 
-                            return '<div class="d-flex gap-1">' . $buttons . '</div>';
+                            return '
+                                <div class="d-flex gap-1">
+                                    '.$buttons.'
+                                </div>
+                            ';
                         }
 
                         if ($log->status === 'entered') {
 
                             return '
-                                <form action="' . route('gatekeeper.visitor-logs.mark-exit', $log) . '" method="POST">
-                                    ' . csrf_field() . '
-                                    <input type="hidden" name="_method" value="PATCH">
+                                <form action="'.route('gatekeeper.visitor-logs.mark-exit', $log).'"
+                                    method="POST">
 
-                                return '
-                                    <form action="'.route('gatekeeper.visitor-logs.mark-exit', $log).'" method="POST">
-                                        '.csrf_field().'
-                                        <input type="hidden" name="_method" value="PATCH">
+                                    '.csrf_field().'
+                                    '.method_field('PATCH').'
 
-                                        <button class="btn btn-danger btn-sm">
-                                            Mark Exit
-                                        </button>
-                                    </form>
-                                ';
-                            }
+                                    <button type="submit"
+                                            class="btn btn-danger btn-sm">
+                                        Mark Exit
+                                    </button>
+                                </form>
+                            ';
                         }
 
                         return '<span class="badge bg-secondary">Exited</span>';
                     })
-
                     ->rawColumns([
                         'status',
-                        'action'
+                        'action',
                     ])
-
                     ->make(true);
             }
 
@@ -200,7 +198,7 @@ class VisitorLogController extends Controller
             Log::info('VisitorEntered event dispatched', [
                 'visitor_log_id' => $visitorLog->id,
             ]);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Visitor Entry Marked Successfully!',
