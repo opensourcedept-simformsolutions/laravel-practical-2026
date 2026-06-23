@@ -53,6 +53,7 @@
             <i class="bi bi-truck"></i>
             <span class="sidebar-link-label">Delivery</span>
         </x-sidebar-link>
+
         {{-- user management --}}
         @can('is-admin')
         <x-sidebar-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('users.index')">
@@ -60,32 +61,35 @@
             <span class="sidebar-link-label"> Users Management</span>
         </x-sidebar-link>
         @endcan
-        
+
         {{-- Reports --}}
+        @php
+            $reportsActive = request()->routeIs('reports.*');
+        @endphp
         <div class="sidebar-dropdown">
-            <button type="button" class="sidebar-dropdown-toggle" id="reportsToggle">
+            <button type="button" class="sidebar-dropdown-toggle {{ $reportsActive ? 'active' : '' }}"
+                id="reportsToggle">
                 <span>
                     <i class="bi bi-file-earmark-bar-graph"></i>
                     <span class="sidebar-link-label">Reports</span>
                 </span>
 
-                <i class="bi bi-chevron-down" id="reportsArrow"></i>
+                <i class="bi bi-chevron-down {{ $reportsActive ? 'rotate-180' : '' }}" id="reportsArrow"></i>
             </button>
 
-            <div class="sidebar-dropdown-menu d-none" id="reportsMenu">
+            <div class="sidebar-dropdown-menu {{ $reportsActive ? '' : 'd-none' }}" id="reportsMenu">
 
-                <x-sidebar-link :href="route('reports.deliveries.')">
+                <x-sidebar-link :href="route('reports.deliveries.')" :active="request()->routeIs('reports.deliveries*')">
                     <i class="bi bi-box-seam"></i>
                     <span class="sidebar-link-label">Delivery Report</span>
                 </x-sidebar-link>
 
-                <x-sidebar-link :href="route('reports.complaints.')">
+                <x-sidebar-link :href="route('reports.complaints.')" :active="request()->routeIs('reports.complaints*')">
                     <i class="bi bi-chat-square-text"></i>
                     <span class="sidebar-link-label">Complaint Report</span>
                 </x-sidebar-link>
 
-                <x-sidebar-link :href="route('reports.passes.')">
-                    <i class="bi bi-person-vcard"></i>
+                <x-sidebar-link :href="route('reports.passes.')" :active="request()->routeIs('reports.passes*')"> <i class="bi bi-person-vcard"></i>
                     <span class="sidebar-link-label">Visitor Report</span>
                 </x-sidebar-link>
 
