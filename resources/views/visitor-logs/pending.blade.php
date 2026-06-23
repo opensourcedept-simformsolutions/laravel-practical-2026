@@ -190,7 +190,10 @@
             document.getElementById('video').srcObject = stream;
 
         } catch (e) {
-            alert('Unable to access camera');
+            Toast.fire({
+                icon: 'error',
+                title: 'Unable to access camera'
+            });
         }
 
     });
@@ -263,7 +266,12 @@
             e.preventDefault();
 
             if (!capturedFile) {
-                alert('Please capture a photo first');
+
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Please capture a photo first'
+                });
+
                 return;
             }
 
@@ -280,13 +288,20 @@
                 data: formData,
                 processData: false,
                 contentType: false,
-                success: function () {
+                success: function (response) {
                     bootstrap.Modal.getInstance(document.getElementById('entryModal')).hide();
                     $('#visitorLogsTable').DataTable().ajax.reload(null, false);
+                    Toast.fire({
+                        icon: 'success',
+                        title: response.message
+                    });
                 },
                 error: function (xhr) {
                     $('#entryForm button[type="submit"]').prop('disabled', false);
-                    alert(xhr.responseJSON?.message ?? 'Failed to mark entry');
+                   Toast.fire({
+                        icon: 'error',
+                        title: xhr.responseJSON?.message ?? 'Failed to mark entry'
+                   });
                 }
         });
     });
