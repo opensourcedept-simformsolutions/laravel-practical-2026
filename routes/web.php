@@ -4,6 +4,7 @@ use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Delivery\DeliveryController;
 use App\Http\Controllers\FlatController;
+use App\Http\Controllers\GateKeeperController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Resident\VisitorPassController;
 use App\Http\Controllers\ResidentController;
@@ -159,5 +160,21 @@ Route::prefix('reports')
                 Route::get('/export', 'export')->name('export');
             });
     });
+Route::middleware(['auth'])->group(function () {
 
-require __DIR__ . '/auth.php';
+    Route::get(
+        '/gatekeeper/scan',
+        [GateKeeperController::class, 'scanPage']
+    )->name('gatekeeper.scan');
+
+    Route::post(
+        '/gatekeeper/find-pass',
+        [GateKeeperController::class, 'findPass']
+    )->name('gatekeeper.find-pass');
+
+    Route::post(
+        '/gatekeeper/mark-entry/{visitorLog}',
+        [GateKeeperController::class, 'markEntry']
+    )->name('gatekeeper.mark-entry');
+});
+require __DIR__.'/auth.php';
