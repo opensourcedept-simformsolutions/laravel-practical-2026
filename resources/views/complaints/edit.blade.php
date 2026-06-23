@@ -105,7 +105,7 @@
 
                                             <select name="category" class="form-select">
 
-                                                @foreach(\App\Enum\ComplaintCategory::cases() as $category)
+                                                @foreach(\App\Enums\ComplaintCategory::cases() as $category)
                                                 <option value="{{ $category->value }}" {{ old('category', $complaint->
                                                     category) === $category->value ? 'selected' : '' }}
                                                     >

@@ -7,8 +7,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+
 
 class VisitorLogController extends Controller
 {
@@ -22,13 +21,19 @@ class VisitorLogController extends Controller
             $user = auth()->user();
 
             $query = VisitorLog::query()
-                ->withTrashed()
                 ->whereIn('status', ['pending', 'entered'])
                 ->with([
                     'visitor',
                     'flat',
                 ])
-                ->select('visitor_logs.*');
+                ->select('visitor_logs.*')
+                ->orderByRaw("
+                    CASE
+                        WHEN status = 'pending' THEN 1
+                        WHEN status = 'entered' THEN 2
+                    END
+                ")->latest();
+
 
             if (!$user->isSuperAdmin()) {
 
@@ -129,8 +134,7 @@ class VisitorLogController extends Controller
 
                     ->rawColumns([
                         'status',
-                        'action',
-                        'photo'
+                        'action'
                     ])
 
                     ->make(true);
@@ -164,37 +168,17 @@ class VisitorLogController extends Controller
 
         try {
             $request->validate([
-                'photo' => ['required'],
+                'photo' => ['required','image','mimes:jpg,jpeg,png','max:2048'],
             ]);
 
             if ($visitorLog->status !== 'pending') {
-                return redirect()->back()->with([
+                return response()->json([
+                    'success' => false,
                     'message' => 'Only Pending Passes Can Be Entered!',
-                    'status' => 'error',
-                ]);
+                ], 422);
             }
 
-            $photoPath = null;
-
-            if ($request->filled('photo')) {
-
-                $image = preg_replace(
-                    '#^data:image/\w+;base64,#i',
-                    '',
-                    $request->photo
-                );
-
-                $image = str_replace(' ', '+', $image);
-
-                $fileName = 'visitor_' . Str::uuid() . '.jpg';
-
-                Storage::disk('public')->put(
-                    'visitor_photos/' . $fileName,
-                    base64_decode($image)
-                );
-
-                $photoPath = 'visitor_photos/' . $fileName;
-            }
+            $photoPath = $request->file('photo')->store('visitor_photos', 'public');
 
             $visitorLog->update([
                 'entry_time' => now(),
@@ -203,9 +187,9 @@ class VisitorLogController extends Controller
                 'photo_path' => $photoPath,
             ]);
 
-            return redirect()->back()->with([
+            return response()->json([
+                'success' => true,
                 'message' => 'Visitor Entry Marked Successfully!',
-                'status' => 'success',
             ]);
 
         } catch (Exception $e) {
@@ -215,10 +199,10 @@ class VisitorLogController extends Controller
                 'exception' => $e,
             ]);
 
-            return redirect()->back()->with([
+            return response()->json([
+                'success' => false,
                 'message' => 'Something Went Wrong While Mark Entry',
-                'status' => 'error',
-            ]);
+            ], 500);
         }
     }
 

@@ -4,7 +4,7 @@ namespace App\Policies;
 
 use App\Models\Complaint;
 use App\Models\User;
-use App\Enum\ComplaintStatus;
+use App\Enums\ComplaintStatus;
 
 class ComplaintPolicy
 {

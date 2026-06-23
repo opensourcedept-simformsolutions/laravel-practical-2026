@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
-use App\Enum\ComplaintCategory;
-use App\Enum\ComplaintStatus;
+use App\Enums\ComplaintCategory;
+use App\Enums\ComplaintStatus;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
