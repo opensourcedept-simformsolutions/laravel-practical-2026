@@ -4,6 +4,7 @@ use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Delivery\DeliveryController;
 use App\Http\Controllers\FlatController;
+use App\Http\Controllers\GateKeeperController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Resident\VisitorPassController;
 use App\Http\Controllers\ResidentController;
@@ -40,7 +41,7 @@ Route::middleware(['auth', 'role:admin'])
 
         Route::resource('users', UserController::class);
     });
-    
+
 Route::middleware(['auth', 'role:admin,gatekeeper'])
     ->controller(VisitorLogController::class)
     ->name('gatekeeper.')
@@ -136,5 +137,21 @@ Route::prefix('reports')
             });
 
     });
+Route::middleware(['auth'])->group(function () {
 
+    Route::get(
+        '/gatekeeper/scan',
+        [GateKeeperController::class, 'scanPage']
+    )->name('gatekeeper.scan');
+
+    Route::post(
+        '/gatekeeper/find-pass',
+        [GateKeeperController::class, 'findPass']
+    )->name('gatekeeper.find-pass');
+
+    Route::post(
+        '/gatekeeper/mark-entry/{visitorLog}',
+        [GateKeeperController::class, 'markEntry']
+    )->name('gatekeeper.mark-entry');
+});
 require __DIR__.'/auth.php';

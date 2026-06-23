@@ -26,6 +26,17 @@
                 <i class="bi bi-person-check"></i>
                 <span class="sidebar-link-label">Pending Passes</span>
             </x-sidebar-link>
+            
+            {{-- qr code scanner  --}}
+            <x-sidebar-link :href="route('gatekeeper.scan')" :active="request()->routeIs('gatekeeper.scan')">
+
+                <i class="bi bi-qr-code-scan"></i>
+
+                <span class="sidebar-link-label">
+                    Scan Visitor Pass
+                </span>
+
+            </x-sidebar-link>
         @endcanany
 
         @can('is-admin')
@@ -56,10 +67,10 @@
 
         {{-- user management --}}
         @can('is-admin')
-        <x-sidebar-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('users.index')">
-            <i class="bi bi-people"></i>
-            <span class="sidebar-link-label"> Users Management</span>
-        </x-sidebar-link>
+            <x-sidebar-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('users.index')">
+                <i class="bi bi-people"></i>
+                <span class="sidebar-link-label"> Users Management</span>
+            </x-sidebar-link>
         @endcan
 
         {{-- Reports --}}
