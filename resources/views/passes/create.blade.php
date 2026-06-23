@@ -27,7 +27,7 @@
 
                                 <div class="row">
 
-                                    @if(auth()->user()->isGatekeeper())
+                                    @if(! auth()->user()->isResident())
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label class="form-label">Flat</label>
@@ -138,16 +138,15 @@
                             </div>
 
                             <div class="card-footer bg-white d-flex justify-content-end">
-                                @if(auth()->user()->isGatekeeper())
-                                <a href="{{ route('gatekeeper.visitor-logs.pending') }}" class="btn btn-light me-2">
-                                    Cancel
-                                </a>
+                                @if(! auth()->user()->isResident())
+                                    <a href="{{ route('gatekeeper.visitor-logs.pending') }}" class="btn btn-light me-2">
+                                        Cancel
+                                    </a>
                                 @else
-                                <a href="{{ route('passes.index') }}" class="btn btn-light me-2">
-                                    Cancel
-                                </a>
+                                    <a href="{{ route('passes.index') }}" class="btn btn-light me-2">
+                                        Cancel
+                                    </a>
                                 @endif
-
                                 <button type="submit" class="btn btn-primary">
                                     Create Pass
                                 </button>

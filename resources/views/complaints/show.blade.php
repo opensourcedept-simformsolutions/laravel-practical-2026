@@ -21,13 +21,6 @@
 
             </div>
 
-            {{-- Flash Message --}}
-            @if(session('message'))
-            <div class="alert alert-{{ session('status') === 'success' ? 'success' : 'danger' }}">
-                {{ session('message') }}
-            </div>
-            @endif
-
             {{-- Main Card --}}
             <div class="card shadow-sm border-0">
 

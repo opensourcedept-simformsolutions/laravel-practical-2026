@@ -23,7 +23,7 @@
                             <div class="card-body">
 
                                 {{-- ADMIN FORM --}}
-                                @if(auth()->user()->isAdmin())
+                                @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
 
                                 <p class="text-secondary mb-3 text-decoration-underline">
                                     Complaint Status
@@ -105,7 +105,7 @@
 
                                             <select name="category" class="form-select">
 
-                                                @foreach(\App\Enum\ComplaintCategory::cases() as $category)
+                                                @foreach(\App\Enums\ComplaintCategory::cases() as $category)
                                                 <option value="{{ $category->value }}" {{ old('category', $complaint->
                                                     category) === $category->value ? 'selected' : '' }}
                                                     >
