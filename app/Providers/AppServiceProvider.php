@@ -4,9 +4,14 @@ namespace App\Providers;
 
 use App\Models\Complaint;
 use App\Models\Delivery;
+use App\Events\VisitorEntered;
+use App\Events\VisitorExited;
 use App\Policies\ComplaintPolicy;
 use App\Policies\DeliveryPolicy;
+use App\Listeners\SendVisitorEntryMail;
+use App\Listeners\SendVisitorExitMail;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -42,5 +47,14 @@ class AppServiceProvider extends ServiceProvider
             return $user->isResident();
         });
 
+        Event::listen(
+            VisitorEntered::class,
+            SendVisitorEntryMail::class
+        );
+
+        Event::listen(
+            VisitorExited::class,
+            SendVisitorExitMail::class
+        );
     }
 }

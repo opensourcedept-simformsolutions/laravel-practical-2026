@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Role;
+use App\Models\Society;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -10,30 +12,68 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
+        $superAdminRole = Role::where('name', 'super_admin')->firstOrFail();
+        $adminRole = Role::where('name', 'admin')->firstOrFail();
+        $gatekeeperRole = Role::where('name', 'gatekeeper')->firstOrFail();
+        $residentRole = Role::where('name', 'resident')->firstOrFail();
+
+        /*
+         * Super Admin
+         */
         User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@society.com',
-            'phone' => '9876543210',
-            'password' => Hash::make('password'),
-            'role_id' => 1,
+            'name' => 'Super Admin',
+            'email' => 'superadmin@societyms.test',
+            'phone' => '9999999999',
+            'password' => Hash::make('1'),
+            'role_id' => $superAdminRole->id,
+            'society_id' => Society::first()->id,
+            'email_verified_at' => now(),
         ]);
 
-        User::create([
-            'name' => 'Gatekeeper',
-            'email' => 'gatekeeper@society.com',
-            'phone' => '9876543211',
-            'password' => Hash::make('password'),
-            'role_id' => 2,
-        ]);
+        foreach (Society::all() as $society) {
 
-        for ($i = 1; $i <= 10; $i++) {
+            /*
+             * Society Admin
+             */
             User::create([
-                'name' => "Resident $i",
-                'email' => "resident$i@example.com",
-                'phone' => '90000000' . str_pad($i, 2, '0', STR_PAD_LEFT),
-                'password' => Hash::make('password'),
-                'role_id' => $i % 2 ? 3 : 4,
+                'name' => "{$society->name} Admin",
+                'email' => "admin{$society->id}@societyms.test",
+                'phone' => fake()->numerify('9#########'),
+                'password' => Hash::make('1'),
+                'role_id' => $adminRole->id,
+                'society_id' => $society->id,
+                'email_verified_at' => now(),
             ]);
+
+            /*
+             * Gatekeepers
+             */
+            foreach (range(1, 2) as $i) {
+                User::create([
+                    'name' => fake()->name(),
+                    'email' => "gatekeeper{$society->id}_{$i}@societyms.test",
+                    'phone' => fake()->numerify('9#########'),
+                    'password' => Hash::make('1'),
+                    'role_id' => $gatekeeperRole->id,
+                    'society_id' => $society->id,
+                    'email_verified_at' => now(),
+                ]);
+            }
+
+            /*
+             * Resident
+             */
+            foreach (range(1, 5) as $i) {
+                User::create([
+                    'name' => fake()->name(),
+                    'email' => "resident{$society->id}_{$i}@societyms.test",
+                    'phone' => fake()->numerify('9#########'),
+                    'password' => Hash::make('1'),
+                    'role_id' => $residentRole->id,
+                    'society_id' => $society->id,
+                    'email_verified_at' => now(),
+                ]);
+            }
         }
     }
 }
