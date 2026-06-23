@@ -7,7 +7,7 @@
 
         <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
             <h2 class="h3 fw-bold mb-0">
-                Complaints
+                Complaints Report
             </h2>
 
             <div class="d-flex gap-2">

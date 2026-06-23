@@ -7,13 +7,16 @@ use Illuminate\Database\Seeder;
 
 class VisitorSeeder extends Seeder
 {
-    public function run(): void
+     public function run(): void
     {
-        for ($i = 1; $i <= 10; $i++) {
+        foreach (range(1, 20) as $i) {
+
             Visitor::create([
-                'name' => "Visitor $i",
-                'phone' => '80000000' . str_pad($i, 2, '0', STR_PAD_LEFT),
-                'vehicle_number' => "GJ01AB10$i",
+                'name' => fake()->name(),
+                'phone' => fake()->numerify('9#########'),
+                'vehicle_number' => fake()->optional(70)->regexify(
+                    'GJ[0-9]{2}[A-Z]{2}[0-9]{4}'
+                ),
             ]);
         }
     }

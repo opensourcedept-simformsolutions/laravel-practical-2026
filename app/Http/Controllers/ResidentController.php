@@ -253,7 +253,8 @@ public function destroy(Resident $resident)
 
         DB::transaction(function () use ($resident) {
 
-            $user = $resident->user;
+                $user = $resident->user;
+        Gate::authorize('create', Resident::class);
 
             $resident->delete();
 

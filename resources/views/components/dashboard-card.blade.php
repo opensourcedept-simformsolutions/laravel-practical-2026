@@ -1,3 +1,10 @@
+@props([
+    'value'=>'0',
+    'title',
+
+    'bg',
+    'icon',
+])
 <div class="col-xl-3 col-md-6">
     <div class="dashboard-card">
         <div>

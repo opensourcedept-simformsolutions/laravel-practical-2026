@@ -3,26 +3,31 @@
 namespace Database\Seeders;
 
 use App\Models\Complaint;
+use App\Models\Resident;
 use Illuminate\Database\Seeder;
 
 class ComplaintSeeder extends Seeder
 {
     public function run(): void
     {
-        $categories = [
-            'security',
-            'cleaning',
-            'water',
-            'parking',
-        ];
+        foreach (range(1, 15) as $i) {
 
-        for ($i = 1; $i <= 10; $i++) {
+            $resident = Resident::inRandomOrder()->first();
+
             Complaint::create([
-                'user_id' => rand(3, 12),
-                'category' => $categories[array_rand($categories)],
-                'description' => "Sample complaint $i",
-                'admin_notes' => null,
-                'status' => 'open',
+                'user_id' => $resident->user_id,
+                'category' => fake()->randomElement([
+                    'security',
+                    'cleaning',
+                    'water',
+                    'parking',
+                ]),
+                'description' => fake()->paragraph(),
+                'status' => fake()->randomElement([
+                    'open',
+                    'in_progress',
+                    'resolved',
+                ]),
             ]);
         }
     }
