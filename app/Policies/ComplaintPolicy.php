@@ -46,12 +46,13 @@ class ComplaintPolicy
     public function update(User $user, Complaint $complaint): bool
     {
         if ($user->isAdmin()) {
-            return $complaint->user->society_id === $user->society_id;
+            return $complaint->user->society_id === $user->society_id
+            && $complaint->status !== ComplaintStatus::RESOLVED->value;
         }
 
         if ($user->isResident() || $user->isGatekeeper()) {
             return $complaint->user_id === $user->id
-                && $complaint->status !== ComplaintStatus::RESOLVED->value;
+                && $complaint->status === ComplaintStatus::OPEN->value;
         }
 
         return false;
@@ -67,6 +68,6 @@ class ComplaintPolicy
         }
 
         return $complaint->user_id === $user->id
-            && $complaint->status === ComplaintStatus::RESOLVED->value;
+            && $complaint->status === (ComplaintStatus::OPEN->value || ComplaintStatus::RESOLVED->value);
     }
 }
