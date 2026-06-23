@@ -5,7 +5,6 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-
 class StoreUserRequest extends FormRequest
 {
     /**
@@ -36,16 +35,15 @@ class StoreUserRequest extends FormRequest
             'email' => [
                 'required',
                 'email',
-                'unique:users,email'
-                
-                    
+                'unique:users,email',
+
             ],
             'phone' => [
                 'required',
                 'digits_between:10,15',
-                'unique:users,phone'
+                'unique:users,phone',
             ],
-            
+
             'password' => [
                 'required',
                 'min:1',
@@ -53,8 +51,14 @@ class StoreUserRequest extends FormRequest
 
             'role_id' => [
                 'required',
-                'exists:roles,id'
-                ],
+                'exists:roles,id',
+            ],
+            'society_id' => [
+                auth()->user()?->isSuperAdmin()
+                    ? 'required'
+                    : 'nullable',
+                'exists:societies,id',
+            ],
 
         ];
     }

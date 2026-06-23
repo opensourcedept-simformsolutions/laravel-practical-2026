@@ -67,19 +67,7 @@ class DashboardController extends Controller
                     'status',
                     'received'
                 )->count(),
-            ],
-
-            'latest_societies' => Society::latest()
-                ->take(5)
-                ->get(),
-
-            'latest_complaints' => Complaint::latest()
-                ->take(5)
-                ->get(),
-
-            'latest_visitors' => VisitorLog::latest()
-                ->take(5)
-                ->get(),
+            ]
         ]);
 
     }
@@ -175,47 +163,6 @@ class DashboardController extends Controller
                     'resolved'
                 )->count(),
             ],
-
-            'pending_complaints' => Complaint::whereHas(
-                'user',
-                fn ($q) => $q->where(
-                    'society_id',
-                    $societyId
-                )
-            )
-                ->whereIn(
-                    'status',
-                    ['open', 'in_progress']
-                )
-                ->latest()
-                ->take(5)
-                ->get(),
-
-            'today_visitors' => VisitorLog::whereHas(
-                'flat',
-                fn ($q) => $q->where(
-                    'society_id',
-                    $societyId
-                )
-            )
-                ->whereDate(
-                    'visit_date',
-                    today()
-                )
-                ->latest()
-                ->take(5)
-                ->get(),
-
-            'recent_deliveries' => Delivery::whereHas(
-                'flat',
-                fn ($q) => $q->where(
-                    'society_id',
-                    $societyId
-                )
-            )
-                ->latest()
-                ->take(5)
-                ->get(),
         ]);
     }
 

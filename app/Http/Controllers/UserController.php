@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\Role;
+use App\Models\Society;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -19,10 +20,14 @@ class UserController extends Controller
 
         if ($request->ajax()) {
 
-            $query = User::with('role')
+            $query = User::with([
+                'role',
+                'society',
+            ])
                 ->select([
                     'users.*',
                     'roles.name as role_name',
+                    'societies.name as society_name',
                 ])
                 ->leftJoin(
                     'roles',
@@ -30,20 +35,54 @@ class UserController extends Controller
                     '=',
                     'roles.id'
                 )
-                ->where(
-                    'society_id',
-                    auth()->user()->society_id
+                ->leftJoin(
+                    'societies',
+                    'users.society_id',
+                    '=',
+                    'societies.id'
                 )
                 ->where('users.id', '!=', auth()->id())
                 ->whereHas('role', function ($q) {
                     $q->where('name', '!=', 'super_admin');
                 });
 
+            if (! auth()->user()->isSuperAdmin()) {
+
+                $query->where(
+                    'users.society_id',
+                    auth()->user()->society_id
+                );
+            }
+            if ($request->filled('role')) {
+
+                $query->whereHas(
+                    'role',
+                    fn ($q) => $q->where(
+                        'name',
+                        $request->role
+                    )
+                );
+            }
+            if (
+                auth()->user()->isSuperAdmin()
+                && $request->filled('society_id')
+            ) {
+
+                $query->where(
+                    'users.society_id',
+                    $request->society_id
+                );
+            }
+
             return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn(
                     'role',
                     fn ($row) => ucfirst($row->role_name)
+                )
+                ->addColumn(
+                    'society',
+                    fn ($row) => $row->society_name ?? '-'
                 )
                 ->addColumn('actions', function ($row) {
 
@@ -76,21 +115,38 @@ class UserController extends Controller
                 ->make(true);
         }
 
-        return view('admin.users.index');
+        $roles = Role::whereNotIn('name', [
+            'super_admin',
+        ])->get();
+
+        $societies = auth()->user()->isSuperAdmin()
+            ? Society::orderBy('name')->get()
+            : collect();
+
+        return view(
+            'admin.users.index',
+            compact(
+                'roles',
+                'societies'
+            ));
     }
 
     public function create()
     {
         Gate::authorize('create', User::class);
 
-        $roles = Role::whereIn('name', [
-            'admin',
-            'gatekeeper',
-        ])->get();
+        $roles = Role::whereIn('name', ['admin', 'gatekeeper'])->get(); 
+
+        $societies = auth()->user()->isSuperAdmin()
+            ? Society::orderBy('name')->get()
+            : collect();
 
         return view(
             'admin.users.create',
-            compact('roles')
+            compact(
+                'roles',
+                'societies'
+            )
         );
     }
 
@@ -100,8 +156,11 @@ class UserController extends Controller
 
         $validated = $request->validated();
 
-        $validated['society_id'] =
-            auth()->user()->society_id;
+        if (auth()->user()->isAdmin()) {
+
+            $validated['society_id'] =
+                auth()->user()->society_id;
+        }
 
         User::create($validated);
         Session::flash(
@@ -123,15 +182,15 @@ class UserController extends Controller
     {
         Gate::authorize('update', $user);
 
-        $roles = Role::whereIn('name', [
-            'resident',
-            'admin',
-            'gatekeeper',
-        ])->get();
+        $roles = Role::whereIn('name', ['resident', 'admin', 'gatekeeper'])->get();
+
+        $societies = auth()->user()->isSuperAdmin()
+        ? Society::orderBy('name')->get()
+        : collect();
 
         return view(
             'admin.users.edit',
-            compact('user', 'roles')
+            compact('user', 'roles', 'societies')
         );
     }
 
@@ -147,6 +206,9 @@ class UserController extends Controller
             unset($validated['password']);
         }
 
+        if (auth()->user()->isAdmin()) {
+            unset($validated['society_id']);
+        }
         $user->update($validated);
 
         Session::flash(
