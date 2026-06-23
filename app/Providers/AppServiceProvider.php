@@ -2,11 +2,10 @@
 
 namespace App\Providers;
 
-use App\Models\Delivery;
-use App\Policies\DeliveryPolicy;
-
 use App\Models\Complaint;
+use App\Models\Delivery;
 use App\Policies\ComplaintPolicy;
+use App\Policies\DeliveryPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -41,5 +40,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('is-resident', function ($user) {
             return $user->isResident();
         });
+
     }
 }

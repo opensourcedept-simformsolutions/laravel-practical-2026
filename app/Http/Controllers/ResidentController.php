@@ -14,45 +14,44 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
-use Exception;
 use Illuminate\Support\Str;
 use Throwable;
 use Yajra\DataTables\Facades\DataTables;
 
 class ResidentController extends Controller
 {
-  public function index(Request $request)
-{
-    if ($request->ajax()) {
+    public function index(Request $request)
+    {
+        if ($request->ajax()) {
 
-        $query = Resident::with([
-            'user' => function ($q) {
-                $q->withTrashed();
-            },
-            'flat'
-        ]);
+            $query = Resident::with([
+                'user' => function ($q) {
+                    $q->withTrashed();
+                },
+                'flat',
+            ]);
 
-        return DataTables::of($query)
+            return DataTables::of($query)
 
-            ->addColumn('name', fn ($row) => $row->user?->name ?? '-')
-            ->addColumn('email', fn ($row) => $row->user?->email ?? '-')
-            ->addColumn('phone', fn ($row) => $row->user?->phone ?? '-')
+                ->addColumn('name', fn ($row) => $row->user?->name ?? '-')
+                ->addColumn('email', fn ($row) => $row->user?->email ?? '-')
+                ->addColumn('phone', fn ($row) => $row->user?->phone ?? '-')
 
-            ->addColumn('flat', fn ($row) => $row->flat?->flat_number ?? '-')
-            ->addColumn('wing', fn ($row) => $row->flat?->wing ?? '-')
+                ->addColumn('flat', fn ($row) => $row->flat?->flat_number ?? '-')
+                ->addColumn('wing', fn ($row) => $row->flat?->wing ?? '-')
 
-            ->addColumn('type', function ($row) {
-                return $row->resident_type === 'owner'
-                    ? '<span class="badge bg-success">Owner</span>'
-                    : '<span class="badge bg-info">Tenant</span>';
-            })
+                ->addColumn('type', function ($row) {
+                    return $row->resident_type === 'owner'
+                        ? '<span class="badge bg-success">Owner</span>'
+                        : '<span class="badge bg-info">Tenant</span>';
+                })
 
-            ->addColumn('actions', function ($row) {
+                ->addColumn('actions', function ($row) {
 
-                $editUrl = route('residents.edit', $row->id);
-                $deleteUrl = route('residents.destroy', $row->id);
+                    $editUrl = route('residents.edit', $row->id);
+                    $deleteUrl = route('residents.destroy', $row->id);
 
-                return '
+                    return '
                     <a href="'.$editUrl.'" class="btn btn-warning btn-sm">Edit</a>
 
                     <form action="'.$deleteUrl.'" method="POST" class="d-inline">
@@ -64,14 +63,14 @@ class ResidentController extends Controller
                         </button>
                     </form>
                 ';
-            })
+                })
 
-            ->rawColumns(['type', 'actions'])
-            ->make(true);
+                ->rawColumns(['type', 'actions'])
+                ->make(true);
+        }
+
+        return view('residents.index');
     }
-
-    return view('residents.index');
-}
 
     public function create()
     {
@@ -91,17 +90,14 @@ class ResidentController extends Controller
 
             $data = $request->validated();
 
-            $user = null;
-
             $residentRoleId = Role::where(
                 'name',
                 'resident'
             )->value('id');
 
-            DB::transaction(function () use (
+            $user = DB::transaction(function () use (
                 $data,
-                $residentRoleId,
-                &$user
+                $residentRoleId
             ) {
 
                 $user = User::create([
@@ -119,46 +115,43 @@ class ResidentController extends Controller
                     'resident_type' => $data['resident_type'],
                 ]);
 
+                return $user;
             });
 
-            DB::afterCommit(function () use ($user) {
+            try {
 
-                if ($user) {
-                    $user->notify(
-                        new ResidentWelcomeNotification($user)
-                    );
-                }
+                $user->notify(
+                    new ResidentWelcomeNotification($user)
+                );
 
-            });
+            } catch (Throwable $e) {
 
-            Session::flash(
-                'message',
-                'Resident created successfully.'
-            );
+                Log::error('Resident notification failed', [
+                    'user_id' => $user->id,
+                    'message' => $e->getMessage(),
+                ]);
+            }
 
-            Session::flash(
-                'status',
-                'success'
-            );
-
-            return redirect()->route('residents.index');
+            return redirect()
+                ->route('residents.index')
+                ->with([
+                    'message' => 'Resident created successfully.',
+                    'status' => 'success',
+                ]);
 
         } catch (Throwable $e) {
 
-            Log::error($e);
+            Log::error('Resident creation failed', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
 
-            Session::flash(
-                'message',
-                'Unable to create resident.'
-            );
-
-            Session::flash(
-                'status',
-                'error'
-            );
-
-            return back()->withInput();
-
+            return back()
+                ->withInput()
+                ->with([
+                    'message' => 'Unable to create resident.',
+                    'status' => 'error',
+                ]);
         }
     }
 
@@ -247,31 +240,39 @@ class ResidentController extends Controller
     public function destroy(Resident $resident)
     {
         Gate::authorize('delete', $resident);
+
         try {
 
             DB::transaction(function () use ($resident) {
 
-                $resident->user->delete();
+                $user = $resident->user;
+
+                $resident->delete();
+
+                if ($user) {
+                    $user->delete();
+                }
 
             });
 
             return redirect()
                 ->route('residents.index')
-                ->with(
-                    'success',
-                    'Resident deleted successfully'
-                );
+                ->with([
+                    'message' => 'Resident deleted successfully.',
+                    'status' => 'success',
+                ]);
 
         } catch (Throwable $e) {
 
-            Log::error($e);
+            Log::error('Resident delete failed', [
+                'resident_id' => $resident->id,
+                'message' => $e->getMessage(),
+            ]);
 
-            return back()
-                ->with(
-                    'error',
-                    'Unable to delete resident'
-                );
+            return back()->with([
+                'message' => 'Unable to delete resident.',
+                'status' => 'error',
+            ]);
         }
-
     }
 }

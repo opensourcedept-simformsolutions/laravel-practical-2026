@@ -4,22 +4,15 @@
 
 @section('content')
     <x-form.form :action="route('deliveries.update', $delivery)" method="PUT" class="mx-auto w-100" style="max-width: 760px;">
-        <x-form.form-section title="Add Delivery">
-            <x-form.field name="flat_id" label="Flat" required>
-                <x-form.select
-                    name="flat_id"
-                    :options="$flatOptions"
-                    :value="old('vendor', $delivery->flat_id)"
-                    required />
-            </x-form.field>
-
-            <x-form.field name="resident_id" label="Resident" required>
-                <x-form.select
+        <x-form.form-section title="Edit Delivery">
+            <x-form.field name="resident_id" label="Resident">
+            <x-form.select
                     name="resident_id"
+                    id="resident_id"
                     :options="$residentOptions"
-                    placeholder="Select Resident"
-                    :value="old('vendor', $delivery->flat_id)"
-                    required />
+                    :value="old('resident_id', $delivery->resident_id)"
+                    placeholder="Search Resident"
+                />
             </x-form.field>
 
             <x-form.field name="vendor" label="Vendor" required>
@@ -42,6 +35,11 @@
             </x-form.field>
 
             <div class="d-flex justify-content-end">
+                <a href="{{ route('deliveries.index') }}" class="btn btn-secondary mx-2">
+                    <i class="bi bi-arrow-left"></i>
+                    Back
+                </a>
+
                 <x-form.submit-button>
                     Save Delivery
                 </x-form.submit-button>
@@ -49,3 +47,15 @@
         </x-form.form-section>
     </x-form.form>
 @endsection
+
+@push('scripts')
+    <script>
+        $(function () {
+            $('#resident_id').select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Search Resident',
+                width: '100%'
+            });
+        });
+    </script>
+@endpush

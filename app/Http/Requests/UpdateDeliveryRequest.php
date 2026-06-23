@@ -23,7 +23,6 @@ class UpdateDeliveryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'flat_id' => ['required', 'exists:flats,id'],
             'resident_id' => ['sometimes', 'exists:residents,id'],
             'vendor' => ['sometimes', 'string', 'max:255'],
             'package_details' => ['sometimes', 'string', 'min:3'],
