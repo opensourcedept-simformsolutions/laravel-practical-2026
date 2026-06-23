@@ -31,25 +31,33 @@ class GateKeeperController extends Controller
         ]);
     }
 
-    public function markEntry(VisitorLog $visitorLog)
-    {
-        if ($visitorLog->status !== 'pending') {
+public function markEntry(Request $request, VisitorLog $visitorLog)
+{
+    $request->validate([
+        'photo' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+    ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Visitor already entered or pass not valid.',
-            ], 422);
-        }
-
-        $visitorLog->update([
-            'status' => 'entered',
-            'entry_time' => now(),
-            'gatekeeper_id' => auth()->id(),
-        ]);
+    if ($visitorLog->status !== 'pending') {
 
         return response()->json([
-            'success' => true,
-            'message' => 'Entry marked successfully.',
-        ]);
+            'success' => false,
+            'message' => 'Visitor already entered or pass not valid.',
+        ], 422);
     }
+
+    $visitorLog->status = 'entered';
+    $visitorLog->entry_time = now();
+    $visitorLog->gatekeeper_id = auth()->id();
+
+    $visitorLog->photo_path = $request
+        ->file('photo')
+        ->store('visitor_photos', 'public');
+
+    $visitorLog->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Entry marked successfully.',
+    ]);
+}
 }
