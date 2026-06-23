@@ -2,16 +2,18 @@
 
 namespace App\Http\Requests\Delivery;
 
+use App\Enums\DeliveryStatus;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
- * Handle validation for creating a new delivery record.
+ * Handle validation for updating an existing delivery record.
  *
- * Ensures the selected resident exists and validates
- * delivery vendor and package information.
+ * Supports partial updates by validating only the fields
+ * present in the request payload.
  */
-class StoreDeliveryRequest extends FormRequest
+class UpdateDeliveryRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,16 +24,23 @@ class StoreDeliveryRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules for creating a delivery.
+     * Get the validation rules for updating a delivery.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'resident_id' => ['required', 'exists:residents,id'],
             'vendor' => ['required', 'string', 'max:255'],
             'package_details' => ['required', 'string', 'min:3'],
         ];
+
+        if (auth()->user()->isAdmin() || auth()->user()->isSuperAdmin()) {
+            $rules['status'] = ['required', Rule::enum(DeliveryStatus::class)];
+        }
+
+        return $rules;
     }
 }
+

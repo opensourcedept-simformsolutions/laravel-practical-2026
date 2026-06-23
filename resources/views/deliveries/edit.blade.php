@@ -15,6 +15,22 @@
                 />
             </x-form.field>
 
+            @can('is-admin')
+
+                <x-form.field name="status" label="Status">
+                    <x-form.select
+                        name="status"
+                        id="status"
+                        :options="[
+                            \App\Enums\DeliveryStatus::RECEIVED->value => 'Received',
+                            \App\Enums\DeliveryStatus::DELIVERED->value => 'Delivered',
+                        ]"
+                        :value="old('status', $delivery->status)"
+                        placeholder="Select Status"
+                    />
+                </x-form.field>
+            @endcan
+
             <x-form.field name="vendor" label="Vendor" required>
                 <x-form.input
                     name="vendor"
@@ -54,6 +70,14 @@
             $('#resident_id').select2({
                 theme: 'bootstrap-5',
                 placeholder: 'Search Resident',
+                width: '100%'
+            });
+        });
+
+        $(function () {
+            $('#status').select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Search status',
                 width: '100%'
             });
         });
