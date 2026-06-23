@@ -8,55 +8,62 @@ use Yajra\DataTables\Facades\DataTables;
 use App\Http\Requests\StoreSocietyRequest;
 use App\Http\Requests\UpdateSocietyRequest;
 use Exception;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
 class SocietyController extends Controller
 {
     public function index()
     {
+        $this->authorize('viewAny', Society::class);
+
         return view('societies.index');
     }
 
-    public function data()
+    public function data(Request $request)
     {
-        $societies = Society::withTrashed();
+        try {
 
-        return DataTables::of($societies)
+            $this->authorize('viewAny', Society::class);
 
-            ->addIndexColumn()
+            $societies = Society::withTrashed();
 
-            ->editColumn('created_at', function ($society) {
-                return $society->created_at->format('d M Y');
-            })
+            return DataTables::of($societies)
 
-            ->addColumn('status', function ($society) {
+                ->addIndexColumn()
 
-                return $society->deleted_at
-                    ? '<span class="badge bg-danger">Deleted</span>'
-                    : '<span class="badge bg-success">Active</span>';
-            })
+                ->editColumn('created_at', function ($society) {
+                    return $society->created_at->format('d M Y');
+                })
 
-            ->addColumn('actions', function ($society) {
+                ->addColumn('status', function ($society) {
 
-                $actions = '<div class="d-flex justify-content-center gap-2">';
+                    return $society->deleted_at
+                        ? '<span class="badge bg-danger">Deleted</span>'
+                        : '<span class="badge bg-success">Active</span>';
+                })
 
-                $actions .= '
+                ->addColumn('actions', function ($society) {
+
+                    $actions = '<div class="d-flex justify-content-center gap-2">';
+
+                    $actions .= '
                     <a href="' . route('societies.show', $society->id) . '"
                         class="btn btn-info text-white">
                         <i class="bi bi-eye"></i>
                     </a>
                 ';
 
-                if (!$society->trashed()) {
+                    if (!$society->trashed()) {
 
-                    $actions .= '
+                        $actions .= '
                         <a href="' . route('societies.edit', $society->id) . '"
                             class="btn btn-primary">
                             <i class="bi bi-pencil-square"></i>
                         </a>
                     ';
 
-                    $actions .= '
+                        $actions .= '
                         <button
                             class="btn btn-danger btn-action"
                             data-url="' . route('societies.destroy', $society->id) . '"
@@ -68,9 +75,9 @@ class SocietyController extends Controller
                             <i class="bi bi-trash"></i>
                         </button>
                     ';
-                } else {
+                    } else {
 
-                    $actions .= '
+                        $actions .= '
                         <button
                             class="btn btn-success btn-action"
                             data-url="' . route('societies.restore', $society->id) . '"
@@ -82,20 +89,33 @@ class SocietyController extends Controller
                             <i class="bi bi-arrow-counterclockwise"></i>
                         </button>
                     ';
-                }
+                    }
 
-                $actions .= '</div>';
+                    $actions .= '</div>';
 
-                return $actions;
-            })
+                    return $actions;
+                })
 
-            ->rawColumns(['actions', 'status'])
+                ->rawColumns(['actions', 'status'])
 
-            ->make(true);
+                ->make(true);
+        } catch (Exception $e) {
+
+            Log::error($e->getMessage());
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Something went wrong while loading visitor logs.',
+                ], 500);
+            }
+        }
     }
 
     public function create()
     {
+        $this->authorize('create', Society::class);
+
         return view('societies.create');
     }
 
@@ -103,29 +123,51 @@ class SocietyController extends Controller
     {
         try {
 
+            $this->authorize('create', Society::class);
+
             Society::create($request->validated());
 
             return redirect()
                 ->route('societies.index')
-                ->with('success', 'Society created successfully.');
+                ->with([
+                    'status' => 'success',
+                    'message' => 'Society created successfully.'
+                ]);
         } catch (Exception $e) {
-            Session::flash('message', 'Something went wrong.');
-            Session::flash('status', 'error');
+            Log::error($e->getMessage());
 
-            return redirect()->back()->withInput();
+            return back()
+                ->withInput()
+                ->with([
+                    'status' => 'error',
+                    'message' => 'Something went wrong.'
+                ]);
         }
     }
 
-    public function show(string $id)
+    public function show(Society $society)
     {
-        $society = Society::withTrashed()
-            ->findOrFail($id);
+        try {
 
-        return view('societies.show', compact('society'));
+            $this->authorize('view', $society);
+
+            $society = Society::withTrashed()
+                ->findOrFail($society->id);
+
+            return view('societies.show', compact('society'));
+        } catch (Exception $e) {
+
+            return back()->with([
+                'status' => 'error',
+                'message' => 'Something went wrong.'
+            ]);
+        }
     }
 
     public function edit(Society $society)
     {
+        $this->authorize('update', $society);
+
         return view('societies.edit', compact('society'));
     }
 
@@ -133,25 +175,37 @@ class SocietyController extends Controller
     public function update(UpdateSocietyRequest $request, Society $society)
     {
         try {
+
+            $this->authorize('update', $society);
+
             $society->update(
                 $request->validated()
             );
 
             return redirect()
                 ->route('societies.index')
-                ->with('success', 'Society updated successfully.');
+                ->with([
+                    'status' => 'success',
+                    'message' => 'Society updated successfully.'
+                ]);
         } catch (Exception $e) {
 
-            Session::flash('message', 'Something went wrong.');
-            Session::flash('status', 'error');
+            Log::error($e->getMessage());
 
-            return redirect()->back()->withInput();
+            return back()
+                ->withInput()
+                ->with([
+                    'status' => 'error',
+                    'message' => 'Something went wrong.'
+                ]);
         }
     }
 
     public function destroy(Society $society)
     {
         try {
+
+            $this->authorize('delete', $society);
 
             $society->delete();
 
@@ -168,12 +222,11 @@ class SocietyController extends Controller
         }
     }
 
-    public function restore($id)
+    public function restore(Society $society)
     {
         try {
 
-            $society = Society::withTrashed()
-                ->findOrFail($id);
+            $this->authorize('restore', $society);
 
             $society->restore();
 

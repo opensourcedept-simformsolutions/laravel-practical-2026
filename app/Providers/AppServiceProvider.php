@@ -2,11 +2,15 @@
 
 namespace App\Providers;
 
+use App\Events\VisitorEntered;
+use App\Events\VisitorExited;
+use App\Listeners\SendVisitorEntryMail;
+use App\Listeners\SendVisitorExitMail;
 use App\Models\Delivery;
 use App\Policies\DeliveryPolicy;
-
 use App\Models\Complaint;
 use App\Policies\ComplaintPolicy;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -30,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Gate::policy(Complaint::class, ComplaintPolicy::class);
+
         Gate::define('is-admin', function ($user) {
             return $user->isAdmin();
         });
@@ -41,5 +46,15 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('is-resident', function ($user) {
             return $user->isResident();
         });
+
+        Event::listen(
+            VisitorEntered::class,
+            SendVisitorEntryMail::class
+        );
+
+        Event::listen(
+            VisitorExited::class,
+            SendVisitorExitMail::class
+        );
     }
 }

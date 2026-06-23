@@ -110,7 +110,7 @@ Route::middleware(['auth', 'role:super_admin'])
         Route::delete('societies/{society}', 'destroy')->name('destroy');
 
         Route::patch(
-            'societies/{id}/restore',
+            'societies/{society}/restore',
             'restore'
         )->name('restore');
     });
