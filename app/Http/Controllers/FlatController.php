@@ -15,22 +15,23 @@ class FlatController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
+            $query = Flat::where('society_id', auth()->user()->society_id);
 
-            return DataTables::of(Flat::query())
+            return DataTables::of($query)
                 ->addColumn('actions', function ($row) {
 
                     $editUrl = route('flats.edit', $row->id);
                     $deleteUrl = route('flats.destroy', $row->id);
 
                     return '
-                    <a href="'.$editUrl.'" class="btn btn-sm btn-warning">Edit</a>
+                    <a href="'.$editUrl.'" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
 
                     <form action="'.$deleteUrl.'" method="POST" style="display:inline-block;">
                         '.csrf_field().'
                         '.method_field('DELETE').'
                         <button type="submit" class="btn btn-sm btn-danger"
                             onclick="return confirm(\'Are you sure?\')">
-                            Delete
+                              <i class="bi bi-trash"></i>
                         </button>
                     </form>
                 ';
@@ -96,6 +97,7 @@ class FlatController extends Controller
         $flat->delete();
         Session::flash('message', 'Flat Deleted successfully.');
         Session::flash('status', 'success');
+
         return redirect()->route('flats.index')
             ->with('success', 'Flat deleted successfully');
     }

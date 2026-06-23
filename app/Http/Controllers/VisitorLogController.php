@@ -80,13 +80,13 @@ class VisitorLogController extends Controller
                                         class="btn btn-success btn-sm entry-btn"
                                         data-id="'.$log->id.'">
                                         Entry
-                                    </button>
+                                    </button>]  
                                 ';
                             }
 
                             if ($user->can('update', $log)) {
                                 $buttons .= '
-                                    <a href="'.route('passes.edit', $log->id).'"
+                                    <a href="'.route('passes.edit', $log->id).'"   
                                         class="btn btn-warning btn-sm">
                                         Edit
                                     </a>

@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Http\Requests\StoreResidentRequest;
 use App\Http\Requests\UpdateResidentRequest;
 use App\Models\Flat;
@@ -14,63 +13,66 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
+use Exception;
 use Illuminate\Support\Str;
 use Throwable;
 use Yajra\DataTables\Facades\DataTables;
 
 class ResidentController extends Controller
 {
-    public function index(Request $request)
-    {
-        if ($request->ajax()) {
+  public function index(Request $request)
+{
+        Gate::authorize('viewAny', Resident::class);
+         if ($request->ajax()) {
 
-            $query = Resident::with([
-                'user' => function ($q) {
-                    $q->withTrashed();
-                },
-                'flat',
-            ]);
+        $query = Resident::with([
+            'user' => function ($q) {
+                $q->withTrashed();
+            },
+            'flat'
+        ])->whereHas('flat', function ($q) {
+            $q->where('society_id', auth()->user()->society_id);
+        });
+        return DataTables::of($query)
 
-            return DataTables::of($query)
+            ->addColumn('name', fn ($row) => $row->user?->name ?? '-')
+            ->addColumn('email', fn ($row) => $row->user?->email ?? '-')
+            ->addColumn('phone', fn ($row) => $row->user?->phone ?? '-')
 
-                ->addColumn('name', fn ($row) => $row->user?->name ?? '-')
-                ->addColumn('email', fn ($row) => $row->user?->email ?? '-')
-                ->addColumn('phone', fn ($row) => $row->user?->phone ?? '-')
+            ->addColumn('flat', fn ($row) => $row->flat?->flat_number ?? '-')
+            ->addColumn('wing', fn ($row) => $row->flat?->wing ?? '-')
 
-                ->addColumn('flat', fn ($row) => $row->flat?->flat_number ?? '-')
-                ->addColumn('wing', fn ($row) => $row->flat?->wing ?? '-')
+            ->addColumn('type', function ($row) {
+                return $row->resident_type === 'owner'
+                    ? '<span class="badge bg-success">Owner</span>'
+                    : '<span class="badge bg-info">Tenant</span>';
+            })
 
-                ->addColumn('type', function ($row) {
-                    return $row->resident_type === 'owner'
-                        ? '<span class="badge bg-success">Owner</span>'
-                        : '<span class="badge bg-info">Tenant</span>';
-                })
+            ->addColumn('actions', function ($row) {
 
-                ->addColumn('actions', function ($row) {
+                $editUrl = route('residents.edit', $row->id);
+                $deleteUrl = route('residents.destroy', $row->id);
 
-                    $editUrl = route('residents.edit', $row->id);
-                    $deleteUrl = route('residents.destroy', $row->id);
-
-                    return '
-                    <a href="'.$editUrl.'" class="btn btn-warning btn-sm">Edit</a>
+                return '
+                    <a href="'.$editUrl.'" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
 
                     <form action="'.$deleteUrl.'" method="POST" class="d-inline">
                         '.csrf_field().'
                         '.method_field('DELETE').'
                         <button type="submit" class="btn btn-danger btn-sm"
                             onclick="return confirm(\'Delete this resident?\')">
-                            Delete
+                              <i class="bi bi-trash"></i>
                         </button>
                     </form>
                 ';
-                })
+            })
 
-                ->rawColumns(['type', 'actions'])
-                ->make(true);
-        }
-
-        return view('residents.index');
+            ->rawColumns(['type', 'actions'])
+            ->make(true);
     }
+
+    return view('residents.index');
+}
 
     public function create()
     {
@@ -90,14 +92,17 @@ class ResidentController extends Controller
 
             $data = $request->validated();
 
+            $user = null;
+
             $residentRoleId = Role::where(
                 'name',
                 'resident'
             )->value('id');
 
-            $user = DB::transaction(function () use (
+            DB::transaction(function () use (
                 $data,
-                $residentRoleId
+                $residentRoleId,
+                &$user
             ) {
 
                 $user = User::create([
@@ -115,43 +120,46 @@ class ResidentController extends Controller
                     'resident_type' => $data['resident_type'],
                 ]);
 
-                return $user;
             });
 
-            try {
+            DB::afterCommit(function () use ($user) {
 
-                $user->notify(
-                    new ResidentWelcomeNotification($user)
-                );
+                if ($user) {
+                    $user->notify(
+                        new ResidentWelcomeNotification($user)
+                    );
+                }
 
-            } catch (Throwable $e) {
+            });
 
-                Log::error('Resident notification failed', [
-                    'user_id' => $user->id,
-                    'message' => $e->getMessage(),
-                ]);
-            }
+            Session::flash(
+                'message',
+                'Resident created successfully.'
+            );
 
-            return redirect()
-                ->route('residents.index')
-                ->with([
-                    'message' => 'Resident created successfully.',
-                    'status' => 'success',
-                ]);
+            Session::flash(
+                'status',
+                'success'
+            );
+
+            return redirect()->route('residents.index');
 
         } catch (Throwable $e) {
 
-            Log::error('Resident creation failed', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
+            Log::error($e);
 
-            return back()
-                ->withInput()
-                ->with([
-                    'message' => 'Unable to create resident.',
-                    'status' => 'error',
-                ]);
+            Session::flash(
+                'message',
+                'Unable to create resident.'.$e->getMessage()
+            );
+
+            Session::flash(
+                'status',
+                'error'
+            );
+
+            return back()->withInput();
+
         }
     }
 
@@ -189,7 +197,7 @@ class ResidentController extends Controller
                 $resident,
                 $data
             ) {
-
+                    
                 $resident->user->update([
                     'name' => $data['name'],
                     'email' => $data['email'],
@@ -237,42 +245,42 @@ class ResidentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Resident $resident)
-    {
-        Gate::authorize('delete', $resident);
+public function destroy(Resident $resident)
+{
+    Gate::authorize('delete', $resident);
 
-        try {
+    try {
 
-            DB::transaction(function () use ($resident) {
+        DB::transaction(function () use ($resident) {
 
-                $user = $resident->user;
+            $user = $resident->user;
 
-                $resident->delete();
+            $resident->delete();
 
-                if ($user) {
-                    $user->delete();
-                }
+            if ($user) {
+                $user->delete();
+            }
 
-            });
+        });
 
-            return redirect()
-                ->route('residents.index')
-                ->with([
-                    'message' => 'Resident deleted successfully.',
-                    'status' => 'success',
-                ]);
-
-        } catch (Throwable $e) {
-
-            Log::error('Resident delete failed', [
-                'resident_id' => $resident->id,
-                'message' => $e->getMessage(),
+        return redirect()
+            ->route('residents.index')
+            ->with([
+                'message' => 'Resident deleted successfully.',
+                'status' => 'success',
             ]);
 
-            return back()->with([
-                'message' => 'Unable to delete resident.',
-                'status' => 'error',
-            ]);
-        }
+    } catch (Throwable $e) {
+
+        Log::error('Resident delete failed', [
+            'resident_id' => $resident->id,
+            'message' => $e->getMessage(),
+        ]);
+
+        return back()->with([
+            'message' => 'Unable to delete resident.',
+            'status' => 'error',
+        ]);
     }
+}
 }
