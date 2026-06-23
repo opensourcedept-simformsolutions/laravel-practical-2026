@@ -57,6 +57,12 @@ class UpdateUserRequest extends FormRequest
                 'confirmed',
                 'min:1',
             ],
+            'society_id' => [
+                auth()->user()->isSuperAdmin()
+                    ? 'required'
+                    : 'nullable',
+                'exists:societies,id',
+            ],
         ];
     }
 }
