@@ -191,6 +191,26 @@ http://127.0.0.1:8000
 
 ---
 
+## Additional Commands
+
+### Create Storage Symlink
+
+```bash
+php artisan storage:link
+````
+
+### Start Email Queue Worker
+
+```bash
+php artisan queue:work --queue=emails
+```
+
+These commands are required for:
+
+* Serving uploaded files (visitor photos, QR codes, etc.)
+* Processing queued email notifications
+---
+
 ## Dashboard
 
 The Super Admin Dashboard provides a centralized overview of societies, residents, gatekeepers, visitors, complaints, and deliveries.
