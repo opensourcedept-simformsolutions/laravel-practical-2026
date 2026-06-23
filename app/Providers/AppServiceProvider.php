@@ -29,9 +29,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Gate::policy(Complaint::class, ComplaintPolicy::class);
-        Gate::define('is-superadmin', function ($user) {
-            return $user->isSuperAdmin();
-        });
+
         Gate::define('is-admin', function ($user) {
             return $user->isAdmin();
         });
