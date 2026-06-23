@@ -1,6 +1,7 @@
 <div class="d-flex flex-wrap gap-2">
     <a href="{{ route('deliveries.show', $delivery) }}"
         class="btn btn-sm btn-primary rounded">
+        class="btn btn-sm btn-primary rounded">
         <i class="bi bi-eye"></i> View
     </a>
     @canany(['is-admin','is-gatekeeper'])

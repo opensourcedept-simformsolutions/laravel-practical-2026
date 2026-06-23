@@ -35,6 +35,7 @@
 .sidebar-brand-text,
 .sidebar-link-label {
     transition: opacity 0.2s ease, visibility 0.2s ease;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
 .sidebar-menu {
@@ -188,7 +189,7 @@
 }
 
 #reportsArrow {
-    transition: transform 0.2s ease;
+    transition: transform .2s ease;
 }
 
 @media (max-width: 991.98px) {
@@ -199,7 +200,7 @@
         width: 260px;
         height: 100vh;
         z-index: 1050;
-        transition: transform 0.3s ease;
+        transition: transform .3s ease;
     }
 
     .sidebar-container.collapsed {

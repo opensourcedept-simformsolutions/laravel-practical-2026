@@ -1,4 +1,5 @@
 <aside class="sidebar" id="appSidebar">
+
     <div class="sidebar-header">
         <i class="bi bi-buildings"></i>
         <span class="sidebar-brand-text">SocietyMS</span>
@@ -13,35 +14,31 @@
         </x-sidebar-link>
 
         {{-- Passes --}}
-        @cannot(['is-gatekeeper', 'is-admin'])
+        @canany(['is-admin', 'is-resident'])
             <x-sidebar-link :href="route('passes.index')" :active="request()->routeIs('passes.*')">
-                <i class="bi bi-pass"></i>
+                <i class="bi bi-person-vcard"></i>
                 <span class="sidebar-link-label">Visitor Passes</span>
             </x-sidebar-link>
-        @endcannot
+        @endcanany
 
-        @can('is-gatekeeper')
+        @canany(['is-admin', 'is-gatekeeper'])
             <x-sidebar-link :href="route('gatekeeper.visitor-logs.pending')" :active="request()->routeIs('gatekeeper.visitor-logs.*')">
                 <i class="bi bi-person-check"></i>
                 <span class="sidebar-link-label">Pending Passes</span>
             </x-sidebar-link>
-        @endcan
+        @endcanany
 
-        <x-sidebar-link :href="route('flats.index')" :active="request()->routeIs('flats.index')">
-            <i class="bi bi-people"></i>
-            <span class="sidebar-link-label">Flats</span>
-        </x-sidebar-link>
-
-        <x-sidebar-link :href="route('residents.index')" :active="request()->routeIs('residents.index')">
-            <i class="bi bi-house-door"></i>
-            <span class="sidebar-link-label">Residents</span>
-        </x-sidebar-link>
-
-        {{-- user management --}}
         @can('is-admin')
-            <x-sidebar-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('admin.users.index')">
-                <i class="bi bi-people"></i>
-                <span class="sidebar-link-label"> Users Management</span>
+            {{-- Flats --}}
+            <x-sidebar-link :href="route('flats.index')" :active="request()->routeIs('flats.index')">
+                <i class="bi bi-building"></i>
+                <span class="sidebar-link-label">Flats</span>
+            </x-sidebar-link>
+
+            {{-- Residents --}}
+            <x-sidebar-link :href="route('residents.index')" :active="request()->routeIs('residents.index')">
+                <i class="bi bi-people-fill"></i>
+                <span class="sidebar-link-label">Residents</span>
             </x-sidebar-link>
         @endcan
 
@@ -53,9 +50,17 @@
 
         {{-- Delivery --}}
         <x-sidebar-link :href="route('deliveries.index')" :active="request()->routeIs('deliveries.index')">
-            <i class="bi bi-pass"></i>
+            <i class="bi bi-truck"></i>
             <span class="sidebar-link-label">Delivery</span>
         </x-sidebar-link>
+
+        {{-- user management --}}
+        @can('is-admin')
+        <x-sidebar-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('users.index')">
+            <i class="bi bi-people"></i>
+            <span class="sidebar-link-label"> Users Management</span>
+        </x-sidebar-link>
+        @endcan
 
         {{-- Reports --}}
         @php
