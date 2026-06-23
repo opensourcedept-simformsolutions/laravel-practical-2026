@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Enum\ComplaintCategory;
-use App\Enum\ComplaintStatus;
+use App\Enums\ComplaintCategory;
+use App\Enums\ComplaintStatus;
 use App\Http\Requests\StoreComplaintRequest;
 use App\Http\Requests\UpdateComplaintRequest;
 use App\Models\Complaint;

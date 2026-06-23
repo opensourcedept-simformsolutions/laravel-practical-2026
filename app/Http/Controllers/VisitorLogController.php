@@ -8,18 +8,39 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
 
+
 class VisitorLogController extends Controller
 {
     public function pending(Request $request)
     {
+        $this->authorize('viewAny', VisitorLog::class);
+
         try {
             if ($request->ajax()) {
 
-                $query = VisitorLog::query()
-                    ->withTrashed()
-                    ->whereIn('status', ['pending', 'entered'])
-                    ->with(['visitor', 'flat'])
-                    ->select('visitor_logs.*');
+            $user = auth()->user();
+
+            $query = VisitorLog::query()
+                ->whereIn('status', ['pending', 'entered'])
+                ->with([
+                    'visitor',
+                    'flat',
+                ])
+                ->select('visitor_logs.*')
+                ->orderByRaw("
+                    CASE
+                        WHEN status = 'pending' THEN 1
+                        WHEN status = 'entered' THEN 2
+                    END
+                ")->latest();
+
+
+            if (!$user->isSuperAdmin()) {
+
+                $query->whereHas('flat', function ($q) use ($user) {
+                    $q->where('society_id', $user->society_id);
+                });
+            }
 
                 return DataTables::of($query)
 
@@ -46,27 +67,34 @@ class VisitorLogController extends Controller
 
                     ->addColumn('action', function ($log) {
 
+                        $user = auth()->user();
+
                         if ($log->status === 'pending') {
 
-                            $buttons = '
-                                <form action="'.route('gatekeeper.visitor-logs.mark-entry', $log).'" method="POST">
-                                    '.csrf_field().'
-                                    <input type="hidden" name="_method" value="PATCH">
+                            $buttons = '';
 
-                                    <button class="btn btn-success btn-sm">
+                            if ($user->can('markEntry', $log)) {
+                                $buttons .= '
+                                    <button
+                                        type="button"
+                                        class="btn btn-success btn-sm entry-btn"
+                                        data-id="'.$log->id.'">
                                         Entry
                                     </button>
-                                </form>
-                            ';
+                                ';
+                            }
 
-                            if ($log->created_by === auth()->id()) {
-
+                            if ($user->can('update', $log)) {
                                 $buttons .= '
                                     <a href="'.route('passes.edit', $log->id).'"
                                         class="btn btn-warning btn-sm">
                                         Edit
                                     </a>
+                                ';
+                            }
 
+                            if ($user->can('delete', $log)) {
+                                $buttons .= '
                                     <form action="'.route('passes.destroy', $log->id).'"
                                         method="POST"
                                         onsubmit="return confirm(\'Delete this pass?\')">
@@ -86,16 +114,19 @@ class VisitorLogController extends Controller
 
                         if ($log->status === 'entered') {
 
-                            return '
-                                <form action="'.route('gatekeeper.visitor-logs.mark-exit', $log).'" method="POST">
-                                    '.csrf_field().'
-                                    <input type="hidden" name="_method" value="PATCH">
+                            if ($user->can('markExit', $log)) {
 
-                                    <button class="btn btn-danger btn-sm">
-                                        Mark Exit
-                                    </button>
-                                </form>
-                            ';
+                                return '
+                                    <form action="'.route('gatekeeper.visitor-logs.mark-exit', $log).'" method="POST">
+                                        '.csrf_field().'
+                                        <input type="hidden" name="_method" value="PATCH">
+
+                                        <button class="btn btn-danger btn-sm">
+                                            Mark Exit
+                                        </button>
+                                    </form>
+                                ';
+                            }
                         }
 
                         return '<span class="badge bg-secondary">Exited</span>';
@@ -103,7 +134,7 @@ class VisitorLogController extends Controller
 
                     ->rawColumns([
                         'status',
-                        'action',
+                        'action'
                     ])
 
                     ->make(true);
@@ -131,28 +162,34 @@ class VisitorLogController extends Controller
         }
     }
 
-    public function markEntry(VisitorLog $visitorLog)
+    public function markEntry(Request $request, VisitorLog $visitorLog)
     {
         $this->authorize('markEntry', $visitorLog);
 
         try {
+            $request->validate([
+                'photo' => ['required','image','mimes:jpg,jpeg,png','max:2048'],
+            ]);
 
             if ($visitorLog->status !== 'pending') {
-                return redirect()->back()->with([
+                return response()->json([
+                    'success' => false,
                     'message' => 'Only Pending Passes Can Be Entered!',
-                    'status' => 'error',
-                ]);
+                ], 422);
             }
+
+            $photoPath = $request->file('photo')->store('visitor_photos', 'public');
 
             $visitorLog->update([
                 'entry_time' => now(),
                 'gatekeeper_id' => auth()->id(),
                 'status' => 'entered',
+                'photo_path' => $photoPath,
             ]);
 
-            return redirect()->back()->with([
+            return response()->json([
+                'success' => true,
                 'message' => 'Visitor Entry Marked Successfully!',
-                'status' => 'success',
             ]);
 
         } catch (Exception $e) {
@@ -162,19 +199,17 @@ class VisitorLogController extends Controller
                 'exception' => $e,
             ]);
 
-            return redirect()->back()->with([
-                'message' => 'Something went wrong while marking visitor entry.',
-                'status' => 'error',
-            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Something Went Wrong While Mark Entry',
+            ], 500);
         }
     }
 
     public function markExit(VisitorLog $visitorLog)
     {
         $this->authorize('markExit', $visitorLog);
-
         try {
-
             if ($visitorLog->status !== 'entered') {
                 return redirect()->back()->with([
                     'message' => 'Only Entered Visitors Can Exit!',
@@ -200,7 +235,7 @@ class VisitorLogController extends Controller
             ]);
 
             return redirect()->back()->with([
-                'message' => 'Something went wrong while marking visitor exit.',
+                'message' => 'Something Went Wrong While Mark Exit',
                 'status' => 'error',
             ]);
         }
@@ -208,12 +243,23 @@ class VisitorLogController extends Controller
 
     public function exited(Request $request)
     {
+        $this->authorize('viewAny', VisitorLog::class);
+
         if ($request->ajax()) {
 
-            $query = VisitorLog::with([
-                'visitor',
-                'flat',
-            ])->where('status', 'exited');
+        $user = auth()->user();
+
+        $query = VisitorLog::with([
+            'visitor',
+            'flat',
+        ])->where('status', 'exited');
+
+        if (!$user->isSuperAdmin()) {
+
+            $query->whereHas('flat', function ($q) use ($user) {
+                $q->where('society_id', $user->society_id);
+            });
+        }
 
             return DataTables::of($query)
                 ->addColumn('visitor_name', fn ($row) => $row->visitor?->name ?? 'N/A')
@@ -230,6 +276,17 @@ class VisitorLogController extends Controller
                 )
                 ->addColumn('exit_time', fn ($row) => $row->exit_time?->format('h:i A') ?? '-'
                 )
+                ->addColumn('photo', function ($row) {
+                    if(!$row->photo_path){
+                        return '-';
+                    }
+                    return '
+                        <a href="'.asset('storage/'.$row->photo_path).'" target="_blank" class="btn btn-info btn-sm">
+                            View Photo
+                        </a>
+                    ';
+                })
+                ->rawColumns(['photo'])
                 ->make(true);
         }
 

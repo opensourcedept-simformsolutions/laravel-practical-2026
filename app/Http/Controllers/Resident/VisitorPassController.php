@@ -216,7 +216,7 @@ class VisitorPassController extends Controller
 
         $flats = collect();
 
-        if (auth()->user()->isGatekeeper()) {
+        if (! auth()->user()->isResident()) {
 
             $flats = Flat::where('society_id', auth()->user()->society_id)
                 ->orderBy('wing')
@@ -249,7 +249,7 @@ class VisitorPassController extends Controller
                     ]
                 );
 
-                if ($user->isGatekeeper()) {
+                if (! $user->isResident()) {
 
                     $flat = Flat::where('id', $validated['flat_id'])
                         ->where('society_id', $user->society_id)
@@ -311,7 +311,7 @@ class VisitorPassController extends Controller
 
         $flats = [];
 
-        if (auth()->user()->isGatekeeper()) {
+        if (! auth()->user()->isResident()) {
             $flats = Flat::orderBy('flat_number')->get();
         }
 

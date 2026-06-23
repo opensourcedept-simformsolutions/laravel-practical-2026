@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Enum\ComplaintCategory;
+use App\Enums\ComplaintCategory;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;

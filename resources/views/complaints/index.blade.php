@@ -101,7 +101,7 @@
                     <tr>
                         <th>ID</th>
 
-                        @if(auth()->user()->isAdmin())
+                        @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
                         <th>Resident</th>
                         @endif
 
