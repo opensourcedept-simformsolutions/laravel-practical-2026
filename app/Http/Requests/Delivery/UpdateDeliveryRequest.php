@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Delivery;
 
+use App\Enums\DeliveryStatus;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * Handle validation for updating an existing delivery record.
@@ -28,10 +30,17 @@ class UpdateDeliveryRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'resident_id' => ['required', 'exists:residents,id'],
             'vendor' => ['required', 'string', 'max:255'],
             'package_details' => ['required', 'string', 'min:3'],
         ];
+
+        if (auth()->user()->isAdmin() || auth()->user()->isSuperAdmin()) {
+            $rules['status'] = ['required', Rule::enum(DeliveryStatus::class)];
+        }
+
+        return $rules;
     }
 }
+

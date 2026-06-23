@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Delivery;
 use App\Enums\DeliveryStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Delivery\StoreDeliveryRequest;
-use App\Http\Requests\UpdateDeliveryRequest;
+use App\Http\Requests\Delivery\UpdateDeliveryRequest;
 use App\Models\Delivery;
 use App\Models\Flat;
 use App\Models\Resident;

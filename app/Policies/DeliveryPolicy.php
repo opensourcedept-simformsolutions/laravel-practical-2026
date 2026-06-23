@@ -70,7 +70,7 @@ class DeliveryPolicy
     public function markDelivered(User $user, Delivery $delivery): bool
     {
         return $this->sameSociety($user, $delivery)
-            && ($user->isAdmin() || $user->isGatekeeper());
+            && ($user->isAdmin() || $user->isResident());
     }
 
     /**
