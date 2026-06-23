@@ -5,6 +5,12 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * Handle validation for updating an existing delivery record.
+ *
+ * Supports partial updates by validating only the fields
+ * present in the request payload.
+ */
 class UpdateDeliveryRequest extends FormRequest
 {
     /**
@@ -16,16 +22,16 @@ class UpdateDeliveryRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Get the validation rules for updating a delivery.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            'resident_id' => ['sometimes', 'exists:residents,id'],
-            'vendor' => ['sometimes', 'string', 'max:255'],
-            'package_details' => ['sometimes', 'string', 'min:3'],
+            'resident_id' => ['required', 'exists:residents,id'],
+            'vendor' => ['required', 'string', 'max:255'],
+            'package_details' => ['required', 'string', 'min:3'],
         ];
     }
 }

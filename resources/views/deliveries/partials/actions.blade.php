@@ -3,7 +3,7 @@
         class="btn btn-sm btn-primary rounded">
         <i class="bi bi-eye"></i> View
     </a>
-    @cannot('is-resident')
+    @canany(['is-admin','is-gatekeeper'])
         <a href="{{ route('deliveries.edit', $delivery) }}"
             class="btn btn-sm btn-warning rounded">
             <i class="bi bi-pencil"></i> Edit
@@ -31,5 +31,5 @@
                 </button>
             </form>
         @endif
-    @endcannot
+    @endcanany
 </div>

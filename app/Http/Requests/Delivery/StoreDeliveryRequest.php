@@ -5,6 +5,12 @@ namespace App\Http\Requests\Delivery;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * Handle validation for creating a new delivery record.
+ *
+ * Ensures the selected resident exists and validates
+ * delivery vendor and package information.
+ */
 class StoreDeliveryRequest extends FormRequest
 {
     /**
@@ -16,7 +22,7 @@ class StoreDeliveryRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Get the validation rules for creating a delivery.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
