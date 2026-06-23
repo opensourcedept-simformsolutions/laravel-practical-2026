@@ -48,14 +48,7 @@ class DeliveryController extends Controller
                 'resident' => fn ($q) => $q->withTrashed(),
                 'resident.user' => fn ($q) => $q->withTrashed(),
             ]);
-        try {
-            $query = Delivery::with([
-                'flat' => fn ($q) => $q->withTrashed(),
-                'resident' => fn ($q) => $q->withTrashed(),
-                'resident.user' => fn ($q) => $q->withTrashed(),
-            ]);
 
-            $user = auth()->user();
             $user = auth()->user();
 
             if (! $user->isSuperAdmin()) {
@@ -67,27 +60,7 @@ class DeliveryController extends Controller
                     });
                 }
             }
-            if (! $user->isSuperAdmin()) {
-                if ($user->isResident()) {
-                    $query->where('flat_id', $user->resident->flat_id);
-                } else {
-                    $query->whereHas('flat', function ($query) use ($user) {
-                        $query->where('society_id', $user->society_id);
-                    });
-                }
-            }
 
-            return DataTables::eloquent($query)
-                ->addColumn('flat', function ($delivery) {
-                    return $delivery->flat->wing.' - Floor '.$delivery->flat->floor.' - '.$delivery->flat->flat_number;
-                })
-                ->addColumn('resident', function ($delivery) {
-                    return $delivery->resident->user->name;
-                })
-                ->editColumn('status', function ($delivery) {
-                    $class = $delivery->status === 'delivered'
-                        ? 'text-bg-success'
-                        : 'text-bg-primary';
             return DataTables::eloquent($query)
                 ->addColumn('flat', function ($delivery) {
                     return $delivery->flat->wing.' - Floor '.$delivery->flat->floor.' - '.$delivery->flat->flat_number;
@@ -288,7 +261,6 @@ class DeliveryController extends Controller
         $this->authorize('create', Delivery::class);
 
         return view('deliveries.create', ['residentOptions' => $this->getResidentOptions()]);
-        return view('deliveries.create', ['residentOptions' => $this->getResidentOptions()]);
     }
 
     /**
@@ -309,12 +281,6 @@ class DeliveryController extends Controller
             $resident = Resident::findOrFail(
                 $validatedData['resident_id']
             );
-        try {
-            $validatedData = $request->validated();
-
-            $resident = Resident::findOrFail(
-                $validatedData['resident_id']
-            );
 
             $delivery = Delivery::create([
                 'flat_id' => $resident->flat_id,
@@ -325,22 +291,7 @@ class DeliveryController extends Controller
                 'received_at' => now(),
                 'delivered_at' => null,
             ]);
-            $delivery = Delivery::create([
-                'flat_id' => $resident->flat_id,
-                'resident_id' => $resident->id,
-                'vendor' => $validatedData['vendor'],
-                'package_details' => $validatedData['package_details'],
-                'status' => DeliveryStatus::RECEIVED->value,
-                'received_at' => now(),
-                'delivered_at' => null,
-            ]);
 
-            $this->notificationService->notify($delivery, 'Delivery received');
-
-            return redirect()->route('deliveries.index')
-                ->with(['status' => 'success', 'message' => 'Delivery recorded successfully.']);
-        } catch (\Throwable $e) {
-            $this->notificationService->failed('create delivery', $e);
             $this->notificationService->notify($delivery, 'Delivery received');
 
             return redirect()->route('deliveries.index')
@@ -379,17 +330,6 @@ class DeliveryController extends Controller
     {
         $this->authorize('markDelivered', $delivery);
 
-        try {
-            if ($delivery->status === DeliveryStatus::DELIVERED->value) {
-                return back()->with([
-                    'status' => 'warning',
-                    'message' => 'Delivery is already marked as delivered.',
-                ]);
-            }
-            $delivery->update([
-                'status' => DeliveryStatus::DELIVERED->value,
-                'delivered_at' => now(),
-            ]);
         try {
             if ($delivery->status === DeliveryStatus::DELIVERED->value) {
                 return back()->with([
@@ -497,10 +437,6 @@ class DeliveryController extends Controller
         try {
             $this->notificationService->notify($delivery, 'Delivery deleted');
 
-        try {
-            $this->notificationService->notify($delivery, 'Delivery deleted');
-
-            $delivery->delete();
             $delivery->delete();
 
             return redirect()
@@ -528,7 +464,6 @@ class DeliveryController extends Controller
         $user = auth()->user();
 
         return Resident::with(['user', 'flat'])
-        return Resident::with(['user', 'flat'])
             ->when(! $user->isSuperAdmin(), function ($query) use ($user) {
                 $query->whereHas('flat', function ($q) use ($user) {
                     $q->where('society_id', $user->society_id);
@@ -537,8 +472,6 @@ class DeliveryController extends Controller
             ->get()
             ->mapWithKeys(function ($resident) {
                 return [
-                    $resident->id => $resident->flat->wing.'-'.$resident->flat->flat_number
-                        .' - '.$resident->user->name,
                     $resident->id => $resident->flat->wing.'-'.$resident->flat->flat_number
                         .' - '.$resident->user->name,
                 ];
