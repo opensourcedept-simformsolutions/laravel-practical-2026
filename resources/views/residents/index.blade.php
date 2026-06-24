@@ -49,15 +49,20 @@
             $('#residentsTable').DataTable({
                 processing: true,
                 serverSide: true,
+                responsive:true,
                 ajax: "{{ route('residents.index') }}",
-                dom: 'Bfrtip',
-                buttons: [
-                    'copy',
-                    'csv',
-                    'excel',
-                    'print',
-                    'pdf'
-                ],
+                layout: {
+                    topStart: {
+                        buttons: [
+                            'csv',
+                            'excel'
+                        ]
+                    },
+                    topEnd: {
+                        search: true,
+                        pageLength: true
+                    }
+                },
 
                 columns: [{
                         data: 'id',
