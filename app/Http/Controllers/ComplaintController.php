@@ -85,6 +85,7 @@ class ComplaintController extends Controller
                 }
 
                 return DataTables::of($query)
+                    ->addIndexColumn()
                     ->addColumn('resident_name', function ($complaint) {
                         return $complaint->user?->name ?? 'N/A';
                     })

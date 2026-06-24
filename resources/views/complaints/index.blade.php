@@ -9,32 +9,25 @@
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
 
         <div>
-            @if(auth()->user()->role->name === 'super_admin')
-            <span class="fw-semibold">All Complaints</span>
-            @elseif(auth()->user()->role->name === 'admin')
-            <span class="fw-semibold">Society Complaints</span>
+            @if(auth()->user()->isSuperAdmin())
+                <span class="fw-semibold">All Complaints</span>
+            @elseif(auth()->user()->isAdmin())
+                <span class="fw-semibold">Society Complaints</span>
             @else
-            <span class="fw-semibold">My Complaints</span>
+                <span class="fw-semibold">My Complaints</span>
             @endif
         </div>
 
-        @if(in_array(auth()->user()->role->name, ['resident', 'gatekeeper']))
-        <a href="{{ route('complaints.create') }}" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-square me-1"></i>
-            Create Complaint
-        </a>
-        @endif
+        @canany(['is-gatekeeper','is-resident'])
+            <a href="{{ route('complaints.create') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-square me-1"></i>
+                Create Complaint
+            </a>
+        @endcan
 
     </div>
 
     <div class="card-body">
-
-        @if(session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-        @endif
-
 
         <div class="table-responsive">
 
@@ -44,13 +37,13 @@
                     <tr>
                         <th>ID</th>
 
-                        @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
+                    @can('is-admin')
                         <th>Resident</th>
-                        @endif
+                    @endcan
 
-                        @if(auth()->user()->isSuperAdmin())
+                    @if(auth()->user()->isSuperAdmin())
                         <th>Society</th>
-                        @endif
+                    @endif
 
                         <th>Category</th>
                         <th>Description</th>
@@ -86,20 +79,21 @@
         },
 
         columns: [
-
             {
-                data: 'id',
-                name: 'id'
+                data: 'DT_RowIndex',
+                name: 'DT_RowIndex',
+                searchable: false,
+                orderable: false
             },
 
-            @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
+            @can('is-admin')
             {
                 data: 'resident_name',
                 name: 'user.name',
                 orderable: false,
                 searchable: false
             },
-            @endif
+            @endcan
 
             @if(auth()->user()->isSuperAdmin())
             {

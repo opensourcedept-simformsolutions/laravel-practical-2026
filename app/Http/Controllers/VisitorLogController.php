@@ -45,7 +45,7 @@ class VisitorLogController extends Controller
             }
 
                 return DataTables::of($query)
-
+                    ->addIndexColumn()
                     ->addColumn('visitor_name', function ($log) {
                         return $log->visitor?->name ?? 'N/A';
                     })
@@ -284,6 +284,7 @@ class VisitorLogController extends Controller
         }
 
             return DataTables::of($query)
+                ->addIndexColumn()
                 ->addColumn('visitor_name', fn($row) => $row->visitor?->name ?? 'N/A')
                 ->addColumn('phone', fn($row) => $row->visitor?->phone ?? 'N/A')
                 ->addColumn(
