@@ -41,7 +41,7 @@ class UserController extends Controller
                     '=',
                     'societies.id'
                 )
-                ->where('users.id', '!=', auth()->id())
+                ->where('users.id', '!=', auth()->id())       
                 ->whereHas('role', function ($q) {
                     $q->where('name', '!=', 'super_admin');
                 });
