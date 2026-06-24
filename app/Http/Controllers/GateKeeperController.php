@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\VisitorEntered;
 use App\Models\VisitorLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class GateKeeperController extends Controller
 {
@@ -27,37 +29,49 @@ class GateKeeperController extends Controller
             'phone' => $visitorLog->visitor->phone,
             'purpose' => $visitorLog->purpose,
             'status' => $visitorLog->status,
-            'flat' => $visitorLog->flat->wing.'-'.$visitorLog->flat->flat_number,
+            'flat' => $visitorLog->flat->wing . '-' . $visitorLog->flat->flat_number,
         ]);
     }
 
-public function markEntry(Request $request, VisitorLog $visitorLog)
-{
-    $request->validate([
-        'photo' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
-    ]);
+    public function markEntry(Request $request, VisitorLog $visitorLog)
+    {
+        $request->validate([
+            'photo' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+        ]);
 
-    if ($visitorLog->status !== 'pending') {
+        if ($visitorLog->status !== 'pending') {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Visitor already entered or pass not valid.',
+            ], 422);
+        }
+
+        $visitorLog->status = 'entered';
+        $visitorLog->entry_time = now();
+        $visitorLog->gatekeeper_id = auth()->id();
+
+        $visitorLog->photo_path = $request
+            ->file('photo')
+            ->store('visitor_photos', 'public');
+
+        $visitorLog->save();
+
+        Log::info('VisitorEntered event dispatching from GateKeeper', [
+            'visitor_log_id' => $visitorLog->id,
+        ]);
+
+        event(
+            new VisitorEntered($visitorLog)
+        );
+
+        Log::info('VisitorEntered event dispatched from GateKeeper', [
+            'visitor_log_id' => $visitorLog->id,
+        ]);
 
         return response()->json([
-            'success' => false,
-            'message' => 'Visitor already entered or pass not valid.',
-        ], 422);
+            'success' => true,
+            'message' => 'Entry marked successfully.',
+        ]);
     }
-
-    $visitorLog->status = 'entered';
-    $visitorLog->entry_time = now();
-    $visitorLog->gatekeeper_id = auth()->id();
-
-    $visitorLog->photo_path = $request
-        ->file('photo')
-        ->store('visitor_photos', 'public');
-
-    $visitorLog->save();
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Entry marked successfully.',
-    ]);
-}
 }

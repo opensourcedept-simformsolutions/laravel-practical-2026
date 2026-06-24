@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Http\Requests\StoreResidentRequest;
 use App\Http\Requests\UpdateResidentRequest;
 use App\Models\Flat;
@@ -20,59 +21,61 @@ use Yajra\DataTables\Facades\DataTables;
 
 class ResidentController extends Controller
 {
-  public function index(Request $request)
-{
-        Gate::authorize('viewAny', Resident::class);
-         if ($request->ajax()) {
+    public function index(Request $request)
+    {
+        $this->authorize('viewAny', Resident::class);
 
-        $query = Resident::with([
-            'user' => function ($q) {
-                $q->withTrashed();
-            },
-            'flat'
-        ])->whereHas('flat', function ($q) {
-            $q->where('society_id', auth()->user()->society_id);
-        });
-        return DataTables::of($query)
+        if ($request->ajax()) {
 
-            ->addColumn('name', fn ($row) => $row->user?->name ?? '-')
-            ->addColumn('email', fn ($row) => $row->user?->email ?? '-')
-            ->addColumn('phone', fn ($row) => $row->user?->phone ?? '-')
+            $query = Resident::with([
+                'user' => function ($q) {
+                    $q->withTrashed();
+                },
+                'flat'
+            ])->whereHas('flat', function ($q) {
+                $q->where('society_id', auth()->user()->society_id);
+            });
 
-            ->addColumn('flat', fn ($row) => $row->flat?->flat_number ?? '-')
-            ->addColumn('wing', fn ($row) => $row->flat?->wing ?? '-')
+            return DataTables::of($query)
 
-            ->addColumn('type', function ($row) {
-                return $row->resident_type === 'owner'
-                    ? '<span class="badge bg-success">Owner</span>'
-                    : '<span class="badge bg-info">Tenant</span>';
-            })
+                ->addColumn('name', fn($row) => $row->user?->name ?? '-')
+                ->addColumn('email', fn($row) => $row->user?->email ?? '-')
+                ->addColumn('phone', fn($row) => $row->user?->phone ?? '-')
 
-            ->addColumn('actions', function ($row) {
+                ->addColumn('flat', fn($row) => $row->flat?->flat_number ?? '-')
+                ->addColumn('wing', fn($row) => $row->flat?->wing ?? '-')
 
-                $editUrl = route('residents.edit', $row->id);
-                $deleteUrl = route('residents.destroy', $row->id);
+                ->addColumn('type', function ($row) {
+                    return $row->resident_type === 'owner'
+                        ? '<span class="badge bg-success">Owner</span>'
+                        : '<span class="badge bg-info">Tenant</span>';
+                })
 
-                return '
-                    <a href="'.$editUrl.'" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
+                ->addColumn('actions', function ($row) {
 
-                    <form action="'.$deleteUrl.'" method="POST" class="d-inline">
-                        '.csrf_field().'
-                        '.method_field('DELETE').'
+                    $editUrl = route('residents.edit', $row->id);
+                    $deleteUrl = route('residents.destroy', $row->id);
+
+                    return '
+                    <a href="' . $editUrl . '" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
+
+                    <form action="' . $deleteUrl . '" method="POST" class="d-inline">
+                        ' . csrf_field() . '
+                        ' . method_field('DELETE') . '
                         <button type="submit" class="btn btn-danger btn-sm"
                             onclick="return confirm(\'Delete this resident?\')">
                               <i class="bi bi-trash"></i>
                         </button>
                     </form>
                 ';
-            })
+                })
 
-            ->rawColumns(['type', 'actions'])
-            ->make(true);
+                ->rawColumns(['type', 'actions'])
+                ->make(true);
+        }
+
+        return view('residents.index');
     }
-
-    return view('residents.index');
-}
 
     public function create()
     {
@@ -86,7 +89,7 @@ class ResidentController extends Controller
 
     public function store(StoreResidentRequest $request)
     {
-        Gate::authorize('create', Resident::class);
+        $this->authorize('create', Resident::class);
 
         try {
 
@@ -119,7 +122,6 @@ class ResidentController extends Controller
                     'flat_id' => $data['flat_id'],
                     'resident_type' => $data['resident_type'],
                 ]);
-
             });
 
             DB::afterCommit(function () use ($user) {
@@ -129,51 +131,26 @@ class ResidentController extends Controller
                         new ResidentWelcomeNotification($user)
                     );
                 }
-
             });
 
-            Session::flash(
-                'message',
-                'Resident created successfully.'
-            );
-
-            Session::flash(
-                'status',
-                'success'
-            );
+            Session::flash('message', 'Resident created successfully.');
+            Session::flash('status', 'success');
 
             return redirect()->route('residents.index');
-
         } catch (Throwable $e) {
 
-            Log::error($e);
+            Log::error($e->getMessage());
 
-            Session::flash(
-                'message',
-                'Unable to create resident.'.$e->getMessage()
-            );
-
-            Session::flash(
-                'status',
-                'error'
-            );
+            Session::flash('message', 'Unable to create resident.' . $e->getMessage());
+            Session::flash('status', 'error');
 
             return back()->withInput();
-
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show() {}
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Resident $resident)
     {
-        Gate::authorize('update', $resident);
+        $this->authorize('update', $resident);
 
         $flats = Flat::where(
             'society_id',
@@ -187,7 +164,7 @@ class ResidentController extends Controller
         UpdateResidentRequest $request,
         Resident $resident
     ) {
-        Gate::authorize('update', $resident);
+        $this->authorize('update', $resident);
 
         try {
 
@@ -197,7 +174,7 @@ class ResidentController extends Controller
                 $resident,
                 $data
             ) {
-                    
+
                 $resident->user->update([
                     'name' => $data['name'],
                     'email' => $data['email'],
@@ -208,80 +185,55 @@ class ResidentController extends Controller
                     'flat_id' => $data['flat_id'],
                     'resident_type' => $data['resident_type'],
                 ]);
-
             });
 
-            Session::flash(
-                'message',
-                'Resident updated successfully.'
-            );
-
-            Session::flash(
-                'status',
-                'success'
-            );
+            Session::flash('message', 'Resident updated successfully.');
+            Session::flash('status', 'success');
 
             return redirect()->route('residents.index');
-
         } catch (Throwable $e) {
 
-            Log::error($e);
+            Log::error($e->getMessage());
 
-            Session::flash(
-                'message',
-                'Unable to update resident.'
-            );
-
-            Session::flash(
-                'status',
-                'error'
-            );
+            Session::flash('message', 'Unable to update resident.');
+            Session::flash('status', 'error');
 
             return back()->withInput();
-
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-public function destroy(Resident $resident)
-{
-    Gate::authorize('delete', $resident);
+    public function destroy(Resident $resident)
+    {
+        $this->authorize('delete', $resident);
 
-    try {
+        try {
 
-        DB::transaction(function () use ($resident) {
+            DB::transaction(function () use ($resident) {
 
                 $user = $resident->user;
-        Gate::authorize('create', Resident::class);
+                $this->authorize('create', Resident::class);
 
-            $resident->delete();
+                $resident->delete();
 
-            if ($user) {
-                $user->delete();
-            }
+                if ($user) {
+                    $user->delete();
+                }
+            });
 
-        });
+            return redirect()
+                ->route('residents.index')
+                ->with([
+                    'message' => 'Resident deleted successfully.',
+                    'status' => 'success',
+                ]);
+        } catch (Throwable $e) {
 
-        return redirect()
-            ->route('residents.index')
-            ->with([
-                'message' => 'Resident deleted successfully.',
-                'status' => 'success',
+            Log::error($e->getMessage());
+
+            return back()->with([
+                'message' => 'Unable to delete resident.',
+                'status' => 'error',
             ]);
-
-    } catch (Throwable $e) {
-
-        Log::error('Resident delete failed', [
-            'resident_id' => $resident->id,
-            'message' => $e->getMessage(),
-        ]);
-
-        return back()->with([
-            'message' => 'Unable to delete resident.',
-            'status' => 'error',
-        ]);
+        }
     }
-}
 }
