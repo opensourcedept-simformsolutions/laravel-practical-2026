@@ -41,28 +41,30 @@ class ResidentController extends Controller
 
             return DataTables::of($query)
 
-                ->addColumn('name', fn ($row) => $row->user?->name ?? '-')
-                ->addColumn('email', fn ($row) => $row->user?->email ?? '-')
-                ->addColumn('phone', fn ($row) => $row->user?->phone ?? '-')
-                ->addColumn('flat', fn ($row) => $row->flat?->flat_number ?? '-')
-                ->addColumn('wing', fn ($row) => $row->flat?->wing ?? '-')
+                ->addColumn('name', fn($row) => $row->user?->name ?? '-')
+                ->addColumn('email', fn($row) => $row->user?->email ?? '-')
+                ->addColumn('phone', fn($row) => $row->user?->phone ?? '-')
+
+                ->addColumn('flat', fn($row) => $row->flat?->flat_number ?? '-')
+                ->addColumn('wing', fn($row) => $row->flat?->wing ?? '-')
+
                 ->addColumn('type', function ($row) {
                     return $row->resident_type === 'owner'
                         ? '<span class="badge bg-success">Owner</span>'
                         : '<span class="badge bg-info">Tenant</span>';
                 })
+
                 ->addColumn('actions', function ($row) {
 
                     $editUrl = route('residents.edit', $row->id);
                     $deleteUrl = route('residents.destroy', $row->id);
 
                     return '
-                           <div class="text-center">
-                    <a href="'.$editUrl.'" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
+                    <a href="' . $editUrl . '" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
 
-                    <form action="'.$deleteUrl.'" method="POST" class="d-inline">
-                        '.csrf_field().'
-                        '.method_field('DELETE').'
+                    <form action="' . $deleteUrl . '" method="POST" class="d-inline">
+                        ' . csrf_field() . '
+                        ' . method_field('DELETE') . '
                         <button type="submit" class="btn btn-danger btn-sm"
                             onclick="return confirm(\'Delete this resident?\')">
                               <i class="bi bi-trash"></i>   
@@ -157,14 +159,11 @@ class ResidentController extends Controller
             Session::flash('status', 'success');
 
             return redirect()->route('residents.index');
-
         } catch (Throwable $e) {
 
-            Log::error('Resident creation failed', [
-                'message' => $e->getMessage(),
-            ]);
+            Log::error($e->getMessage());
 
-            Session::flash('message', 'Unable to create resident.');
+            Session::flash('message', 'Unable to create resident.' . $e->getMessage());
             Session::flash('status', 'error');
 
             return back()->withInput();
@@ -252,13 +251,6 @@ class ResidentController extends Controller
         } catch (Throwable $e) {
 
             Log::error($e->getMessage());
-
-        } catch (Throwable $e) {
-
-            Log::error('Resident delete failed', [
-                'resident_id' => $resident->id,
-                'message' => $e->getMessage(),
-            ]);
 
             return back()->with([
                 'message' => 'Unable to delete resident.',

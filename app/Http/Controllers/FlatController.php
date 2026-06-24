@@ -40,20 +40,16 @@ class FlatController extends Controller
                     $deleteUrl = route('flats.destroy', $row->id);
 
                     return '
-                    <div class="text-center">
-                        <a href="'.$editUrl.'" class="btn btn-sm btn-warning">
-                            <i class="bi bi-pencil-square"></i>
-                        </a>
+                    <a href="' . $editUrl . '" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
 
-                        <form action="'.$deleteUrl.'" method="POST" style="display:inline-block;">
-                            '.csrf_field().'
-                            '.method_field('DELETE').'
-                            <button type="submit" class="btn btn-sm btn-danger"
-                                onclick="return confirm(\'Are you sure?\')">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </form>
-                    </div>
+                    <form action="' . $deleteUrl . '" method="POST" style="display:inline-block;">
+                        ' . csrf_field() . '
+                        ' . method_field('DELETE') . '
+                        <button type="submit" class="btn btn-sm btn-danger"
+                            onclick="return confirm(\'Are you sure?\')">
+                              <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
                 ';
                 })
                 ->rawColumns(['actions'])
@@ -95,8 +91,7 @@ class FlatController extends Controller
             Session::flash('status', 'success');
 
             return redirect()->route('flats.index');
-
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
 
             Session::flash('message', 'Something went wrong.');
             Session::flash('status', 'error');
