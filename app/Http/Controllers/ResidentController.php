@@ -60,6 +60,7 @@ class ResidentController extends Controller
                     $deleteUrl = route('residents.destroy', $row->id);
 
                     return '
+                    <div class="text-center">
                     <a href="' . $editUrl . '" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
 
                     <form action="' . $deleteUrl . '" method="POST" class="d-inline">
@@ -67,7 +68,7 @@ class ResidentController extends Controller
                         ' . method_field('DELETE') . '
                         <button type="submit" class="btn btn-danger btn-sm"
                             onclick="return confirm(\'Delete this resident?\')">
-                              <i class="bi bi-trash"></i>   
+                              <i class="bi bi-trash"></i>
                         </button>
                     </form>
                     </div>
@@ -92,7 +93,7 @@ class ResidentController extends Controller
             : collect();
 
         $flats = $user->isSuperAdmin()
-            ? collect()  
+            ? collect()
             : Flat::where('society_id', $user->society_id)->get();
 
         return view('residents.create', compact('societies', 'flats'));

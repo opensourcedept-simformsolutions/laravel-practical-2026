@@ -108,5 +108,8 @@
                 ]
             });
         });
+        $(document).on('change', '#society_filter', function() {
+            rd();
+        });
     </script>
 @endpush

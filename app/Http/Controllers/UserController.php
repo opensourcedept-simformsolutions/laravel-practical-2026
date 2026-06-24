@@ -8,7 +8,6 @@ use App\Models\Role;
 use App\Models\Society;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -41,7 +40,7 @@ class UserController extends Controller
                     '=',
                     'societies.id'
                 )
-                ->where('users.id', '!=', auth()->id())       
+                ->where('users.id', '!=', auth()->id())
                 ->whereHas('role', function ($q) {
                     $q->where('name', '!=', 'super_admin');
                 });
@@ -90,8 +89,9 @@ class UserController extends Controller
                     $deleteUrl = route('admin.users.destroy', $row->id);
 
                     return '
+                    <div class="text-center">
                 <a href="' . $editUrl . '" class="btn btn-warning btn-sm">
-                    Edit
+                   Edit <i class="bi bi-pencil-square"></i>
                 </a>
 
                 <form action="' . $deleteUrl . '"
@@ -104,11 +104,11 @@ class UserController extends Controller
                     <button
                         class="btn btn-danger btn-sm"
                         onclick="return confirm(\'Delete this user?\')">
-                        Delete
+                        <i class="bi bi-trash"></i>
                     </button>
 
                 </form>
-            ';
+            </div>';
                 })
 
                 ->rawColumns(['actions'])

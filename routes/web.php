@@ -26,25 +26,29 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
-        ->middleware(['verified'])
         ->name('dashboard');
 
-    Route::middleware('auth')
-        ->controller(ProfileController::class)
+    Route::controller(ProfileController::class)
         ->prefix('profile')
         ->group(function () {
             Route::get('/', 'index')->name('profile');
             Route::get('/edit', 'edit')->name('profile.edit');
             Route::patch('/', 'update')->name('profile.update');
-            Route::delete('/', 'destroy')->name('profile.destroy');
         });
 
     Route::middleware(['role:admin'])
-        ->prefix('admin')
-        ->name('admin.')
         ->group(function () {
 
-            Route::resource('users', UserController::class);
+            Route::prefix('admin')
+                ->name('admin.')
+                ->group(function () {
+
+                    Route::resource('users', UserController::class)
+                        ->except(['show']);
+                });
+
+            Route::resource('flats', FlatController::class);
+            Route::resource('residents', ResidentController::class);
         });
 
     Route::middleware(['role:admin,gatekeeper'])
@@ -92,14 +96,6 @@ Route::middleware('auth')->group(function () {
             Route::patch('{visitorLog}/cancel', 'cancel')->name('cancel');
         });
 
-    Route::middleware(['role:admin'])->group(function () {
-        Route::resource('flats', FlatController::class);
-    });
-
-    Route::middleware(['role:admin'])->group(function () {
-        Route::resource('residents', ResidentController::class);
-    });
-
     Route::middleware(['role:super_admin'])
         ->controller(SocietyController::class)
         ->prefix('societies')
@@ -113,7 +109,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/{society}/edit', 'edit')->name('edit');
             Route::put('/{society}', 'update')->name('update');
             Route::delete('/{society}', 'destroy')->name('destroy');
-            Route::patch('/{society}/restore','restore')->name('restore');
+            Route::patch('/{society}/restore', 'restore')->name('restore');
         });
 
     Route::controller(DeliveryController::class)

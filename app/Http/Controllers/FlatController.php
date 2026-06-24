@@ -40,6 +40,7 @@ class FlatController extends Controller
                     $deleteUrl = route('flats.destroy', $row->id);
 
                     return '
+                    <div class="text-center">
                     <a href="' . $editUrl . '" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
 
                     <form action="' . $deleteUrl . '" method="POST" style="display:inline-block;">
@@ -50,6 +51,7 @@ class FlatController extends Controller
                               <i class="bi bi-trash"></i>
                         </button>
                     </form>
+                    </div>
                 ';
                 })
                 ->rawColumns(['actions'])
@@ -121,7 +123,7 @@ class FlatController extends Controller
     public function destroy(Flat $flat)
     {
         $flat->delete();
-        
+
         Session::flash('message', 'Flat Deleted successfully.');
         Session::flash('status', 'success');
 
