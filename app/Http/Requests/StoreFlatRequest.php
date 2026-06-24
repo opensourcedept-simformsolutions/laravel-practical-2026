@@ -2,32 +2,33 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class StoreFlatRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            'wing' => ['required', 'string',  'max:5',
-                'regex:/^[A-Za-z]+$/', ],
-            'floor' => ['required', 'integer', 'min:0',
-                'max:50', ],
+            'wing' => [
+                'required',
+                'string',
+                'max:20',
+                'regex:/^[A-Za-z0-9]+$/',
+            ],
+
+            'floor' => [
+                'required',
+                'integer',
+                'min:0',
+                'max:50',
+            ],
+
             'flat_number' => [
                 'required',
                 'integer',
@@ -48,6 +49,10 @@ class StoreFlatRequest extends FormRequest
 
                     }),
             ],
+
+            'society_id' => auth()->user()->isSuperAdmin()
+                ? ['required', 'exists:societies,id']
+                : ['nullable'],
         ];
     }
 
@@ -55,8 +60,8 @@ class StoreFlatRequest extends FormRequest
     {
         return [
             'wing.required' => 'Wing is required.',
-            'wing.regex' => 'Wing must contain only letters.',
-            'wing.max' => 'Wing may not exceed 5 characters.',
+            'wing.regex' => 'Wing must be valid.',
+            'wing.max' => 'Wing may not exceed 20 characters.',
 
             'floor.required' => 'Floor is required.',
             'floor.integer' => 'Floor must be a number.',

@@ -29,7 +29,6 @@
               <th>Entry Time</th>
               <th>Exit Date</th>
               <th>Exit Time</th>
-              <th>Status</th>
               <th>Photo</th>
             </tr>
           </thead>
@@ -48,16 +47,15 @@
       $('#exitedVisitorsTable').DataTable({
         processing: true,
         serverSide: true,
+        responsive: true,
 
         ajax: "{{ route('gatekeeper.visitor-logs.exited') }}",
 
-        order: [
-          [6, 'desc']
-        ],
-
         columns: [{
-            data: 'id',
-            name: 'id'
+            data: 'DT_RowIndex',
+            name: 'DT_RowIndex',
+            orderable: false,
+            searchable: false
           },
           {
             data: 'visitor_name',
@@ -78,23 +76,23 @@
           },
           {
             data: 'entry_date',
-            name: 'entry_time'
+            name: 'entry_time',
+            orderable: false
           },
           {
             data: 'entry_time',
-            name: 'entry_time'
+            name: 'entry_time',
+            orderable: false
           },
           {
             data: 'exit_date',
-            name: 'exit_time'
+            name: 'exit_time',
+            orderable: false
           },
           {
             data: 'exit_time',
-            name: 'exit_time'
-          },
-          {
-            data: 'status',
-            name: 'status'
+            name: 'exit_time',
+            orderable: false
           },
           {
             data: 'photo',

@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreFlatRequest;
 use App\Http\Requests\UpdateFlatRequest;
 use App\Models\Flat;
+use App\Models\Society;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
-use Yajra\DataTables\Exceptions\Exception;
 use Yajra\DataTables\Facades\DataTables;
 
 class FlatController extends Controller
@@ -15,14 +15,25 @@ class FlatController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            
+
             if (auth()->user()->isSuperAdmin()) {
-                $query = Flat::query();
+
+                $query = Flat::with('society');
+
+                if ($request->filled('society_id')) {
+                    $query->where('society_id', $request->society_id);
+                }
+
             } else {
-                $query = Flat::where('society_id', auth()->user()->society_id);
+
+                $query = Flat::with('society')
+                    ->where('society_id', auth()->user()->society_id);
             }
 
             return DataTables::of($query)
+                ->addColumn('society', function ($row) {
+                    return $row->society?->name ?? '-';
+                })
                 ->addColumn('actions', function ($row) {
 
                     $editUrl = route('flats.edit', $row->id);
@@ -45,24 +56,35 @@ class FlatController extends Controller
                 ->make(true);
         }
 
-        return view('flats.index');
+        $societies = auth()->user()->isSuperAdmin()
+            ? Society::orderBy('name')->get()
+            : collect();
+
+        return view('flats.index', compact('societies'));
     }
 
     public function create()
     {
-        return view('flats.create');
+        $societies = auth()->user()->isSuperAdmin()
+            ? Society::all()
+            : collect();
+
+        return view('flats.create', compact('societies'));
     }
 
     public function store(StoreFlatRequest $request)
     {
         try {
+
             $validated = $request->validated();
 
             Flat::create([
                 'wing' => $validated['wing'],
                 'floor' => $validated['floor'],
                 'flat_number' => $validated['flat_number'],
-                'society_id' => auth()->user()->society_id,
+                'society_id' => auth()->user()->isSuperAdmin()
+                    ? $validated['society_id']
+                    : auth()->user()->society_id,
             ]);
 
             Session::flash('message', 'Flat Created Successfully.');
@@ -99,6 +121,7 @@ class FlatController extends Controller
     public function destroy(Flat $flat)
     {
         $flat->delete();
+        
         Session::flash('message', 'Flat Deleted successfully.');
         Session::flash('status', 'success');
 

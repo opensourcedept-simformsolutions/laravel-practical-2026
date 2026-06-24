@@ -15,9 +15,32 @@
         </div>
 
         <div class="card-body">
+            @if (auth()->user()->isSuperAdmin())
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Society</label>
+                        <select id="society_filter" name="society_id" class="form-select">
+                            <option value="">Select Society</option>
+
+                            @foreach ($societies as $society)
+                                <option value="{{ $society->id }}"
+                                    {{ old('society_id') == $society->id ? 'selected' : '' }}>
+                                    {{ $society->name }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        @error('society_id')
+                            <div class="text-danger pt-1">
+                                {{ $message }}
+                            </div>
+                        @enderror
+                    </div>
+                </div>
+            @endif
+
             <div class="table-responsive">
                 <table id="flatsTable" class="table table-hover table-striped align-middle w-100 app-datatable">
-
                     <thead class="table-light">
                         <tr>
                             <th>ID</th>
@@ -29,7 +52,6 @@
                     </thead>
 
                     <tbody></tbody>
-
                 </table>
             </div>
 
@@ -42,17 +64,19 @@
     <script>
         $(document).ready(function() {
 
-            $('#flatsTable').DataTable({
+            table = $('#flatsTable').DataTable({
                 processing: true,
                 serverSide: true,
-                responsive:true,
-                ajax: "{{ route('flats.index') }}",
+                responsive: true,
+                ajax: {
+                    url: "{{ route('flats.index') }}",
+                    data: function(d) {
+                        d.society_id = $('#society_filter').val();
+                    }
+                },
                 layout: {
                     topStart: {
-                        buttons: [
-                            'csv',
-                            'excel'
-                        ]
+                        buttons: ['csv', 'excel']
                     },
                     topEnd: {
                         search: true,
@@ -60,8 +84,9 @@
                     }
                 },
                 columns: [{
-                        data: 'id',
-                        name: 'id'
+                        data: 'society',
+                        name: 'society',
+                        visible: "{{ auth()->user()->isSuperAdmin() ? 'true' : 'false' }}"
                     },
                     {
                         data: 'wing',
@@ -82,7 +107,6 @@
                     }
                 ]
             });
-
         });
     </script>
 @endpush

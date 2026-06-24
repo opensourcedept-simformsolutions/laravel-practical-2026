@@ -77,6 +77,7 @@
                             <th>Flat</th>
                             <th>Resident</th>
                             <th>Vendor</th>
+                            <th>Package Details</th>
                             <th>Status</th>
                             <th>Received At</th>
                             <th>Delivered At</th>
@@ -157,6 +158,10 @@
                     {
                         data: 'vendor',
                         name: 'vendor'
+                    },
+                    {
+                        data: 'package_details',
+                        name: 'package_details'
                     },
                     {
                         data: 'status',
