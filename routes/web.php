@@ -14,7 +14,6 @@ use App\Http\Controllers\VisitorLogController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-// login or dashboard page redirect
 Route::get('/', function () {
 
     if (! Auth::check()) {
@@ -160,6 +159,7 @@ Route::prefix('reports')
                 Route::get('/export', 'export')->name('export');
             });
     });
+
 Route::middleware(['auth'])->group(function () {
 
     Route::get(
@@ -177,4 +177,5 @@ Route::middleware(['auth'])->group(function () {
         [GateKeeperController::class, 'markEntry']
     )->name('gatekeeper.mark-entry');
 });
-require __DIR__.'/auth.php';
+
+require __DIR__ . '/auth.php';

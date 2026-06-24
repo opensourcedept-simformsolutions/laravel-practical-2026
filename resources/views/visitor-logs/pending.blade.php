@@ -4,167 +4,153 @@
 
 @section('content')
 
-<div class="container py-4">
+  <div class="card shadow-sm border-0 rounded-3">
 
-    <h2 class="mb-4">
-        Pending Visitor Passes
-    </h2>
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <span class="fw-semibold">Visitor Pass List</span>
 
-    <div class="card">
-        @if ($errors->any())
-        <div class="alert alert-danger">
-            {{ $errors->first() }}
-        </div>
-        @endif
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <span class="fw-semibold">Visitor Pass List</span>
+      <div class="d-flex gap-2">
 
-            <div class="d-flex gap-2">
+        <a href="{{ route('gatekeeper.visitor-logs.exited') }}" class="btn btn-success btn-sm">
+          <i class="bi bi-box-arrow-right me-1"></i>
+          Exited Visitors
+        </a>
 
-                <a href="{{ route('gatekeeper.visitor-logs.exited') }}" class="btn btn-success btn-sm">
-                    <i class="bi bi-box-arrow-right me-1"></i>
-                    Exited Visitors
-                </a>
+        <a href="{{ route('passes.create') }}" class="btn btn-primary btn-sm">
+          <i class="bi bi-plus-square me-1"></i>
+          Create Pass
+        </a>
 
-                <a href="{{ route('passes.create') }}" class="btn btn-primary btn-sm">
-                    <i class="bi bi-plus-square me-1"></i>
-                    Create Pass
-                </a>
-
-            </div>
-        </div>
-
-        <div class="card-body">
-            <div class="table-responsive">
-
-                <table id="visitorLogsTable" class="table table-bordered table-striped w-100">
-
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Visitor</th>
-                            <th>Phone</th>
-                            <th>Flat</th>
-                            <th>Purpose</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-
-                </table>
-
-            </div>
-
-        </div>
-
+      </div>
     </div>
 
-</div>
+    <div class="card-body">
+      <div class="table-responsive">
 
-<div class="modal fade" id="entryModal" tabindex="-1">
+        <table id="visitorLogsTable" class="table table-bordered table-striped w-100">
+
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Visitor</th>
+              <th>Phone</th>
+              <th>Flat</th>
+              <th>Purpose</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+        </table>
+
+      </div>
+
+    </div>
+  </div>
+
+  <div class="modal fade" id="entryModal" tabindex="-1">
 
     <div class="modal-dialog modal-lg">
 
-        <div class="modal-content">
+      <div class="modal-content">
 
-            <form id="entryForm" method="POST" enctype="multipart/form-data">
+        <form id="entryForm" method="POST" enctype="multipart/form-data">
 
-                @csrf
-                @method('PATCH')
+          @csrf
+          @method('PATCH')
 
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        Capture Visitor Photo
-                    </h5>
+          <div class="modal-header">
+            <h5 class="modal-title">
+              Capture Visitor Photo
+            </h5>
 
-                    <button type="button" class="btn-close" data-bs-dismiss="modal">
-                    </button>
-                </div>
+            <button type="button" class="btn-close" data-bs-dismiss="modal">
+            </button>
+          </div>
 
-                <div class="modal-body text-center">
+          <div class="modal-body text-center">
 
-                    <video id="video" autoplay playsinline width="100%" class="border rounded"></video>
+            <video id="video" autoplay playsinline width="100%" class="border rounded"></video>
 
-                    <canvas id="canvas" style="display:none;"></canvas>
+            <canvas id="canvas" style="display:none;"></canvas>
 
-                    <img id="preview" class="img-thumbnail mt-3 d-none" width="250">
+            <img id="preview" class="img-thumbnail mt-3 d-none" width="250">
 
-                    {{-- <input type="hidden" name="photo" id="photo"> --}}
+            {{-- <input type="hidden" name="photo" id="photo"> --}}
 
-                    <div class="mt-3">
-                        <button type="button" class="btn btn-primary" id="captureBtn">
-                            Capture Photo
-                        </button>
-                    </div>
+            <div class="mt-3">
+              <button type="button" class="btn btn-primary" id="captureBtn">
+                Capture Photo
+              </button>
+            </div>
 
-                </div>
+          </div>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-warning d-none" id="recaptureBtn">
-                        Recapture Photo
-                    </button>
-                    <button type="submit" class="btn btn-success">
-                        Mark Entry
-                    </button>
-                </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-warning d-none" id="recaptureBtn">
+              Recapture Photo
+            </button>
+            <button type="submit" class="btn btn-success">
+              Mark Entry
+            </button>
+          </div>
 
-            </form>
+        </form>
 
-        </div>
+      </div>
 
     </div>
 
-</div>
+  </div>
 
 @endsection
 
 @push('scripts')
-<script>
-    $(function () {
+  <script>
+    $(function() {
 
-    let stream = null;
-    let capturedFile = null;
+      let stream = null;
+      let capturedFile = null;
 
-    $('#visitorLogsTable').DataTable({
+      $('#visitorLogsTable').DataTable({
         processing: true,
         serverSide: true,
         ajax: "{{ route('gatekeeper.visitor-logs.pending') }}",
 
-        columns: [
-            {
-                data: 'id',
-                name: 'id'
-            },
-            {
-                data: 'visitor_name',
-                name: 'visitor.name'
-            },
-            {
-                data: 'phone',
-                name: 'visitor.phone'
-            },
-            {
-                data: 'flat_details',
-                name: 'flat.flat_number',
-                orderable: false
-            },
-            {
-                data: 'purpose',
-                name: 'purpose'
-            },
-            {
-                data: 'status',
-                name: 'status'
-            },
-            {
-                data: 'action',
-                searchable: false,
-                orderable: false
-            }
+        columns: [{
+            data: 'id',
+            name: 'id'
+          },
+          {
+            data: 'visitor_name',
+            name: 'visitor.name'
+          },
+          {
+            data: 'phone',
+            name: 'visitor.phone'
+          },
+          {
+            data: 'flat_details',
+            name: 'flat.flat_number',
+            orderable: false
+          },
+          {
+            data: 'purpose',
+            name: 'purpose'
+          },
+          {
+            data: 'status',
+            name: 'status'
+          },
+          {
+            data: 'action',
+            searchable: false,
+            orderable: false
+          }
         ]
-    });
+      });
 
-    $(document).on('click', '.entry-btn', async function () {
+      $(document).on('click', '.entry-btn', async function() {
 
         const id = $(this).data('id');
 
@@ -183,22 +169,22 @@
         modal.show();
 
         try {
-            stream = await navigator.mediaDevices.getUserMedia({
-                video: true
-            });
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true
+          });
 
-            document.getElementById('video').srcObject = stream;
+          document.getElementById('video').srcObject = stream;
 
         } catch (e) {
-            Toast.fire({
-                icon: 'error',
-                title: 'Unable to access camera'
-            });
+          Toast.fire({
+            icon: 'error',
+            title: 'Unable to access camera'
+          });
         }
 
-    });
+      });
 
-    $('#captureBtn').on('click', function () {
+      $('#captureBtn').on('click', function() {
 
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
@@ -208,23 +194,23 @@
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
         canvas.toBlob(function(blob) {
-            capturedFile = new File([blob],`visitor_${Date.now()}.jpg`,{
-                type: 'image/jpeg'
-            });
-            $('#preview').attr('src', URL.createObjectURL(blob)).removeClass('d-none');
-            $('#video').addClass('d-none');
-            $('#captureBtn').addClass('d-none');
-            $('#recaptureBtn').removeClass('d-none');
-            $('#entryForm button[type="submit"]').prop('disabled', false);
+          capturedFile = new File([blob], `visitor_${Date.now()}.jpg`, {
+            type: 'image/jpeg'
+          });
+          $('#preview').attr('src', URL.createObjectURL(blob)).removeClass('d-none');
+          $('#video').addClass('d-none');
+          $('#captureBtn').addClass('d-none');
+          $('#recaptureBtn').removeClass('d-none');
+          $('#entryForm button[type="submit"]').prop('disabled', false);
         }, 'image/jpeg', 0.9);
 
         if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-            stream = null;
+          stream.getTracks().forEach(track => track.stop());
+          stream = null;
         }
-    });
+      });
 
-    $('#recaptureBtn').on('click', async function () {
+      $('#recaptureBtn').on('click', async function() {
 
         capturedFile = null;
         $('#preview').attr('src', '').addClass('d-none');
@@ -234,78 +220,78 @@
         $('#entryForm button[type="submit"]').prop('disabled', true);
 
         try {
-            stream = await navigator.mediaDevices.getUserMedia({
-                video: true
-            });
-            document.getElementById('video').srcObject = stream;
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true
+          });
+          document.getElementById('video').srcObject = stream;
         } catch (e) {
-        alert('Unable to access camera');
+          alert('Unable to access camera');
         }
-    });
+      });
 
-    $('#entryModal').on('hidden.bs.modal', function () {
+      $('#entryModal').on('hidden.bs.modal', function() {
         capturedFile = null;
         if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-            stream = null;
+          stream.getTracks().forEach(track => track.stop());
+          stream = null;
         }
 
         $('#preview')
-            .attr('src', '')
-            .addClass('d-none');
+          .attr('src', '')
+          .addClass('d-none');
 
         $('#video').removeClass('d-none');
         $('#captureBtn').removeClass('d-none');
         $('#recaptureBtn').addClass('d-none');
 
         $('#entryForm button[type="submit"]')
-            .prop('disabled', true);
-    });
+          .prop('disabled', true);
+      });
 
-    $('#entryForm').on('submit', function(e) {
-            e.preventDefault();
+      $('#entryForm').on('submit', function(e) {
+        e.preventDefault();
 
-            if (!capturedFile) {
+        if (!capturedFile) {
 
-                Toast.fire({
-                    icon: 'warning',
-                    title: 'Please capture a photo first'
-                });
+          Toast.fire({
+            icon: 'warning',
+            title: 'Please capture a photo first'
+          });
 
-                return;
-            }
+          return;
+        }
 
-            const formData = new FormData();
-            formData.append('_token', $('input[name="_token"]').val());
-            formData.append('_method', 'PATCH');
-            formData.append('photo', capturedFile);
+        const formData = new FormData();
+        formData.append('_token', $('input[name="_token"]').val());
+        formData.append('_method', 'PATCH');
+        formData.append('photo', capturedFile);
 
-            $('#entryForm button[type="submit"]').prop('disabled', true);
+        $('#entryForm button[type="submit"]').prop('disabled', true);
 
         $.ajax({
-                url: $(this).attr('action'),
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (response) {
-                    bootstrap.Modal.getInstance(document.getElementById('entryModal')).hide();
-                    $('#visitorLogsTable').DataTable().ajax.reload(null, false);
-                    Toast.fire({
-                        icon: 'success',
-                        title: response.message
-                    });
-                },
-                error: function (xhr) {
-                    $('#entryForm button[type="submit"]').prop('disabled', false);
-                   Toast.fire({
-                        icon: 'error',
-                        title: xhr.responseJSON?.message ?? 'Failed to mark entry'
-                   });
-                }
+          url: $(this).attr('action'),
+          type: 'POST',
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: function(response) {
+            bootstrap.Modal.getInstance(document.getElementById('entryModal')).hide();
+            $('#visitorLogsTable').DataTable().ajax.reload(null, false);
+            Toast.fire({
+              icon: 'success',
+              title: response.message
+            });
+          },
+          error: function(xhr) {
+            $('#entryForm button[type="submit"]').prop('disabled', false);
+            Toast.fire({
+              icon: 'error',
+              title: xhr.responseJSON?.message ?? 'Failed to mark entry'
+            });
+          }
         });
-    });
+      });
 
-});
-</script>
+    });
+  </script>
 @endpush

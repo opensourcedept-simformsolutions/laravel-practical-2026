@@ -86,8 +86,8 @@ class VisitorLogController extends Controller
 
                             if (auth()->user()->can('update', $log)) {
                                 $buttons .= '
-                                    <a href="'.route('passes.edit', $log).'"
-                                    class="btn btn-warning btn-sm">
+                                    <a href="'.route('passes.edit', $log->id).'"   
+                                        class="btn btn-warning btn-sm">
                                         Edit
                                     </a>
                                 ';
