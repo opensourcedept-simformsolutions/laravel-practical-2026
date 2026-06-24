@@ -99,7 +99,6 @@ class DeliveryController extends Controller
                 ->rawColumns(['package_details','status', 'actions'])
                 ->toJson();
         } catch (Exception $e) {
-
             $this->notificationService->failed(
                 'load delivery datatable',
                 $e
@@ -401,14 +400,6 @@ class DeliveryController extends Controller
         try {
             $data = $request->validated();
 
-            $delivery->fill($data);
-
-            if (! $delivery->isDirty()) {
-                return redirect()
-                    ->route('deliveries.index')
-                    ->with(['status' => 'info', 'message' => 'No changes detected.']);
-            }
-
             $oldValues = $delivery->only([
                 'flat_id',
                 'resident_id',
@@ -416,6 +407,14 @@ class DeliveryController extends Controller
                 'package_details',
                 'status',
             ]);
+
+            $delivery->fill($data);
+
+            if (! $delivery->isDirty()) {
+                return redirect()
+                    ->route('deliveries.index')
+                    ->with(['status' => 'info', 'message' => 'No changes detected.']);
+            }
 
             $delivery->save();
 
