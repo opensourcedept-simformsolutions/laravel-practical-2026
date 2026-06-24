@@ -14,11 +14,39 @@ class UpdateSocietyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'address' => ['required', 'string'],
-            'city' => ['required', 'string', 'max:255'],
-            'state' => ['required', 'string', 'max:255'],
-            'pincode' => ['required', 'digits:6'],
+            'name' => [
+                'required',
+                'string',
+                'min:2',
+                'max:100',
+                'regex:/^[\pL\pN\s\.\'&,\-\/()]+$/u',
+            ],
+
+            'address' => [
+                'required',
+                'string',
+                'min:2',
+                'max:255',
+            ],
+
+            'city' => [
+                'required',
+                'string',
+                'max:50',
+                'regex:/^[\pL\s\.\'-]+$/u',
+            ],
+
+            'state' => [
+                'required',
+                'string',
+                'max:50',
+                'regex:/^[\pL\s\.\'-]+$/u',
+            ],
+
+            'pincode' => [
+                'required',
+                'regex:/^[1-9][0-9]{5}$/',
+            ],
         ];
     }
 
@@ -26,11 +54,18 @@ class UpdateSocietyRequest extends FormRequest
     {
         return [
             'name.required' => 'Society name is required.',
+            'name.regex' => 'Society name contains invalid characters.',
+
             'address.required' => 'Address is required.',
+
             'city.required' => 'City is required.',
+            'city.regex' => 'City contains invalid characters.',
+
             'state.required' => 'State is required.',
+            'state.regex' => 'State contains invalid characters.',
+
             'pincode.required' => 'Pincode is required.',
-            'pincode.digits' => 'Pincode must be exactly 6 digits.',
+            'pincode.regex' => 'Enter a valid 6-digit Indian pincode.',
         ];
     }
 }
