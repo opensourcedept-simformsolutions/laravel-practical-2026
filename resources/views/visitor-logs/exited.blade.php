@@ -29,7 +29,6 @@
               <th>Entry Time</th>
               <th>Exit Date</th>
               <th>Exit Time</th>
-              <th>Status</th>
               <th>Photo</th>
             </tr>
           </thead>
@@ -91,10 +90,6 @@
           {
             data: 'exit_time',
             name: 'exit_time'
-          },
-          {
-            data: 'status',
-            name: 'status'
           },
           {
             data: 'photo',
