@@ -27,7 +27,6 @@
 
                                     <div class="row">
 
-                                        {{-- ✅ SUPER ADMIN ONLY: Society Dropdown --}}
                                         @if (auth()->user()->isSuperAdmin())
                                             <div class="col-md-6">
                                                 <div class="mb-3">
@@ -159,42 +158,41 @@
     </div>
 @endsection
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+@push('scripts')
+    <script>
+        $(document).ready(function() {
 
-<script>
-    $(document).ready(function() {
+            $('#society_id').on('change', function() {
 
-        $('#society_id').on('change', function() {
+                let societyId = $(this).val();
 
-            let societyId = $(this).val();
+                if (!societyId) {
+                    $('#flat_id').html('<option value="">Select Flat</option>');
+                    return;
+                }
 
-            if (!societyId) {
-                $('#flat_id').html('<option value="">Select Flat</option>');
-                return;
-            }
+                $.ajax({
+                    url: "{{ route('society.flats') }}/" + societyId,
+                    type: 'GET',
+                    success: function(data) {
 
-            $.ajax({
-                // url: "/get-flats/" + societyId,
-                url: "{{ route('society.flats') }}/" + societyId,
-                type: 'GET',
-                success: function(data) {
+                        let options = '<option value="">Select Flat</option>';
 
-                    let options = '<option value="">Select Flat</option>';
-
-                    data.forEach(function(flat) {
-                        options += `<option value="${flat.id}">
+                        data.forEach(function(flat) {
+                            options += `<option value="${flat.id}">
                             ${flat.flat_number} (${flat.wing})
                         </option>`;
-                    });
+                        });
 
-                    $('#flat_id').html(options);
-                },
-                error: function() {
-                    $('#flat_id').html('<option value="">Error loading flats</option>');
-                }
+                        $('#flat_id').html(options);
+                    },
+                    error: function() {
+                        $('#flat_id').html('<option value="">Error loading flats</option>');
+                    }
+                });
+
             });
 
         });
-
-    });
-</script>
+    </script>
+@endpush

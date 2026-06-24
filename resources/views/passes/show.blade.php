@@ -143,18 +143,19 @@
 
 @endsection
 
+@push('scripts')
+    <script>
+        function copyLink() {
+            const link = "{{ route('passes.show', $visitorLog->id) }}";
 
-<script>
-    function copyLink() {
-        const link = "{{ route('passes.show', $visitorLog->id) }}";
+            navigator.clipboard.writeText(link).then(() => {
 
-        navigator.clipboard.writeText(link).then(() => {
+                Toast.fire({
+                    icon: 'success',
+                    title: 'Link copied successfully'
+                });
 
-            Toast.fire({
-                icon: 'success',
-                title: 'Link copied successfully'
             });
-
-        });
-    }
-</script>
+        }
+    </script>
+@endpush

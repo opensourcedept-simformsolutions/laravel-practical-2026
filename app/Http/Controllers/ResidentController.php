@@ -109,7 +109,6 @@ class ResidentController extends Controller
 
             $residentRoleId = Role::where('name', 'resident')->value('id');
 
-            // ✅ Decide society based on role
             $societyId = auth()->user()->isSuperAdmin()
                 ? $data['society_id']
                 : auth()->user()->society_id;
@@ -121,7 +120,6 @@ class ResidentController extends Controller
                 $societyId
             ) {
 
-                // OPTIONAL (recommended safety check)
                 $flatBelongsToSociety = Flat::where('id', $data['flat_id'])
                     ->where('society_id', $societyId)
                     ->exists();
@@ -130,7 +128,6 @@ class ResidentController extends Controller
                     throw new \Exception('Invalid flat for selected society.');
                 }
 
-                // Create User
                 $user = User::create([
                     'name' => $data['name'],
                     'email' => $data['email'],
@@ -140,7 +137,6 @@ class ResidentController extends Controller
                     'society_id' => $societyId,
                 ]);
 
-                // Create Resident
                 Resident::create([
                     'user_id' => $user->id,
                     'flat_id' => $data['flat_id'],
@@ -148,7 +144,6 @@ class ResidentController extends Controller
                 ]);
             });
 
-            // Send notification AFTER commit
             DB::afterCommit(function () use ($user) {
                 if ($user) {
                     $user->notify(new ResidentWelcomeNotification($user));

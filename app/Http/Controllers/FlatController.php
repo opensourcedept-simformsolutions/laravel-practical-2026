@@ -121,6 +121,7 @@ class FlatController extends Controller
     public function destroy(Flat $flat)
     {
         $flat->delete();
+        
         Session::flash('message', 'Flat Deleted successfully.');
         Session::flash('status', 'success');
 

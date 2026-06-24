@@ -64,8 +64,6 @@
     <script>
         $(document).ready(function() {
 
-            console.log('script loaded');
-
             table = $('#flatsTable').DataTable({
                 processing: true,
                 serverSide: true,
@@ -109,12 +107,6 @@
                     }
                 ]
             });
-
-            $(document).on('change', '#society_filter', function() {
-                console.log('Selected Society:', $(this).val());
-                rd();
-            });
-
         });
     </script>
 @endpush

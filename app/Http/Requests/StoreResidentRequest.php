@@ -12,12 +12,6 @@ class StoreResidentRequest extends FormRequest
     {
         return true;
     }
-
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
@@ -64,29 +58,24 @@ class StoreResidentRequest extends FormRequest
     {
         return [
 
-            // Name
             'name.required' => 'Resident name is required.',
             'name.min' => 'Resident name must be at least 2 characters.',
             'name.max' => 'Resident name may not be greater than 100 characters.',
             'name.regex' => 'Resident name may contain only letters, spaces, apostrophes (\'), hyphens (-), and dots (.).',
 
-            // Email
             'email.required' => 'Email address is required.',
             'email.email' => 'Please enter a valid email address.',
             'email.max' => 'Email address may not exceed 255 characters.',
             'email.unique' => 'This email address is already registered.',
 
-            // Phone
             'phone.required' => 'Phone number is required.',
             'phone.min' => 'Phone number must be at least 7 characters.',
             'phone.max' => 'Phone number may not exceed 20 characters.',
             'phone.regex' => 'Please enter a valid phone number using only digits, spaces, plus (+), hyphens (-), and parentheses ().',
 
-            // Flat
             'flat_id.required' => 'Please select a flat.',
             'flat_id.exists' => 'The selected flat is invalid.',
 
-            // Resident Type
             'resident_type.required' => 'Please select a resident type.',
             'resident_type.in' => 'Resident type must be either Owner or Tenant.',
         ];

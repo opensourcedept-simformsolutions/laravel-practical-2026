@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -27,8 +26,8 @@ class UpdateFlatRequest extends FormRequest
             'wing' => [
                 'required',
                 'string',
-                'max:5',
-                'regex:/^[A-Za-z]+$/',
+                'max:20',
+                'regex:/^[A-Za-z0-9]+$/',
             ],
 
             'floor' => [
@@ -57,8 +56,8 @@ class UpdateFlatRequest extends FormRequest
     {
         return [
             'wing.required' => 'Wing is required.',
-            'wing.regex' => 'Wing must contain only letters.',
-            'wing.max' => 'Wing may not exceed 5 characters.',
+            'wing.regex' => 'Wing must be valid.',
+            'wing.max' => 'Wing may not exceed 20 characters.',
 
             'floor.required' => 'Floor is required.',
             'floor.integer' => 'Floor must be a number.',
