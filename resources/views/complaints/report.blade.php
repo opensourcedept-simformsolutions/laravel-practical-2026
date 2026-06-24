@@ -183,7 +183,14 @@
                         data: 'created_at',
                         name: 'created_at'
                     }
-                ]
+                ],
+
+                drawCallback: function () {
+                    $('[data-bs-toggle="tooltip"]').each(function () {
+                        new bootstrap.Tooltip(this);
+                    });
+                }
+
             });
 
             $('#category-filter').select2({

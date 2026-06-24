@@ -88,7 +88,7 @@ class VisitorLogController extends Controller
                             if (auth()->user()->can('update', $log)) {
                                 $buttons .= '
                                     <a href="'.route('passes.edit', $log).'"
-                                    class="btn btn-warning btn-sm" title="Edit">
+                                    class="btn btn-primary btn-sm" title="Edit">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
                                 ';
@@ -313,8 +313,8 @@ class VisitorLogController extends Controller
                         return '-';
                     }
                     return '
-                        <a href="'.asset('storage/'.$row->photo_path).'" target="_blank" class="btn btn-info btn-sm">
-                            View Photo
+                        <a href="'.asset('storage/'.$row->photo_path).'" target="_blank" class="btn btn-info btn-sm" title="View Photo">
+                            <i class="bi bi-eye"></i>
                         </a>
                     ';
                 })

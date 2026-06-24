@@ -35,63 +35,6 @@
         </div>
         @endif
 
-        <div class="border rounded p-3 mb-4 bg-light">
-
-            <h6 class="fw-semibold mb-3">
-                <i class="bi bi-funnel me-1"></i>
-                Filter Complaints
-            </h6>
-
-            <form id="filterForm">
-
-                <div class="row g-3">
-
-                    <div class="col-md-4">
-                        <label class="form-label">Category</label>
-
-                        <select name="category" class="form-select">
-                            <option value="">All Categories</option>
-                            <option value="security">Security</option>
-                            <option value="cleaning">Cleaning</option>
-                            <option value="water">Water</option>
-                            <option value="parking">Parking</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label">Status</label>
-
-                        <select name="status" class="form-select">
-                            <option value="">All Status</option>
-                            <option value="open">Open</option>
-                            <option value="in_progress">In Progress</option>
-                            <option value="resolved">Resolved</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label">Date</label>
-
-                        <input type="date" name="date" value="{{ request('date') }}" class="form-control">
-                    </div>
-
-                </div>
-
-                <div class="mt-3">
-                    <button type="submit" class="btn btn-primary btn-sm">
-                        <i class="bi bi-search me-1"></i>
-                        Apply Filters
-                    </button>
-
-                    <button type="button" id="resetFilters" class="btn btn-outline-secondary btn-sm">
-                        <i class="bi bi-arrow-clockwise me-1"></i>
-                        Reset
-                    </button>
-                </div>
-
-            </form>
-
-        </div>
 
         <div class="table-responsive">
 
@@ -140,12 +83,6 @@
 
         ajax: {
             url: "{{ route('complaints.index') }}",
-
-            data: function (d) {
-                d.category = $('[name="category"]').val();
-                d.status = $('[name="status"]').val();
-                d.date = $('[name="date"]').val();
-            }
         },
 
         columns: [
@@ -199,19 +136,14 @@
                 orderable: false,
                 searchable: false
             }
-        ]
-    });
+        ],
 
-    $('#filterForm').on('submit', function (e) {
-        e.preventDefault();
-        table.draw();
+        drawCallback: function () {
+            $('[data-bs-toggle="tooltip"]').each(function () {
+                new bootstrap.Tooltip(this);
+            });
+        }
     });
-
-    $('#resetFilters').on('click', function () {
-        $('#filterForm')[0].reset();
-        table.draw();
-    });
-
 });
 </script>
 @endpush
