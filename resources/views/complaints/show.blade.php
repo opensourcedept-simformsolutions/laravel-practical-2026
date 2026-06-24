@@ -43,9 +43,9 @@
 
                             @php
                             $badgeClass = match($complaint->status) {
-                            'resolved' => 'bg-success',
-                            'in_progress' => 'bg-warning',
-                            default => 'bg-danger',
+                                'resolved' => 'bg-success',
+                                'in_progress' => 'bg-warning',
+                                default => 'bg-danger',
                             };
                             @endphp
 
