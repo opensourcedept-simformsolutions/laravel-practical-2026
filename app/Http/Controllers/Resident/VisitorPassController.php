@@ -131,39 +131,39 @@ class VisitorPassController extends Controller
         return DataTables::of($query)
             ->addIndexColumn()
 
-            ->editColumn('visitor', fn ($row) => $row->visitor_name ?? '-')
-            ->editColumn('phone', fn ($row) => $row->visitor_phone ?? '-')
+            ->editColumn('visitor', fn($row) => $row->visitor_name ?? '-')
+            ->editColumn('phone', fn($row) => $row->visitor_phone ?? '-')
 
             ->editColumn(
                 'flat',
-                fn ($row) => $row->flat_wing && $row->flat_number
-                    ? $row->flat_wing.'-'.$row->flat_number
+                fn($row) => $row->flat_wing && $row->flat_number
+                    ? $row->flat_wing . '-' . $row->flat_number
                     : '-'
             )
 
-            ->editColumn('creator', fn ($row) => $row->creator_name ?? '-')
-            ->editColumn('gatekeeper', fn ($row) => $row->gatekeeper_name ?? '-')
+            ->editColumn('creator', fn($row) => $row->creator_name ?? '-')
+            ->editColumn('gatekeeper', fn($row) => $row->gatekeeper_name ?? '-')
 
-            ->editColumn('purpose', fn ($row) => $row->purpose ?? '-')
-            ->editColumn('status', fn ($row) => ucfirst($row->status))
+            ->editColumn('purpose', fn($row) => $row->purpose ?? '-')
+            ->editColumn('status', fn($row) => ucfirst($row->status))
 
             ->editColumn(
                 'entry_time',
-                fn ($row) => $row->entry_time
+                fn($row) => $row->entry_time
                     ? format_date($row->entry_time)
                     : '-'
             )
 
             ->editColumn(
                 'exit_time',
-                fn ($row) => $row->exit_time
+                fn($row) => $row->exit_time
                     ? format_date($row->exit_time)
                     : '-'
             )
 
             ->editColumn(
                 'visit_date',
-                fn ($row) => $row->visit_date
+                fn($row) => $row->visit_date
                     ? format_date($row->visit_date, 'd M Y')
                     : '-'
             )
@@ -173,14 +173,14 @@ class VisitorPassController extends Controller
                 $actions = '<div class="d-flex justify-content-center gap-2">';
 
                 $actions .= '
-                    <a href="'.route('passes.show', $row->id).'" class="btn btn-info text-white">
+                    <a href="' . route('passes.show', $row->id) . '" class="btn btn-info text-white">
                         <i class="bi bi-eye"></i>
                     </a>
                 ';
 
                 if ($row->status === 'pending') {
                     $actions .= '
-                        <a href="'.route('passes.edit', $row->id).'" class="btn btn-primary">
+                        <a href="' . route('passes.edit', $row->id) . '" class="btn btn-primary">
                             <i class="bi bi-pencil-square"></i>
                         </a>
                     ';
@@ -190,7 +190,7 @@ class VisitorPassController extends Controller
                     $actions .= '
                         <button
                             class="btn btn-danger btn-action"
-                            data-url="'.route('passes.cancel', $row->id).'"
+                            data-url="' . route('passes.cancel', $row->id) . '"
                             data-method="PATCH"
                             data-title="Cancel Visitor Pass?"
                             data-text="This action cannot be undone."
@@ -256,7 +256,6 @@ class VisitorPassController extends Controller
                         ->firstOrFail();
 
                     $flatId = $flat->id;
-
                 } else {
 
                     $flatId = $user->resident->flat_id;
@@ -282,7 +281,6 @@ class VisitorPassController extends Controller
             }
 
             return redirect()->route('passes.index');
-
         } catch (Exception $e) {
             Session::flash('message', 'Something went wrong.');
             Session::flash('status', 'error');
@@ -312,7 +310,12 @@ class VisitorPassController extends Controller
         $flats = [];
 
         if (! auth()->user()->isResident()) {
-            $flats = Flat::orderBy('flat_number')->get();
+            $flats = Flat::where(
+                'society_id',
+                auth()->user()->society_id
+            )
+                ->orderBy('flat_number')
+                ->get();
         }
 
         return view('passes.edit', compact(
@@ -325,9 +328,9 @@ class VisitorPassController extends Controller
     {
         $this->authorize('update', $visitorLog);
 
-        $validated = $request->validated();
-
         try {
+
+            $validated = $request->validated();
             $user = auth()->user();
 
             DB::transaction(function () use ($validated, $visitorLog, $user) {
@@ -448,38 +451,37 @@ class VisitorPassController extends Controller
         return DataTables::of($query)
             ->addIndexColumn()
 
-            ->addColumn('visitor', fn ($row) => $row->visitor_name ?? '-')
-            ->addColumn('phone', fn ($row) => $row->visitor_phone ?? '-')
+            ->addColumn('visitor', fn($row) => $row->visitor_name ?? '-')
+            ->addColumn('phone', fn($row) => $row->visitor_phone ?? '-')
 
             ->addColumn('flat', function ($row) {
                 return $row->flat_wing && $row->flat_number
-                    ? $row->flat_wing.'-'.$row->flat_number
+                    ? $row->flat_wing . '-' . $row->flat_number
                     : '-';
             })
 
-            ->addColumn('status', fn ($row) => ucfirst($row->status))
+            ->addColumn('status', fn($row) => ucfirst($row->status))
 
             ->addColumn(
                 'entry_time',
-                fn ($row) => $row->entry_time ? format_date($row->entry_time) : '-'
+                fn($row) => $row->entry_time ? format_date($row->entry_time) : '-'
             )
 
             ->addColumn(
                 'exit_time',
-                fn ($row) => $row->exit_time ? format_date($row->exit_time) : '-'
+                fn($row) => $row->exit_time ? format_date($row->exit_time) : '-'
             )
 
             ->addColumn(
                 'visit_date',
-                fn ($row) => $row->visit_date ? format_date($row->visit_date, 'd M Y') : '-'
+                fn($row) => $row->visit_date ? format_date($row->visit_date, 'd M Y') : '-'
             )
 
-            ->addColumn('gatekeeper', fn ($row) => $row->gatekeeper_name ?? '-')
+            ->addColumn('gatekeeper', fn($row) => $row->gatekeeper_name ?? '-')
 
             ->rawColumns([])
 
             ->make(true);
-
     }
 
     public function export(Request $request)
@@ -508,7 +510,7 @@ class VisitorPassController extends Controller
                     $visitorLog->visitor_name ?? '-',
                     $visitorLog->visitor_phone ?? '-',
                     $visitorLog->flat_wing && $visitorLog->flat_number
-                        ? $visitorLog->flat_wing.'-'.$visitorLog->flat_number : '-',
+                        ? $visitorLog->flat_wing . '-' . $visitorLog->flat_number : '-',
                     $visitorLog->purpose ?? '-',
                     ucfirst($visitorLog->status),
                     $visitorLog->entry_time ? date('Y-m-d H:i:s', strtotime($visitorLog->entry_time)) : '-',

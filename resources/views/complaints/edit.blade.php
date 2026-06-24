@@ -24,65 +24,67 @@
 
                                 {{-- ADMIN FORM --}}
                                 @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
+                                    <p class="text-secondary mb-3 text-decoration-underline">
+                                        Complaint Status
+                                    </p>
 
-                                <p class="text-secondary mb-3 text-decoration-underline">
-                                    Complaint Status
-                                </p>
+                                    <div class="row">
 
-                                <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
 
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
+                                                <label class="form-label">
+                                                    Status
+                                                </label>
 
-                                            <label class="form-label">
-                                                Status
-                                            </label>
+                                                <select name="status" class="form-select">
 
-                                            <select name="status" class="form-select">
+                                                    <option value="open" {{ old('status', $complaint->status) === 'open' ?
+                                                        'selected' : '' }}>
+                                                        Open
+                                                    </option>
 
-                                                <option value="{{ $complaint->status }}" selected>
-                                                    {{ ucwords(str_replace('_', ' ', $complaint->status)) }}
-                                                </option>
+                                                    <option value="in_progress" {{ old('status', $complaint->status) ===
+                                                        'in_progress' ? 'selected' : '' }}>
+                                                        In Progress
+                                                    </option>
 
-                                                @if($complaint->status === 'open')
-                                                <option value="in_progress">In Progress</option>
-                                                @endif
+                                                    <option value="resolved" {{ old('status', $complaint->status) ===
+                                                        'resolved' ? 'selected' : '' }}>
+                                                        Resolved
+                                                    </option>
 
-                                                @if($complaint->status === 'in_progress')
-                                                <option value="resolved">Resolved</option>
-                                                @endif
+                                                </select>
 
-                                            </select>
+                                                @error('status')
+                                                <div class="text-danger pt-1">
+                                                    {{ $message }}
+                                                </div>
+                                                @enderror
 
-                                            @error('status')
-                                            <div class="text-danger pt-1">
-                                                {{ $message }}
                                             </div>
-                                            @enderror
-
                                         </div>
-                                    </div>
 
-                                    <div class="col-md-12">
-                                        <div class="mb-3">
+                                        <div class="col-md-12">
+                                            <div class="mb-3">
 
-                                            <label class="form-label">
-                                                Admin Notes
-                                            </label>
+                                                <label class="form-label">
+                                                    Admin Notes
+                                                </label>
 
-                                            <textarea name="admin_notes" rows="5"
-                                                class="form-control">{{ old('admin_notes', $complaint->admin_notes) }}</textarea>
+                                                <textarea name="admin_notes" rows="5"
+                                                    class="form-control">{{ old('admin_notes', $complaint->admin_notes) }}</textarea>
 
-                                            @error('admin_notes')
-                                            <div class="text-danger pt-1">
-                                                {{ $message }}
+                                                @error('admin_notes')
+                                                <div class="text-danger pt-1">
+                                                    {{ $message }}
+                                                </div>
+                                                @enderror
+
                                             </div>
-                                            @enderror
-
                                         </div>
-                                    </div>
 
-                                </div>
+                                    </div>
 
                                 @else
 

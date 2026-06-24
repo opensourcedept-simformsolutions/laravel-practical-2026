@@ -53,7 +53,7 @@
 
         <div class="col-md-6">
 
-            <div class="error-title">403</div>
+            <div class="error-title">404</div>
 
             <h5 class="fw-bold">Oops! Something went wrong!</h5>
 

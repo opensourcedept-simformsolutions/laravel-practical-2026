@@ -45,7 +45,7 @@ class VisitorLogController extends Controller
             }
 
                 return DataTables::of($query)
-
+                    ->addIndexColumn()
                     ->addColumn('visitor_name', function ($log) {
                         return $log->visitor?->name ?? 'N/A';
                     })
@@ -78,17 +78,18 @@ class VisitorLogController extends Controller
                                     <button
                                         type="button"
                                         class="btn btn-success btn-sm entry-btn"
-                                        data-id="'.$log->id.'">
-                                        Entry
+                                        data-id="'.$log->id.'"
+                                        title="Mark Entry">
+                                        <i class="bi bi-box-arrow-in-right"></i>
                                     </button>
                                 ';
                             }
 
                             if (auth()->user()->can('update', $log)) {
                                 $buttons .= '
-                                    <a href="'.route('passes.edit', $log->id).'"   
-                                        class="btn btn-warning btn-sm">
-                                        Edit
+                                    <a href="'.route('passes.edit', $log).'"
+                                    class="btn btn-primary btn-sm" title="Edit">
+                                        <i class="bi bi-pencil-square"></i>
                                     </a>
                                 ';
                             }
@@ -104,8 +105,8 @@ class VisitorLogController extends Controller
                                         '.method_field('DELETE').'
 
                                         <button type="submit"
-                                                class="btn btn-danger btn-sm">
-                                            Delete
+                                                class="btn btn-danger btn-sm" title="Delete">
+                                            <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
                                 ';
@@ -128,8 +129,8 @@ class VisitorLogController extends Controller
                                     '.method_field('PATCH').'
 
                                     <button type="submit"
-                                            class="btn btn-danger btn-sm">
-                                        Mark Exit
+                                            class="btn btn-danger btn-sm" title="Mark Exit">
+                                        <i class="bi bi-box-arrow-right"></i>
                                     </button>
                                 </form>
                             ';
@@ -283,6 +284,7 @@ class VisitorLogController extends Controller
         }
 
             return DataTables::of($query)
+                ->addIndexColumn()
                 ->addColumn('visitor_name', fn($row) => $row->visitor?->name ?? 'N/A')
                 ->addColumn('phone', fn($row) => $row->visitor?->phone ?? 'N/A')
                 ->addColumn(
@@ -312,8 +314,8 @@ class VisitorLogController extends Controller
                         return '-';
                     }
                     return '
-                        <a href="'.asset('storage/'.$row->photo_path).'" target="_blank" class="btn btn-info btn-sm">
-                            View Photo
+                        <a href="'.asset('storage/'.$row->photo_path).'" target="_blank" class="btn btn-info btn-sm" title="View Photo">
+                            <i class="bi bi-eye"></i>
                         </a>
                     ';
                 })

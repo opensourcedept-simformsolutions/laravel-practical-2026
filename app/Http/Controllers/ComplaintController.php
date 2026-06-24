@@ -11,6 +11,7 @@ use Exception;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
 
 class ComplaintController extends Controller
@@ -83,19 +84,8 @@ class ComplaintController extends Controller
                     });
                 }
 
-                if ($request->filled('category')) {
-                    $query->where('category', $request->category);
-                }
-
-                if ($request->filled('status')) {
-                    $query->where('status', $request->status);
-                }
-
-                if ($request->filled('date')) {
-                    $query->whereDate('created_at', $request->date);
-                }
-
                 return DataTables::of($query)
+                    ->addIndexColumn()
                     ->addColumn('resident_name', function ($complaint) {
                         return $complaint->user?->name ?? 'N/A';
                     })
@@ -108,8 +98,34 @@ class ComplaintController extends Controller
                         return ucfirst($complaint->category);
                     })
 
+                    ->editColumn('description', function ($complaint) {
+
+                        $description = e($complaint->description);
+
+                        if (strlen($complaint->description) > 40) {
+                            return '
+                                '.Str::limit($description, 40).'
+                                <button type="button"
+                                        class="btn btn-link btn-sm p-0 ms-1"
+                                        data-bs-toggle="tooltip"
+                                        title="'.$description.'">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            ';
+                        }
+
+                        return $description;
+                    })
+
                     ->editColumn('status', function ($complaint) {
-                        return ucwords(str_replace('_', ' ', $complaint->status));
+                        return match ($complaint->status) {
+                            'open'        => '<span class="badge bg-primary">Open</span>',
+                            'in_progress' => '<span class="badge bg-warning">In Progress</span>',
+                            'resolved'    => '<span class="badge bg-success">Resolved</span>',
+                            default       => '<span class="badge bg-secondary">' .
+                                ucwords(str_replace('_', ' ', $complaint->status)) .
+                                '</span>',
+                        };
                     })
 
                     ->editColumn('created_at', function ($complaint) {
@@ -120,7 +136,7 @@ class ComplaintController extends Controller
 
                         $buttons = '
                         <a href="'.route('complaints.show', $complaint).'"
-                           class="btn btn-primary btn-sm" title="view">
+                           class="btn btn-info btn-sm" title="view">
                             <i class="bi bi-eye"></i>
                         </a>
                     ';
@@ -128,7 +144,7 @@ class ComplaintController extends Controller
                         if (auth()->user()->can('update', $complaint)) {
                             $buttons .= '
                             <a href="'.route('complaints.edit', $complaint).'"
-                               class="btn btn-warning btn-sm" title="Edit">
+                               class="btn btn-primary btn-sm" title="Edit">
                                 <i class="bi bi-pencil-square"></i>
                             </a>
                         ';
@@ -143,20 +159,20 @@ class ComplaintController extends Controller
                                 '.csrf_field().'
                                 '.method_field('DELETE').'
                                 <button type="submit" class="btn btn-danger btn-sm" title="Delete">
-                                    <i class="bi bi-x-lg"></i>
+                                    <i class="bi bi-trash"></i>
                                 </button>
                             </form>
                         ';
                         }
 
                         return '
-                    <div class="d-flex flex-nowrap justify-content-center gap-1">
-                        '.$buttons.'
-                    </div>
-                    ';
+                            <div class="d-flex flex-nowrap justify-content-center gap-1">
+                                '.$buttons.'
+                            </div>
+                        ';
                     })
 
-                    ->rawColumns(['action'])
+                    ->rawColumns(['action','status','description'])
                     ->make(true);
             }
 
@@ -323,12 +339,28 @@ class ComplaintController extends Controller
             ->editColumn('category', function ($complaint) {
                 return ucfirst($complaint->category);
             })
+            ->editColumn('description', function ($complaint) {
+                $description = e($complaint->description);
+                if (strlen($complaint->description) > 40) {
+                    return '
+                        '.Str::limit($description, 40).'
+                        <button type="button"
+                                class="btn btn-link btn-sm p-0 ms-1"
+                                data-bs-toggle="tooltip"
+                                title="'.$description.'">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    ';
+                }
+                    return $description;
+            })
             ->editColumn('status', function ($complaint) {
                 return ucwords(str_replace('_', ' ', $complaint->status));
             })
             ->editColumn('created_at', function ($complaint) {
                 return $complaint->created_at->format('d M Y');
             })
+            ->rawColumns(['description'])
             ->make(true);
 
     }
