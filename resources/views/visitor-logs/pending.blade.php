@@ -4,109 +4,107 @@
 
 @section('content')
 
-  <div class="card shadow-sm border-0 rounded-3">
+<div class="card shadow-sm border-0 rounded-3">
 
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
-      <span class="fw-semibold">Visitor Pass List</span>
+        <span class="fw-semibold">Visitor Pass List</span>
 
-      <div class="d-flex gap-2">
+        <div class="d-flex gap-2">
 
-        <a href="{{ route('gatekeeper.visitor-logs.exited') }}" class="btn btn-success btn-sm">
-          <i class="bi bi-box-arrow-right me-1"></i>
-          Exited Visitors
-        </a>
+            <a href="{{ route('gatekeeper.visitor-logs.exited') }}" class="btn btn-success btn-sm">
+                <i class="bi bi-box-arrow-right me-1"></i>
+                Exited Visitors
+            </a>
 
-        <a href="{{ route('passes.create') }}" class="btn btn-primary btn-sm">
-          <i class="bi bi-plus-square me-1"></i>
-          Create Pass
-        </a>
+            <a href="{{ route('passes.create') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-square me-1"></i>
+                Create Pass
+            </a>
 
-      </div>
+        </div>
     </div>
 
     <div class="card-body">
-      <div class="table-responsive">
+        <div class="table-responsive">
 
-        <table id="visitorLogsTable" class="table table-bordered table-striped w-100">
+            <table id="visitorLogsTable" class="table table-bordered table-striped w-100">
 
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Visitor</th>
-              <th>Phone</th>
-              <th>Flat</th>
-              <th>Purpose</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Visitor</th>
+                        <th>Phone</th>
+                        <th>Flat</th>
+                        <th>Purpose</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
 
-        </table>
+            </table>
 
-      </div>
+        </div>
 
     </div>
-  </div>
+</div>
 
-  <div class="modal fade" id="entryModal" tabindex="-1">
+<div class="modal fade" id="entryModal" tabindex="-1">
 
     <div class="modal-dialog modal-lg">
 
-      <div class="modal-content">
+        <div class="modal-content">
 
-        <form id="entryForm" method="POST" enctype="multipart/form-data">
+            <form id="entryForm" method="POST" enctype="multipart/form-data">
 
-          @csrf
-          @method('PATCH')
+                @csrf
+                @method('PATCH')
 
-          <div class="modal-header">
-            <h5 class="modal-title">
-              Capture Visitor Photo
-            </h5>
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Capture Visitor Photo
+                    </h5>
 
-            <button type="button" class="btn-close" data-bs-dismiss="modal">
-            </button>
-          </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal">
+                    </button>
+                </div>
 
-          <div class="modal-body text-center">
+                <div class="modal-body text-center">
 
-            <video id="video" autoplay playsinline width="100%" class="border rounded"></video>
+                    <video id="video" autoplay playsinline width="100%" class="border rounded"></video>
 
-            <canvas id="canvas" style="display:none;"></canvas>
+                    <canvas id="canvas" style="display:none;"></canvas>
 
-            <img id="preview" class="img-thumbnail mt-3 d-none" width="250">
+                    <img id="preview" class="img-thumbnail mt-3 d-none" width="250">
 
-            {{-- <input type="hidden" name="photo" id="photo"> --}}
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-primary" id="captureBtn">
+                            Capture Photo
+                        </button>
+                    </div>
 
-            <div class="mt-3">
-              <button type="button" class="btn btn-primary" id="captureBtn">
-                Capture Photo
-              </button>
-            </div>
+                </div>
 
-          </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning d-none" id="recaptureBtn">
+                        Recapture Photo
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        Mark Entry
+                    </button>
+                </div>
 
-          <div class="modal-footer">
-            <button type="button" class="btn btn-warning d-none" id="recaptureBtn">
-              Recapture Photo
-            </button>
-            <button type="submit" class="btn btn-success">
-              Mark Entry
-            </button>
-          </div>
+            </form>
 
-        </form>
-
-      </div>
+        </div>
 
     </div>
 
-  </div>
+</div>
 
 @endsection
 
 @push('scripts')
-  <script>
+<script>
     $(function() {
 
       let stream = null;
@@ -295,5 +293,5 @@
       });
 
     });
-  </script>
+</script>
 @endpush

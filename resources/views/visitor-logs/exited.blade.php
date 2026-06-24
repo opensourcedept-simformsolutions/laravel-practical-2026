@@ -47,12 +47,9 @@
       $('#exitedVisitorsTable').DataTable({
         processing: true,
         serverSide: true,
+        responsive: true,
 
         ajax: "{{ route('gatekeeper.visitor-logs.exited') }}",
-
-        order: [
-          [6, 'desc']
-        ],
 
         columns: [{
             data: 'DT_RowIndex',
@@ -79,19 +76,23 @@
           },
           {
             data: 'entry_date',
-            name: 'entry_time'
+            name: 'entry_time',
+            orderable: false
           },
           {
             data: 'entry_time',
-            name: 'entry_time'
+            name: 'entry_time',
+            orderable: false
           },
           {
             data: 'exit_date',
-            name: 'exit_time'
+            name: 'exit_time',
+            orderable: false
           },
           {
             data: 'exit_time',
-            name: 'exit_time'
+            name: 'exit_time',
+            orderable: false
           },
           {
             data: 'photo',
