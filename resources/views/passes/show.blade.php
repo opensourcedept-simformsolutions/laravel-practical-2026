@@ -58,7 +58,7 @@
                             <h6 class="mb-3">Visitor Pass QR</h6>
 
                             <div class="d-inline-block p-3 bg-white border rounded">
-                                {!! QrCode::size(220)->generate($visitorLog->qr_code_data)  !!}
+                                {!! QrCode::size(220)->generate($visitorLog->qr_code_data) !!}
                             </div>
 
                             <div class="mt-2 text-muted">
@@ -66,8 +66,22 @@
                             </div>
 
                         </div>
+                        <div class="mt-3 text-center">
 
+                            <a href="https://wa.me/?text={{ urlencode(route('passes.show', $visitorLog->id)) }}"
+                                target="_blank" class="btn btn-success btn-sm me-2">
 
+                                <i class="bi bi-whatsapp"></i> Share WhatsApp
+                            </a>
+
+                            <button onclick="copyLink()" class="btn btn-primary btn-sm">
+
+                                <i class="bi bi-link-45deg"></i> Copy Link
+                            </button>
+
+                        </div>
+
+                        <br>
 
                         {{-- DETAILS GRID --}}
                         <div class="row">
@@ -128,3 +142,19 @@
     </div>
 
 @endsection
+
+
+<script>
+    function copyLink() {
+        const link = "{{ route('passes.show', $visitorLog->id) }}";
+
+        navigator.clipboard.writeText(link).then(() => {
+
+            Toast.fire({
+                icon: 'success',
+                title: 'Link copied successfully'
+            });
+
+        });
+    }
+</script>

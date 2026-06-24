@@ -48,6 +48,10 @@ class StoreFlatRequest extends FormRequest
 
                     }),
             ],
+
+            'society_id' => auth()->user()->isSuperAdmin()
+                ? ['required', 'exists:societies,id']
+                : ['nullable'],
         ];
     }
 

@@ -16,7 +16,7 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        Gate::authorize('viewAny', User::class);
+        $this->authorize('viewAny', User::class);
 
         if ($request->ajax()) {
 
@@ -41,7 +41,7 @@ class UserController extends Controller
                     '=',
                     'societies.id'
                 )
-                ->where('users.id', '!=', auth()->id())
+                ->where('users.id', '!=', auth()->id())       
                 ->whereHas('role', function ($q) {
                     $q->where('name', '!=', 'super_admin');
                 });
@@ -57,7 +57,7 @@ class UserController extends Controller
 
                 $query->whereHas(
                     'role',
-                    fn ($q) => $q->where(
+                    fn($q) => $q->where(
                         'name',
                         $request->role
                     )
@@ -78,11 +78,11 @@ class UserController extends Controller
                 ->addIndexColumn()
                 ->addColumn(
                     'role',
-                    fn ($row) => ucfirst($row->role_name)
+                    fn($row) => ucfirst($row->role_name)
                 )
                 ->addColumn(
                     'society',
-                    fn ($row) => $row->society_name ?? '-'
+                    fn($row) => $row->society_name ?? '-'
                 )
                 ->addColumn('actions', function ($row) {
 
@@ -90,16 +90,16 @@ class UserController extends Controller
                     $deleteUrl = route('admin.users.destroy', $row->id);
 
                     return '
-                <a href="'.$editUrl.'" class="btn btn-warning btn-sm">
+                <a href="' . $editUrl . '" class="btn btn-warning btn-sm">
                     Edit
                 </a>
 
-                <form action="'.$deleteUrl.'"
+                <form action="' . $deleteUrl . '"
                       method="POST"
                       class="d-inline">
 
-                    '.csrf_field().'
-                    '.method_field('DELETE').'
+                    ' . csrf_field() . '
+                    ' . method_field('DELETE') . '
 
                     <button
                         class="btn btn-danger btn-sm"
@@ -128,14 +128,15 @@ class UserController extends Controller
             compact(
                 'roles',
                 'societies'
-            ));
+            )
+        );
     }
 
     public function create()
     {
-        Gate::authorize('create', User::class);
+        $this->authorize('create', User::class);
 
-        $roles = Role::whereIn('name', ['admin', 'gatekeeper'])->get(); 
+        $roles = Role::whereIn('name', ['admin', 'gatekeeper'])->get();
 
         $societies = auth()->user()->isSuperAdmin()
             ? Society::orderBy('name')->get()
@@ -152,7 +153,7 @@ class UserController extends Controller
 
     public function store(StoreUserRequest $request)
     {
-        Gate::authorize('create', User::class);
+        $this->authorize('create', User::class);
 
         $validated = $request->validated();
 
@@ -175,18 +176,17 @@ class UserController extends Controller
 
         return redirect()
             ->route('admin.users.index');
-
     }
 
     public function edit(User $user)
     {
-        Gate::authorize('update', $user);
+        $this->authorize('update', $user);
 
         $roles = Role::whereIn('name', ['resident', 'admin', 'gatekeeper'])->get();
 
         $societies = auth()->user()->isSuperAdmin()
-        ? Society::orderBy('name')->get()
-        : collect();
+            ? Society::orderBy('name')->get()
+            : collect();
 
         return view(
             'admin.users.edit',
@@ -198,7 +198,7 @@ class UserController extends Controller
         UpdateUserRequest $request,
         User $user
     ) {
-        Gate::authorize('update', $user);
+        $this->authorize('update', $user);
 
         $validated = $request->validated();
 
@@ -227,7 +227,7 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        Gate::authorize('delete', $user);
+        $this->authorize('delete', $user);
 
         $user->delete();
 

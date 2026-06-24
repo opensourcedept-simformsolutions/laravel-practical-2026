@@ -11,10 +11,10 @@ use App\Http\Controllers\ResidentController;
 use App\Http\Controllers\SocietyController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitorLogController;
+use App\Models\Flat;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-// login or dashboard page redirect
 Route::get('/', function () {
 
     if (! Auth::check()) {
@@ -160,6 +160,7 @@ Route::prefix('reports')
                 Route::get('/export', 'export')->name('export');
             });
     });
+
 Route::middleware(['auth'])->group(function () {
 
     Route::get(
@@ -177,4 +178,12 @@ Route::middleware(['auth'])->group(function () {
         [GateKeeperController::class, 'markEntry']
     )->name('gatekeeper.mark-entry');
 });
+
+Route::get('/get-flats/{society?}', function ($society) {
+
+    return Flat::where('society_id', $society)
+        ->select('id', 'flat_number', 'wing')
+        ->get();
+})->name('society.flats');
+
 require __DIR__.'/auth.php';

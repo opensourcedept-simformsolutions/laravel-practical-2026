@@ -21,26 +21,74 @@ class StoreResidentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:100'],
+            'name' => [
+                'required',
+                'string',
+                'min:2',
+                'max:100',
+                'regex:/^[A-Za-z\s\.\'-]+$/',
+            ],
+
             'email' => [
                 'required',
                 'email',
+                'max:255',
                 Rule::unique('users', 'email')->withoutTrashed(),
             ],
-            'phone' => ['required', 'string', 'max:15'],
-            'flat_id' => ['required', 'exists:flats,id'],
-            'resident_type' => ['required', 'in:owner,tenant'],
+
+            'phone' => [
+                'required',
+                'string',
+                'min:7',
+                'max:20',
+                'regex:/^[0-9+\-\s()]+$/',
+            ],
+
+            'flat_id' => [
+                'required',
+                'exists:flats,id',
+            ],
+
+            'resident_type' => [
+                'required',
+                Rule::in(['owner', 'tenant']),
+            ],
+            'society_id' => [
+                auth()->user()->isSuperAdmin() ? 'required' : 'nullable',
+                'exists:societies,id',
+            ],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'name.required' => 'Name is required.',
-            'email.required' => 'Email is required.',
+
+            // Name
+            'name.required' => 'Resident name is required.',
+            'name.min' => 'Resident name must be at least 2 characters.',
+            'name.max' => 'Resident name may not be greater than 100 characters.',
+            'name.regex' => 'Resident name may contain only letters, spaces, apostrophes (\'), hyphens (-), and dots (.).',
+
+            // Email
+            'email.required' => 'Email address is required.',
+            'email.email' => 'Please enter a valid email address.',
+            'email.max' => 'Email address may not exceed 255 characters.',
+            'email.unique' => 'This email address is already registered.',
+
+            // Phone
             'phone.required' => 'Phone number is required.',
-            'flat_id.required' => 'Flat number is required.',
-            'resident_type.required' => 'select a valid resident_type',
+            'phone.min' => 'Phone number must be at least 7 characters.',
+            'phone.max' => 'Phone number may not exceed 20 characters.',
+            'phone.regex' => 'Please enter a valid phone number using only digits, spaces, plus (+), hyphens (-), and parentheses ().',
+
+            // Flat
+            'flat_id.required' => 'Please select a flat.',
+            'flat_id.exists' => 'The selected flat is invalid.',
+
+            // Resident Type
+            'resident_type.required' => 'Please select a resident type.',
+            'resident_type.in' => 'Resident type must be either Owner or Tenant.',
         ];
     }
 }

@@ -8,44 +8,81 @@ use Illuminate\Validation\Rule;
 
 class UpdateResidentRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         $resident = $this->route('resident');
-        // dd($resident);
+
         return [
-            'name' => ['required', 'string', 'max:100'],
+            'name' => [
+                'required',
+                'string',
+                'min:2',
+                'max:100',
+                'regex:/^[A-Za-z\s\.\'-]+$/',
+            ],
+
             'email' => [
                 'required',
                 'email',
+                'max:255',
                 Rule::unique('users', 'email')
                     ->ignore($resident->user_id)
+                    ->withoutTrashed(),
             ],
-            'phone' => ['required', 'string', 'max:15'],
-            'flat_id' => ['required', 'exists:flats,id'],
-            'resident_type' => ['required', 'in:owner,tenant'],
+
+            'phone' => [
+                'required',
+                'string',
+                'min:7',
+                'max:20',
+                'regex:/^[0-9+\-\s()]+$/',
+            ],
+
+            'flat_id' => [
+                'required',
+                'exists:flats,id',
+            ],
+
+            'resident_type' => [
+                'required',
+                Rule::in(['owner', 'tenant']),
+            ],
         ];
     }
+
     public function messages(): array
     {
         return [
-            'name.required' => 'name is required.',
-            'email.required' => 'email is required.',
-            'phone.required' => 'phone number is required.',
-            'flat_id.required' => 'flat selection  is required.',
-            'resident_type.required' => 'resident_type is required.',
+            // Name
+            'name.required' => 'Resident name is required.',
+            'name.min'      => 'Resident name must be at least 2 characters.',
+            'name.max'      => 'Resident name may not be greater than 100 characters.',
+            'name.regex'    => 'Resident name may contain only letters, spaces, apostrophes (\'), hyphens (-), and dots (.).',
+
+            // Email
+            'email.required' => 'Email address is required.',
+            'email.email'    => 'Please enter a valid email address.',
+            'email.max'      => 'Email address may not exceed 255 characters.',
+            'email.unique'   => 'This email address is already registered.',
+
+            // Phone
+            'phone.required' => 'Phone number is required.',
+            'phone.min'      => 'Phone number must be at least 7 characters.',
+            'phone.max'      => 'Phone number may not exceed 20 characters.',
+            'phone.regex'    => 'Please enter a valid phone number using digits, spaces, +, -, and ().',
+
+            // Flat
+            'flat_id.required' => 'Please select a flat.',
+            'flat_id.exists'   => 'The selected flat is invalid.',
+
+            // Resident Type
+            'resident_type.required' => 'Please select a resident type.',
+            'resident_type.in'       => 'Resident type must be either Owner or Tenant.',
         ];
     }
 }
