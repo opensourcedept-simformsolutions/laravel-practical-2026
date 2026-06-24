@@ -1,30 +1,49 @@
 <div class="d-flex flex-wrap gap-2">
-    <a href="{{ route('deliveries.show', $delivery) }}" class="btn btn-sm btn-primary rounded">
-        <i class="bi bi-eye"></i> View
+    <a href="{{ route('deliveries.show', $delivery) }}"
+       class="btn btn-sm btn-primary rounded"
+       data-bs-toggle="tooltip"
+       title="View Delivery">
+        <i class="bi bi-eye"></i>
     </a>
-    @canany(['is-admin', 'is-gatekeeper'])
-        <a href="{{ route('deliveries.edit', $delivery) }}" class="btn btn-sm btn-warning rounded">
-            <i class="bi bi-pencil"></i> Edit
+
+    @can('update', $delivery)
+        <a href="{{ route('deliveries.edit', $delivery) }}"
+           class="btn btn-sm btn-warning rounded"
+           data-bs-toggle="tooltip"
+           title="Edit Delivery">
+            <i class="bi bi-pencil-square"></i>
         </a>
-        <form action="{{ route('deliveries.destroy', $delivery) }}" method="POST" class="d-inline">
+    @endcan
+
+    @can('delete', $delivery)
+        <form action="{{ route('deliveries.destroy', $delivery) }}"
+              method="POST"
+              class="d-inline delete-form">
             @csrf
             @method('DELETE')
-            <button type="submit" class="btn btn-sm btn-danger rounded">
-                <i class="bi bi-trash"></i> Delete
+            <button type="submit"
+                    class="btn btn-sm btn-danger rounded"
+                    data-bs-toggle="tooltip"
+                    title="Delete Delivery">
+                <i class="bi bi-trash"></i>
             </button>
         </form>
-    @endcanany
+    @endcan
 
-    @canany(['is-resident', 'is-admin'])
+    @can('markDelivered', $delivery)
         @if ($delivery->status === 'received')
-            <form action="{{ route('deliveries.deliver', $delivery) }}" method="POST" class="d-inline">
+            <form action="{{ route('deliveries.deliver', $delivery) }}"
+                  method="POST"
+                  class="d-inline">
                 @csrf
                 @method('PATCH')
-                <button type="submit" class="btn btn-sm btn-success rounded">
+                <button type="submit"
+                        class="btn btn-sm btn-success rounded"
+                        data-bs-toggle="tooltip"
+                        title="Mark Delivered">
                     <i class="bi bi-check-circle"></i>
-                    Mark Delivered
                 </button>
             </form>
         @endif
-    @endcanany
+    @endcan
 </div>

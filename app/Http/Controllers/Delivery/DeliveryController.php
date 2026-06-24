@@ -16,6 +16,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Yajra\DataTables\Facades\DataTables;
@@ -63,11 +64,16 @@ class DeliveryController extends Controller
             }
 
             return DataTables::eloquent($query)
+                ->addIndexColumn()
                 ->addColumn('flat', function ($delivery) {
                     return $delivery->flat->wing . ' - Floor ' . $delivery->flat->floor . ' - ' . $delivery->flat->flat_number;
                 })
                 ->addColumn('resident', function ($delivery) {
                     return $delivery->resident->user->name;
+                })
+                ->editColumn('package_details', function ($delivery) {
+                    $short = Str::limit($delivery->package_details, 50);
+                    return '<span title="' . e($delivery->package_details) . '">' . e($short) . '</span>';
                 })
                 ->editColumn('status', function ($delivery) {
                     $class = $delivery->status === 'delivered'
@@ -81,13 +87,16 @@ class DeliveryController extends Controller
                 ->editColumn('received_at', function ($delivery) {
                     return $delivery->received_at?->format('d M Y H:i');
                 })
+                ->editColumn('delivered_at', function ($delivery) {
+                    return $delivery->delivered_at?->format('d M Y H:i') ?? '-';
+                })
                 ->addColumn('actions', function ($delivery) {
                     return view(
                         'deliveries.partials.actions',
                         compact('delivery')
                     )->render();
                 })
-                ->rawColumns(['status', 'actions'])
+                ->rawColumns(['package_details','status', 'actions'])
                 ->toJson();
         } catch (Exception $e) {
 
@@ -125,6 +134,11 @@ class DeliveryController extends Controller
                 ->addColumn('resident', function ($delivery) {
                     return $delivery->resident->user->name;
                 })
+                ->editColumn('package_details', function ($delivery) {
+                    $short = Str::limit($delivery->package_details, 50);
+                    return '<span title="' . e($delivery->package_details) . '">' . e($short) . '</span>';
+                })
+                ->rawColumns(['package_details'])
                 ->editColumn('status', function ($delivery) {
                     return ucfirst($delivery->status);
                 })
@@ -166,6 +180,7 @@ class DeliveryController extends Controller
                     'Society Name',
                     'Flat',
                     'Resident',
+                    'Package Details',
                     'Vendor',
                     'Status',
                     'Received At',
@@ -179,6 +194,7 @@ class DeliveryController extends Controller
                         $delivery->flat->society->name,
                         $delivery->flat->wing . ' - Floor ' . $delivery->flat->floor . ' - ' . $delivery->flat->flat_number,
                         $delivery->resident->user->name,
+                        $delivery->package_details,
                         $delivery->vendor,
                         ucfirst($delivery->status),
                         $delivery->received_at->format('Y-m-d H:i:s'),

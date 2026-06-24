@@ -51,6 +51,10 @@ class DeliveryPolicy
      */
     public function update(User $user, Delivery $delivery): bool
     {
+        if ($delivery->status === 'delivered') {
+            return false;
+        }
+
         return $this->sameSociety($user, $delivery)
             && ($user->isAdmin() || $user->isGatekeeper());
     }
@@ -60,8 +64,7 @@ class DeliveryPolicy
      */
     public function delete(User $user, Delivery $delivery): bool
     {
-        return $this->sameSociety($user, $delivery)
-            && $user->isAdmin();
+        return false;
     }
 
     /**
@@ -69,8 +72,15 @@ class DeliveryPolicy
      */
     public function markDelivered(User $user, Delivery $delivery): bool
     {
-        return $this->sameSociety($user, $delivery)
-            && ($user->isAdmin() || $user->isResident());
+        if ($delivery->status === 'delivered') {
+            return false;
+        }
+
+        if ($user->isResident()) {
+            return $delivery->resident_id === $user->resident->id;
+        }
+
+        return false;
     }
 
     /**

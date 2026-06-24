@@ -15,8 +15,7 @@
                 />
             </x-form.field>
 
-            @can('is-admin')
-
+            @if(auth()->user()->isSuperAdmin())
                 <x-form.field name="status" label="Status">
                     <x-form.select
                         name="status"
@@ -29,7 +28,7 @@
                         placeholder="Select Status"
                     />
                 </x-form.field>
-            @endcan
+            @endif
 
             <x-form.field name="vendor" label="Vendor" required>
                 <x-form.input
@@ -57,7 +56,7 @@
                 </a>
 
                 <x-form.submit-button>
-                    Save Delivery
+                    Update Delivery
                 </x-form.submit-button>
             </div>
         </x-form.form-section>

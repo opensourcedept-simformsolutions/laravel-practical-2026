@@ -4,21 +4,7 @@
 
 @section('content')
     <div class="mx-auto w-100" style="max-width: 1000px;">
-        <x-form.form-section title="Delivery Details">
-
-            <div class="section-actions">
-                <a href="{{ route('deliveries.index') }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i>
-                    Back
-                </a>
-
-                @canany(['is-admin', 'is-gatekeeper'])
-                    <a href="{{ route('deliveries.edit', $delivery) }}" class="btn btn-outline-warning">
-                        <i class="bi bi-pencil"></i>
-                        Edit Delivery
-                    </a>
-                @endcanany
-            </div>
+        <x-form.form-section title="Delivery #{{ $delivery->id }} Details">
 
             <div class="detail-grid">
 
@@ -73,6 +59,20 @@
                     </span>
                 </div>
 
+            </div>
+
+            <div class="section-actions mt-3">
+                <a href="{{ route('deliveries.index') }}" class="btn btn-secondary py-2">
+                    <i class="bi bi-arrow-left"></i>
+                    Back
+                </a>
+
+                @canany(['is-admin', 'is-gatekeeper'])
+                    <a href="{{ route('deliveries.edit', $delivery) }}" class="btn btn-warning py-2 mx-2">
+                        <i class="bi bi-pencil"></i>
+                        Edit Delivery
+                    </a>
+                @endcanany
             </div>
 
         </x-form.form-section>

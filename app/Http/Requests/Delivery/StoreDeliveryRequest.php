@@ -31,7 +31,7 @@ class StoreDeliveryRequest extends FormRequest
         return [
             'resident_id' => ['required', 'exists:residents,id'],
             'vendor' => ['required', 'string', 'max:255'],
-            'package_details' => ['required', 'string', 'min:3'],
+            'package_details' => ['required', 'string', 'min:3', 'max:1000'],
         ];
     }
 }

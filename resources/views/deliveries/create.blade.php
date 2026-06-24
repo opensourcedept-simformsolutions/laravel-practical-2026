@@ -12,6 +12,7 @@
                     id="resident_id"
                     :options="$residentOptions"
                     placeholder="Search Resident"
+                    required
                 />
             </x-form.field>
 
@@ -20,6 +21,7 @@
                     name="vendor"
                     id="vendor"
                     placeholder="Enter vendor name"
+                    required
                  />
             </x-form.field>
 
@@ -28,10 +30,14 @@
                     name="package_details"
                     id="package_details" rows="4"
                     placeholder="Enter package details"
+                    required
                  />
             </x-form.field>
 
             <div class="d-flex justify-content-end">
+                <a href="{{ route('deliveries.index') }}" class="btn btn-light py-2 mx-2">
+                    Cancel
+                </a>
                 <x-form.submit-button>
                     Save Delivery
                 </x-form.submit-button>

@@ -33,10 +33,10 @@ class UpdateDeliveryRequest extends FormRequest
         $rules = [
             'resident_id' => ['required', 'exists:residents,id'],
             'vendor' => ['required', 'string', 'max:255'],
-            'package_details' => ['required', 'string', 'min:3'],
+            'package_details' => ['required', 'string', 'min:3', 'max:1000'],
         ];
 
-        if (auth()->user()->isAdmin() || auth()->user()->isSuperAdmin()) {
+        if (auth()->user()->isSuperAdmin()) {
             $rules['status'] = ['required', Rule::enum(DeliveryStatus::class)];
         }
 
