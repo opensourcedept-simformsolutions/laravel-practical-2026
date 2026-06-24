@@ -31,10 +31,14 @@ class ResidentController extends Controller
                 'user' => function ($q) {
                     $q->withTrashed();
                 },
-                'flat'
-            ])->whereHas('flat', function ($q) {
-                $q->where('society_id', auth()->user()->society_id);
-            });
+                'flat',
+            ]);
+
+            if (! auth()->user()->isSuperAdmin()) {
+                $query->whereHas('flat', function ($q) {
+                    $q->where('society_id', auth()->user()->society_id);
+                });
+            }
 
             return DataTables::of($query)
 

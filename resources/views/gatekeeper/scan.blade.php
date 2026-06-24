@@ -3,85 +3,75 @@
 @section('title', 'Scan Visitor Pass')
 
 @section('content')
-  <div class="main-content">
-    <div class="page-content">
-      <div class="container-fluid">
+  <div class="card shadow-sm border-0 rounded-3">
 
-        <div class="card shadow">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <span class="fw-semibold">Scan Visitor Pass</span>
+    </div>
 
-          <div class="card-header">
-            <h5 class="mb-0">
-              Scan Visitor Pass
-            </h5>
-          </div>
+    <div class="card-body">
 
-          <div class="card-body">
+      <div class="row">
 
-            <div class="row">
+        <div class="col-lg-6">
 
-              <div class="col-lg-6">
+          <div id="reader"></div>
 
-                <div id="reader"></div>
-
-                <div class="text-center mt-3">
-                  <button id="scan-again-btn" class="btn btn-primary d-none">
-                    Scan Again
-                  </button>
-                </div>
-
-              </div>
-
-              <div class="col-lg-6">
-
-                <div id="visitor-data">
-
-                  <div class="alert alert-info">
-                    Point the camera at a visitor QR code.
-                  </div>
-
-                </div>
-                <div id="camera-section" class="d-none mt-4">
-
-                  <video id="video" autoplay playsinline width="100%" class="border rounded">
-                  </video>
-
-                  <canvas id="canvas" style="display:none;">
-                  </canvas>
-
-                  <img id="preview" class="img-thumbnail mt-3 d-none" width="250">
-
-                  <div class="mt-3">
-
-                    <button type="button" class="btn btn-primary" id="captureBtn">
-                      Capture Photo
-                    </button>
-
-                    <button type="button" class="btn btn-warning d-none" id="recaptureBtn">
-                      Recapture
-                    </button>
-
-                    <button type="button" class="btn btn-success d-none" id="markEntryBtn">
-                      Mark Entry
-                    </button>
-
-                  </div>
-
-                </div>
-              </div>
-
-            </div>
-
+          <div class="text-center mt-3">
+            <button id="scan-again-btn" class="btn btn-primary d-none">
+              Scan Again
+            </button>
           </div>
 
         </div>
 
+        <div class="col-lg-6">
+          <div id="visitor-data">
+            <div class="alert alert-info">
+              Point the camera at a visitor QR code.
+            </div>
+          </div>
+
+          <div id="camera-section" class="d-none mt-4">
+
+            <video id="video" autoplay playsinline width="100%" class="border rounded">
+            </video>
+
+            <canvas id="canvas" style="display:none;">
+            </canvas>
+
+            <img id="preview" class="img-thumbnail mt-3 d-none" width="250">
+
+            <div class="mt-3">
+
+              <button type="button" class="btn btn-primary" id="captureBtn">
+                Capture Photo
+              </button>
+
+              <button type="button" class="btn btn-warning d-none" id="recaptureBtn">
+                Recapture
+              </button>
+
+              <button type="button" class="btn btn-success d-none" id="markEntryBtn">
+                Mark Entry
+              </button>
+
+            </div>
+
+          </div>
+        </div>
+
       </div>
+
     </div>
+
   </div>
+
 @endsection
+
 @push('scripts')
-  
   <script>
+    
     let scanner;
     let stream = null;
     let capturedFile = null;

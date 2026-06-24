@@ -2,16 +2,17 @@
 
 @section('title', 'Deliveries')
 @section('content')
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
-            <h2 class="h3 fw-bold mb-0">
-                Deliveries
-            </h2>
-            @cannot('is-resident')
-                <a href="{{ route('deliveries.create') }}" type="button" class="btn btn-primary">
-                    <i class="bi bi-plus-square me-1"></i> Create Delivery
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+            <span class="fw-semibold">Deliveries</span>
+
+            @canany(['is-gatekeeper','is-admin'])
+                <a href="{{ route('deliveries.create') }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-square me-1"></i>
+                    Create Delivery
                 </a>
-            @endcannot
+            @endcanany
+
         </div>
         <div class="card-body">
             <div class="table-responsive">
