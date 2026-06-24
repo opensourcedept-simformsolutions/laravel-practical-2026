@@ -78,8 +78,9 @@ class VisitorLogController extends Controller
                                     <button
                                         type="button"
                                         class="btn btn-success btn-sm entry-btn"
-                                        data-id="'.$log->id.'">
-                                        Entry
+                                        data-id="'.$log->id.'"
+                                        title="Mark Entry">
+                                        <i class="bi bi-box-arrow-in-right"></i>
                                     </button>
                                 ';
                             }
@@ -87,8 +88,8 @@ class VisitorLogController extends Controller
                             if (auth()->user()->can('update', $log)) {
                                 $buttons .= '
                                     <a href="'.route('passes.edit', $log).'"
-                                    class="btn btn-warning btn-sm">
-                                        Edit
+                                    class="btn btn-warning btn-sm" title="Edit">
+                                        <i class="bi bi-pencil-square"></i>
                                     </a>
                                 ';
                             }
@@ -104,8 +105,8 @@ class VisitorLogController extends Controller
                                         '.method_field('DELETE').'
 
                                         <button type="submit"
-                                                class="btn btn-danger btn-sm">
-                                            Delete
+                                                class="btn btn-danger btn-sm" title="Delete">
+                                            <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
                                 ';
@@ -128,8 +129,8 @@ class VisitorLogController extends Controller
                                     '.method_field('PATCH').'
 
                                     <button type="submit"
-                                            class="btn btn-danger btn-sm">
-                                        Mark Exit
+                                            class="btn btn-danger btn-sm" title="Mark Exit">
+                                        <i class="bi bi-box-arrow-right"></i>
                                     </button>
                                 </form>
                             ';

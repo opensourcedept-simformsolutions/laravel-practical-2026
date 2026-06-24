@@ -109,7 +109,14 @@ class ComplaintController extends Controller
                     })
 
                     ->editColumn('status', function ($complaint) {
-                        return ucwords(str_replace('_', ' ', $complaint->status));
+                        return match ($complaint->status) {
+                            'open'        => '<span class="badge bg-primary">Open</span>',
+                            'in_progress' => '<span class="badge bg-warning">In Progress</span>',
+                            'resolved'    => '<span class="badge bg-success">Resolved</span>',
+                            default       => '<span class="badge bg-secondary">' .
+                                ucwords(str_replace('_', ' ', $complaint->status)) .
+                                '</span>',
+                        };
                     })
 
                     ->editColumn('created_at', function ($complaint) {
@@ -156,7 +163,7 @@ class ComplaintController extends Controller
                     ';
                     })
 
-                    ->rawColumns(['action'])
+                    ->rawColumns(['action','status'])
                     ->make(true);
             }
 
