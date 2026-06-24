@@ -6,7 +6,7 @@
         <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
             <span class="fw-semibold">Deliveries</span>
 
-            @canany(['is-gatekeeper','is-admin'])
+            @canany(['is-gatekeeper', 'is-admin'])
                 <a href="{{ route('deliveries.create') }}" class="btn btn-primary btn-sm">
                     <i class="bi bi-plus-square me-1"></i>
                     Create Delivery
@@ -23,8 +23,10 @@
                             <th>Flat</th>
                             <th>Resident</th>
                             <th>Vendor</th>
+                            <th>Package Details</th>
                             <th>Status</th>
                             <th>Received At</th>
+                            <th>Delivered At</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -45,8 +47,10 @@
                 ajax: '{{ route('deliveries.data') }}',
 
                 columns: [{
-                        data: 'id',
-                        name: 'id'
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex',
+                        orderable: false,
+                        searchable: false
                     },
                     {
                         data: 'flat',
@@ -61,6 +65,10 @@
                         name: 'vendor'
                     },
                     {
+                        data: 'package_details',
+                        name: 'package_details'
+                    },
+                    {
                         data: 'status',
                         name: 'status'
                     },
@@ -69,12 +77,35 @@
                         name: 'received_at'
                     },
                     {
+                        data: 'delivered_at',
+                        name: 'delivered_at'
+                    },
+                    {
                         data: 'actions',
                         name: 'actions',
                         orderable: false,
                         searchable: false
                     }
                 ]
+            });
+        });
+        $(document).on('submit', '.delete-form', function(e) {
+            e.preventDefault();
+
+            const form = this;
+
+            Swal.fire({
+                title: 'Delete Delivery?',
+                text: 'This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Delete',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#dc3545'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
             });
         });
     </script>
