@@ -23,7 +23,7 @@ Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
 
 Route::middleware('auth')
     ->controller(ProfileController::class)
@@ -31,15 +31,18 @@ Route::middleware('auth')
         Route::get('/profile', 'index')->name('profile');
         Route::get('/profile/edit', 'edit')->name('profile.edit');
         Route::patch('/profile', 'update')->name('profile.update');
-        Route::delete('/profile', 'destroy')->name('profile.destroy');
     });
 
 Route::middleware(['auth', 'role:admin'])
-    ->name('admin.')
-    ->prefix('admin')
     ->group(function () {
-
-        Route::resource('users', UserController::class);
+        Route::prefix('admin')
+            ->name('admin.')
+            ->group(function () {
+                Route::resource('users', UserController::class)
+                    ->except(['show']);
+            });
+        Route::resource('flats', FlatController::class);
+        Route::resource('residents', ResidentController::class);
     });
 
 Route::middleware(['auth', 'role:admin,gatekeeper'])
@@ -83,14 +86,6 @@ Route::middleware(['auth', 'role:admin,resident,gatekeeper'])
         Route::get('passes/{visitorLog}', 'show')->name('show');
         Route::patch('passes/{visitorLog}/cancel', 'cancel')->name('cancel');
     });
-
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::resource('flats', FlatController::class);
-});
-
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::resource('residents', ResidentController::class);
-});
 
 Route::middleware(['auth', 'role:super_admin'])
     ->controller(SocietyController::class)
@@ -160,22 +155,19 @@ Route::prefix('reports')
             });
     });
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth'])->controller(GateKeeperController::class)->group(function () {
 
     Route::get(
-        '/gatekeeper/scan',
-        [GateKeeperController::class, 'scanPage']
+        '/gatekeeper/scan', 'scanPage'
     )->name('gatekeeper.scan');
 
     Route::post(
-        '/gatekeeper/find-pass',
-        [GateKeeperController::class, 'findPass']
+        '/gatekeeper/find-pass', 'findPass'
     )->name('gatekeeper.find-pass');
 
     Route::post(
-        '/gatekeeper/mark-entry/{visitorLog}',
-        [GateKeeperController::class, 'markEntry']
+        '/gatekeeper/mark-entry/{visitorLog}', 'markEntry'
     )->name('gatekeeper.mark-entry');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
