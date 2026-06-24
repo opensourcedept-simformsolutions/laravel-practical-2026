@@ -7,14 +7,13 @@ use App\Http\Requests\UpdateResidentRequest;
 use App\Models\Flat;
 use App\Models\Resident;
 use App\Models\Role;
+use App\Models\Society;
 use App\Models\User;
 use App\Notifications\ResidentWelcomeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
-use Exception;
 use Illuminate\Support\Str;
 use Throwable;
 use Yajra\DataTables\Facades\DataTables;
@@ -68,9 +67,10 @@ class ResidentController extends Controller
                         ' . method_field('DELETE') . '
                         <button type="submit" class="btn btn-danger btn-sm"
                             onclick="return confirm(\'Delete this resident?\')">
-                              <i class="bi bi-trash"></i>
+                              <i class="bi bi-trash"></i>   
                         </button>
                     </form>
+                    </div>
                 ';
                 })
 
@@ -83,12 +83,19 @@ class ResidentController extends Controller
 
     public function create()
     {
-        $flats = Flat::where(
-            'society_id',
-            auth()->user()->society_id
-        )->get();
+        $this->authorize('create', Resident::class);
 
-        return view('residents.create', compact('flats'));
+        $user = auth()->user();
+
+        $societies = $user->isSuperAdmin()
+            ? Society::all()
+            : collect();
+
+        $flats = $user->isSuperAdmin()
+            ? collect()  
+            : Flat::where('society_id', $user->society_id)->get();
+
+        return view('residents.create', compact('societies', 'flats'));
     }
 
     public function store(StoreResidentRequest $request)
@@ -96,21 +103,30 @@ class ResidentController extends Controller
         $this->authorize('create', Resident::class);
 
         try {
-
             $data = $request->validated();
 
             $user = null;
 
-            $residentRoleId = Role::where(
-                'name',
-                'resident'
-            )->value('id');
+            $residentRoleId = Role::where('name', 'resident')->value('id');
+
+            $societyId = auth()->user()->isSuperAdmin()
+                ? $data['society_id']
+                : auth()->user()->society_id;
 
             DB::transaction(function () use (
                 $data,
                 $residentRoleId,
-                &$user
+                &$user,
+                $societyId
             ) {
+
+                $flatBelongsToSociety = Flat::where('id', $data['flat_id'])
+                    ->where('society_id', $societyId)
+                    ->exists();
+
+                if (! $flatBelongsToSociety) {
+                    throw new \Exception('Invalid flat for selected society.');
+                }
 
                 $user = User::create([
                     'name' => $data['name'],
@@ -118,7 +134,7 @@ class ResidentController extends Controller
                     'phone' => $data['phone'],
                     'password' => Str::password(32),
                     'role_id' => $residentRoleId,
-                    'society_id' => auth()->user()->society_id,
+                    'society_id' => $societyId,
                 ]);
 
                 Resident::create([
@@ -129,11 +145,8 @@ class ResidentController extends Controller
             });
 
             DB::afterCommit(function () use ($user) {
-
                 if ($user) {
-                    $user->notify(
-                        new ResidentWelcomeNotification($user)
-                    );
+                    $user->notify(new ResidentWelcomeNotification($user));
                 }
             });
 
