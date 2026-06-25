@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreResidentRequest;
 use App\Http\Requests\UpdateResidentRequest;
 use App\Models\Flat;
@@ -10,6 +11,7 @@ use App\Models\Role;
 use App\Models\Society;
 use App\Models\User;
 use App\Notifications\ResidentWelcomeNotification;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -131,6 +133,7 @@ class ResidentController extends Controller
             $data = $request->validated();
 
             $user = null;
+            $resident = null;
 
             $residentRoleId = Role::where('name', 'resident')->value('id');
 
@@ -142,6 +145,7 @@ class ResidentController extends Controller
                 $data,
                 $residentRoleId,
                 &$user,
+                &$resident,
                 $societyId
             ) {
 
@@ -162,12 +166,16 @@ class ResidentController extends Controller
                     'society_id' => $societyId,
                 ]);
 
-                Resident::create([
+                $resident = Resident::create([
                     'user_id' => $user->id,
                     'flat_id' => $data['flat_id'],
                     'resident_type' => $data['resident_type'],
                 ]);
             });
+
+            if ($resident) {
+                ActivityLogger::log('create', $resident, "Resident {$resident->user->name} was added to flat {$resident->flat->wing}-{$resident->flat->flat_number}.");
+            }
 
             DB::afterCommit(function () use ($user) {
                 if ($user) {
@@ -248,6 +256,8 @@ class ResidentController extends Controller
             Session::flash('message', 'Resident updated successfully.');
             Session::flash('status', 'success');
 
+            ActivityLogger::log('update', $resident, "Resident {$resident->user->name} details were updated.");
+
             return redirect()->route('residents.index');
         } catch (Throwable $e) {
 
@@ -270,6 +280,8 @@ class ResidentController extends Controller
 
                 $user = $resident->user;
                 $this->authorize('create', Resident::class);
+
+                ActivityLogger::log('delete', $resident, "Resident {$resident->user->name} was removed.");
 
                 $resident->delete();
 

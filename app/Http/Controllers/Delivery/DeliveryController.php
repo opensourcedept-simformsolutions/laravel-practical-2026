@@ -10,6 +10,7 @@ use App\Models\Delivery;
 use App\Models\Flat;
 use App\Models\Resident;
 use App\Services\DeliveryNotificationService;
+use App\Services\ActivityLogger;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -310,6 +311,8 @@ class DeliveryController extends Controller
                 'delivered_at' => null,
             ]);
 
+            ActivityLogger::log('create', $delivery, "Delivery from {$delivery->vendor} for flat " . ($delivery->flat?->wing ?? '-') . "-" . ($delivery->flat?->flat_number ?? '-') . " logged.");
+
             $this->notificationService->notify($delivery, 'Delivery received');
 
             return redirect()->route('deliveries.index')
@@ -359,6 +362,8 @@ class DeliveryController extends Controller
                 'status' => DeliveryStatus::DELIVERED->value,
                 'delivered_at' => now(),
             ]);
+
+            ActivityLogger::log('deliver', $delivery, "Delivery from {$delivery->vendor} marked as delivered.");
 
             $this->notificationService->notify($delivery, 'Delivery delivered');
 
@@ -422,6 +427,8 @@ class DeliveryController extends Controller
 
             $delivery->save();
 
+            ActivityLogger::log('update', $delivery, "Delivery details updated.");
+
             $newValues = $delivery->only([
                 'flat_id',
                 'resident_id',
@@ -457,6 +464,7 @@ class DeliveryController extends Controller
         $this->authorize('delete', $delivery);
 
         try {
+            ActivityLogger::log('delete', $delivery, "Delivery record deleted.");
             $delivery->delete();
             $this->notificationService->notify($delivery, 'Delivery deleted');
 

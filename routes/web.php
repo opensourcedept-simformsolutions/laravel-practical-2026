@@ -3,14 +3,15 @@
 use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Delivery\DeliveryController;
-use App\Http\Controllers\FlatController;
+use App\Http\Controllers\Admin\FlatController;
 use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\VisitorPassController;
-use App\Http\Controllers\ResidentController;
-use App\Http\Controllers\SocietyController;
+use App\Http\Controllers\Admin\ResidentController;
+use App\Http\Controllers\SuperAdmin\SocietyController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\VisitorLogController;
+use App\Http\Controllers\Gatekeeper\VisitorLogController;
+use App\Http\Controllers\Admin\ActivityLogController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -44,6 +45,9 @@ Route::middleware('auth')->group(function () {
 
                     Route::resource('users', UserController::class)
                         ->except(['show']);
+
+                    Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+                    Route::get('activity-logs/data', [ActivityLogController::class, 'data'])->name('activity-logs.data');
                 });
 
             Route::resource('flats', FlatController::class);

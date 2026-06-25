@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreFlatRequest;
 use App\Http\Requests\UpdateFlatRequest;
 use App\Models\Flat;
 use App\Models\Society;
+use App\Services\ActivityLogger;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -113,7 +115,7 @@ class FlatController extends Controller
 
             $validated = $request->validated();
 
-            Flat::create([
+            $flat = Flat::create([
                 'wing' => $validated['wing'],
                 'floor' => $validated['floor'],
                 'flat_number' => $validated['flat_number'],
@@ -121,6 +123,8 @@ class FlatController extends Controller
                     ? $validated['society_id']
                     : auth()->user()->society_id,
             ]);
+
+            ActivityLogger::log('create', $flat, "Flat {$flat->wing}-{$flat->flat_number} was created.");
 
             Session::flash('message', 'Flat Created Successfully.');
             Session::flash('status', 'success');
@@ -162,6 +166,7 @@ class FlatController extends Controller
 
         try {
             $flat->update($request->validated());
+            ActivityLogger::log('update', $flat, "Flat {$flat->wing}-{$flat->flat_number} was updated.");
             Session::flash('message', 'Flat updated successfully.');
             Session::flash('status', 'success');
 
@@ -182,6 +187,7 @@ class FlatController extends Controller
         $this->authorize('delete', $flat);
 
         try {
+            ActivityLogger::log('delete', $flat, "Flat {$flat->wing}-{$flat->flat_number} was deleted.");
             $flat->delete();
 
             Session::flash('message', 'Flat Deleted successfully.');

@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateVisitorPassRequest;
 use App\Models\Flat;
 use App\Models\Visitor;
 use App\Models\VisitorLog;
+use App\Services\ActivityLogger;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -191,7 +192,8 @@ class VisitorPassController extends Controller
             $validated = $request->validated();
             $user = auth()->user();
 
-            DB::transaction(function () use ($validated, $user) {
+            $visitorLog = null;
+            DB::transaction(function () use ($validated, $user, &$visitorLog) {
 
                 $visitor = Visitor::updateOrCreate(
                     [
@@ -226,6 +228,10 @@ class VisitorPassController extends Controller
 
                 $visitorLog->save();
             });
+
+            if ($visitorLog) {
+                ActivityLogger::log('create', $visitorLog, "Visitor Pass for {$visitorLog->visitor->name} was created.");
+            }
 
             Session::flash('message', 'Visitor Pass Created Successfully.');
             Session::flash('status', 'success');
@@ -328,6 +334,8 @@ class VisitorPassController extends Controller
             Session::flash('message', 'Visitor Pass updated successfully.');
             Session::flash('status', 'success');
 
+            ActivityLogger::log('update', $visitorLog, "Visitor Pass for {$visitorLog->visitor->name} was updated.");
+
             if ($user->isGatekeeper()) {
                 return redirect()->route('gatekeeper.visitor-logs.pending');
             }
@@ -359,6 +367,8 @@ class VisitorPassController extends Controller
             $visitorLog->update([
                 'status' => 'cancelled',
             ]);
+
+            ActivityLogger::log('cancel', $visitorLog, "Visitor Pass for {$visitorLog->visitor->name} was cancelled.");
 
             return response()->json([
                 'success' => true,
@@ -560,6 +570,7 @@ class VisitorPassController extends Controller
                 ]);
             }
 
+            ActivityLogger::log('delete', $visitorLog, "Visitor Pass for {$visitorLog->visitor->name} was deleted.");
             $visitorLog->delete();
 
             return redirect()->back()->with([

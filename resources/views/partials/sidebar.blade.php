@@ -79,6 +79,14 @@
             <span class="sidebar-link-label">Complaints</span>
         </x-sidebar-link>
 
+        {{-- Activity Logs --}}
+        @canany(['is-admin', 'is-super-admin'])
+            <x-sidebar-link :href="route('admin.activity-logs.index')" :active="request()->routeIs('admin.activity-logs.*')">
+                <i class="bi bi-journal-text"></i>
+                <span class="sidebar-link-label">Activity Logs</span>
+            </x-sidebar-link>
+        @endcanany
+
         {{-- Reports --}}
         @php
             $reportsActive = request()->routeIs('reports.*');

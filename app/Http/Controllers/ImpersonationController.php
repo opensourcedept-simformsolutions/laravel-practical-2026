@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use App\Services\ActivityLogger;
 
 class ImpersonationController extends Controller
 {
@@ -22,6 +23,7 @@ class ImpersonationController extends Controller
             'impersonator_redirect' => url()->previous(),
         ]);
 
+        ActivityLogger::log('impersonate_start', $user, "Impersonating user {$user->name}.");
         Auth::login($user);
 
         return redirect('/')
@@ -49,6 +51,7 @@ class ImpersonationController extends Controller
         ]);
 
         Auth::login($admin);
+        ActivityLogger::log('impersonate_stop', null, "Stopped impersonating.");
 
         return redirect($redirectUrl ?: route('dashboard'))
             ->with([

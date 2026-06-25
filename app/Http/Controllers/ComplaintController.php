@@ -7,6 +7,7 @@ use App\Enums\ComplaintStatus;
 use App\Http\Requests\StoreComplaintRequest;
 use App\Http\Requests\UpdateComplaintRequest;
 use App\Models\Complaint;
+use App\Services\ActivityLogger;
 use Exception;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
@@ -35,12 +36,14 @@ class ComplaintController extends Controller
 
         try {
 
-            Complaint::create([
+            $complaint = Complaint::create([
                 'user_id' => auth()->id(),
                 'category' => $request->category,
                 'description' => $request->description,
                 'status' => ComplaintStatus::OPEN,
             ]);
+
+            ActivityLogger::log('create', $complaint, "Complaint raised under category '" . ucfirst($complaint->category) . "'.");
 
             return redirect()
                 ->route('complaints.index')
@@ -267,6 +270,8 @@ class ComplaintController extends Controller
                 ]);
             }
 
+            ActivityLogger::log('update', $complaint, "Complaint updated (status: " . ucfirst($complaint->status) . ").");
+
             return redirect()
                 ->route('complaints.show', $complaint)
                 ->with([
@@ -296,6 +301,7 @@ class ComplaintController extends Controller
 
         try {
 
+            ActivityLogger::log('delete', $complaint, "Complaint deleted.");
             $complaint->delete();
 
             return redirect()

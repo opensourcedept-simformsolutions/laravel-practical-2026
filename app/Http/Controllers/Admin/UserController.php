@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Models\Role;
 use App\Models\Society;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -180,7 +181,9 @@ class UserController extends Controller
                 $validated['society_id'] = auth()->user()->society_id;
             }
 
-            User::create($validated);
+            $user = User::create($validated);
+
+            ActivityLogger::log('create', $user, "User {$user->name} (" . ($user->role?->name ?? 'unknown') . ") was created.");
 
             Session::flash('message', 'User created successfully.');
             Session::flash('status', 'success');
@@ -234,6 +237,8 @@ class UserController extends Controller
             
             $user->update($validated);
 
+            ActivityLogger::log('update', $user, "User {$user->name} was updated.");
+
             Session::flash('message', 'User updated successfully.');
             Session::flash('status', 'success');
 
@@ -253,6 +258,7 @@ class UserController extends Controller
         $this->authorize('delete', $user);
 
         try {
+            ActivityLogger::log('delete', $user, "User {$user->name} was deleted.");
             $user->delete();
 
             Session::flash('message', 'User deleted successfully.');

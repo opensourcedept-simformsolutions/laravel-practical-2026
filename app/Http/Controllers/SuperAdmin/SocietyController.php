@@ -1,12 +1,14 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\SuperAdmin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Society;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use App\Http\Requests\StoreSocietyRequest;
 use App\Http\Requests\UpdateSocietyRequest;
+use App\Services\ActivityLogger;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -124,7 +126,9 @@ class SocietyController extends Controller
 
         try {
 
-            Society::create($request->validated());
+            $society = Society::create($request->validated());
+
+            ActivityLogger::log('create', $society, "Society {$society->name} was created.");
 
             return redirect()
                 ->route('societies.index')
@@ -182,6 +186,8 @@ class SocietyController extends Controller
                 $request->validated()
             );
 
+            ActivityLogger::log('update', $society, "Society {$society->name} was updated.");
+
             return redirect()
                 ->route('societies.index')
                 ->with([
@@ -207,6 +213,7 @@ class SocietyController extends Controller
 
         try {
 
+            ActivityLogger::log('delete', $society, "Society {$society->name} was deleted.");
             $society->delete();
 
             return response()->json([
@@ -232,6 +239,8 @@ class SocietyController extends Controller
 
             $society->restore();
 
+            ActivityLogger::log('restore', $society, "Society {$society->name} was restored.");
+
             return response()->json([
                 'success' => true,
                 'message' => 'Society restored successfully.'
@@ -249,13 +258,12 @@ class SocietyController extends Controller
 
     public function flats(Society $society)
     {
-        $this->authorize('view', $society);
+        $this->authorize('viewFlats', $society);
 
         try {
-
-            $flats = $society->flats()
-                ->select('id', 'flat_number', 'wing')
+            $flats = Flat::where('society_id', $society->id)
                 ->orderBy('wing')
+                ->orderBy('floor')
                 ->orderBy('flat_number')
                 ->get();
 
@@ -264,9 +272,7 @@ class SocietyController extends Controller
                 'data' => $flats,
             ]);
         } catch (Exception $e) {
-
-            Log::error($e->getMessage());
-
+            Log::error('Error loading flats: ' . $e->getMessage(), ['exception' => $e]);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to load flats.',

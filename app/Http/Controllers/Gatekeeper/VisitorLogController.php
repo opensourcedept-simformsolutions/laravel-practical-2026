@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Gatekeeper;
 
+use App\Http\Controllers\Controller;
 use App\Events\VisitorEntered;
 use App\Events\VisitorExited;
 use App\Models\VisitorLog;
+use App\Services\ActivityLogger;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -236,6 +238,8 @@ class VisitorLogController extends Controller
             $visitorLog->photo_path = $request->file('photo')->store('visitor_photos', 'public');
             $visitorLog->save();
 
+            ActivityLogger::log('mark_entry', $visitorLog, "Visitor {$visitorLog->visitor->name} entered flat " . ($visitorLog->flat?->wing ?? '-') . "-" . ($visitorLog->flat?->flat_number ?? '-') . ".");
+
             Log::info('VisitorEntered event dispatching', [
                 'visitor_log_id' => $visitorLog->id,
             ]);
@@ -280,6 +284,8 @@ class VisitorLogController extends Controller
             $visitorLog->exit_time = now();
             $visitorLog->status = 'exited';
             $visitorLog->save();
+
+            ActivityLogger::log('mark_exit', $visitorLog, "Visitor {$visitorLog->visitor->name} exited flat " . ($visitorLog->flat?->wing ?? '-') . "-" . ($visitorLog->flat?->flat_number ?? '-') . ".");
 
             Log::info('VisitorExited event dispatching', [
                 'visitor_log_id' => $visitorLog->id,

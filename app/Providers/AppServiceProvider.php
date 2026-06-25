@@ -37,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Gate::policy(Complaint::class, ComplaintPolicy::class);
+        Gate::policy(\App\Models\ActivityLog::class, \App\Policies\ActivityLogPolicy::class);
 
         Gate::define('is-admin', function ($user) {
             return $user->isAdmin();
@@ -58,6 +59,22 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(
             VisitorExited::class,
             SendVisitorExitMail::class
+        );
+
+        Event::listen(
+            \Illuminate\Auth\Events\Login::class,
+            function ($event) {
+                \App\Services\ActivityLogger::log('login', $event->user, "User {$event->user->name} logged in.");
+            }
+        );
+
+        Event::listen(
+            \Illuminate\Auth\Events\Logout::class,
+            function ($event) {
+                if ($event->user) {
+                    \App\Services\ActivityLogger::log('logout', $event->user, "User {$event->user->name} logged out.");
+                }
+            }
         );
     }
 }
