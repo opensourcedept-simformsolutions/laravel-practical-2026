@@ -7,30 +7,52 @@ use App\Models\Flat;
 use App\Models\Resident;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<Delivery>
- */
 class DeliveryFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    protected $model = Delivery::class;
+
     public function definition(): array
     {
-        $status = fake()->randomElement(['received', 'delivered']);
-        $receivedAt = fake()->dateTimeBetween('-30 days', 'now');
-        $deliveredAt = ($status === 'delivered') ? fake()->dateTimeBetween($receivedAt, 'now') : null;
+        $received = fake()->dateTimeBetween('-5 days', 'now');
 
         return [
             'flat_id' => Flat::factory(),
             'resident_id' => Resident::factory(),
-            'vendor' => fake()->company(),
+            'vendor' => fake()->randomElement([
+                'Amazon',
+                'Flipkart',
+                'Blinkit',
+                'Swiggy',
+                'Zomato',
+            ]),
             'package_details' => fake()->sentence(),
-            'status' => $status,
-            'received_at' => $receivedAt,
-            'delivered_at' => $deliveredAt,
+            'status' => 'received',
+            'received_at' => $received,
+            'delivered_at' => null,
         ];
+    }
+
+    public function received(): static
+    {
+        return $this->state(function () {
+            return [
+                'status' => 'received',
+                'received_at' => now(),
+                'delivered_at' => null,
+            ];
+        });
+    }
+
+    public function delivered(): static
+    {
+        return $this->state(function () {
+            $received = now()->subHours(rand(1, 24));
+
+            return [
+                'status' => 'delivered',
+                'received_at' => $received,
+                'delivered_at' => now(),
+            ];
+        });
     }
 }
