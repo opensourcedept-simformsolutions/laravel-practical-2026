@@ -44,6 +44,7 @@
                     <thead class="table-light">
                         <tr>
                             <th>ID</th>
+                            <th>Name</th>
                             <th>Wing</th>
                             <th>Floor</th>
                             <th>Flat Number</th>
@@ -84,6 +85,11 @@
                     }
                 },
                 columns: [{
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex',
+                        orderable: false,
+                        searchable: false
+                    },{
                         data: 'society',
                         name: 'society',
                         visible: "{{ auth()->user()->isSuperAdmin() ? 'true' : 'false' }}"

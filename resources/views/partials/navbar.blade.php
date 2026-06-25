@@ -11,6 +11,27 @@
             <i class="bi bi-list"></i>
         </button>
 
+        @if(session()->has('impersonator_id'))
+            <div class="impersonation-banner d-flex align-items-center gap-3 me-3">
+                <i class="bi bi-person-badge"></i>
+
+                <span>
+                    Acting as
+                    <strong>{{ auth()->user()->name }}</strong>
+                </span>
+
+                <form action="{{ route('impersonate.stop') }}"
+                    method="POST"
+                    class="m-0">
+                    @csrf
+
+                    <button type="submit" class="impersonation-exit-btn">
+                        Exit
+                    </button>
+                </form>
+            </div>
+        @endif
+
         <div class="ms-auto">
             <div class="dropdown">
 

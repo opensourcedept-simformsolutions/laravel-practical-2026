@@ -87,28 +87,38 @@ class UserController extends Controller
 
                     $editUrl = route('admin.users.edit', $row->id);
                     $deleteUrl = route('admin.users.destroy', $row->id);
+                    $impersonateUrl = route('impersonate.start', $row->id);
 
                     return '
-                    <div class="text-center">
-                <a href="' . $editUrl . '" class="btn btn-warning btn-sm">
-                   Edit <i class="bi bi-pencil-square"></i>
-                </a>
+                        <div class="text-center">
+                            <a href="' . $editUrl . '" class="btn btn-primary btn-sm">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
 
-                <form action="' . $deleteUrl . '"
-                      method="POST"
-                      class="d-inline">
+                            <form action="' . $impersonateUrl . '" method="POST" class="d-inline">
+                                ' . csrf_field() . '
+                                <button type="submit"
+                                    class="btn btn-dark btn-sm">
+                                    <i class="bi bi-person-check"></i>
+                                </button>
+                            </form>
 
-                    ' . csrf_field() . '
-                    ' . method_field('DELETE') . '
+                            <form action="' . $deleteUrl . '"
+                                method="POST"
+                                class="d-inline">
 
-                    <button
-                        class="btn btn-danger btn-sm"
-                        onclick="return confirm(\'Delete this user?\')">
-                        <i class="bi bi-trash"></i>
-                    </button>
+                                ' . csrf_field() . '
+                                ' . method_field('DELETE') . '
 
-                </form>
-            </div>';
+                                <button
+                                    class="btn btn-danger btn-sm"
+                                    onclick="return confirm(\'Delete this user?\')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+
+                            </form>
+                        </div>
+                    ';
                 })
 
                 ->rawColumns(['actions'])

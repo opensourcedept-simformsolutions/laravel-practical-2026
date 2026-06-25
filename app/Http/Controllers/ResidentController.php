@@ -170,12 +170,18 @@ class ResidentController extends Controller
     {
         $this->authorize('update', $resident);
 
-        $flats = Flat::where(
+        $user = auth()->user();
+
+        $societies = $user->isSuperAdmin()
+            ? Society::all()
+            : collect();
+
+            $flats = Flat::where(
             'society_id',
-            auth()->user()->society_id
+            $resident->flat->society_id
         )->get();
 
-        return view('residents.edit', compact('resident', 'flats'));
+        return view('residents.edit', compact('resident', 'flats', 'societies'));
     }
 
     public function update(

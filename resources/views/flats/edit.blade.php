@@ -29,11 +29,34 @@
 
                   <div class="row">
 
+                    @if (auth()->user()->isSuperAdmin())
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label">Society</label>
+                          <select name="society_id" class="form-select">
+                            <option value="">Select Society</option>
+
+                            @foreach ($societies as $society)
+                              <option value="{{ $society->id }}"
+                                {{ old('society_id', $flat->society_id) == $society->id ? 'selected' : '' }}>
+                                {{ $society->name }}
+                              </option>
+                            @endforeach
+                          </select>
+
+                          @error('society_id')
+                            <div class="text-danger pt-1">
+                              {{ $message }}
+                            </div>
+                          @enderror
+                        </div>
+                      </div>
+                    @endif
+
                     <div class="col-md-6">
                       <div class="mb-3">
                         <label class="form-label">Wing</label>
-                        <input type="text" name="wing" class="form-control"
-                          value="{{ old('wing', $flat->wing) }}">
+                        <input type="text" name="wing" class="form-control" value="{{ old('wing', $flat->wing) }}">
 
                         @error('wing')
                           <div class="text-danger pt-1">
