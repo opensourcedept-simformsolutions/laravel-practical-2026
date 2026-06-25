@@ -1,102 +1,238 @@
-# Society Gatekeeper Management System
 
-A web-based society management application built with Laravel 12. Enables society admins to manage residents, residents to create visitor passes, and gatekeepers to log visitor entry/exit and deliveries.
+# SocietyMS - Society Gatekeeper Management System
 
----
-
-## Project Objective
-
-- Society Admin can manage flats, residents, and gatekeepers
-- Residents can create and track visitor passes and raise complaints
-- Gatekeepers can verify visitors, record entry/exit, and log deliveries
-- Admin can view live dashboard stats and generate reports
+SocietyMS is a web-based Society Gatekeeper Management System built with Laravel 12. The application helps residential societies manage residents, visitors, deliveries, complaints, and gatekeeper operations through a centralized platform.
 
 ---
 
-## User Roles
+## Overview
 
-| Role | Responsibilities |
-|---|---|
-| Admin | Manage residents & gatekeepers, view all reports |
-| Resident | Create visitor passes, view visitor history, raise complaints |
-| Gatekeeper | Verify & log visitor entry/exit, record deliveries |
+The system provides role-based access for:
 
----
+- Super Administrators
+- Society Administrators
+- Residents
+- Gatekeepers
 
-## Modules
-
-### Module 1 — Authentication & RBAC
-
-- Login, logout, change password, forgot password
-- Profile management
-- Role-based access control (Admin, Resident, Gatekeeper)
-- Laravel Breeze authentication scaffolding
-- Route middleware guards per role
-
-### Module 2 — Flat & Resident Management
-
-- Add, edit, delete flats (flat number, wing, floor)
-- Add, edit, delete residents (name, phone, email, owner/tenant)
-- Family member management per flat
-- Link resident to flat and login account
-- Resident listing with search
-
-### Module 3 — Visitor Pass Management *(main module)*
-
-- Resident creates a visitor pass:
-  - Visitor name, mobile number, purpose, visit date, vehicle number (optional)
-- Pass status flow: `Pending → Entered → Exited → Cancelled`
-- Resident can view visitor history and cancel a pending pass
-- Gatekeeper sees all pending passes for their gate
-
-### Module 4 — Gate Entry & Exit
-
-- Gatekeeper searches visitor by name, mobile, or pass ID
-- Mark Entry — records entry time and gatekeeper name
-- Mark Exit — records exit time
-- Visitor log listing for gatekeeper
-
-### Module 5 — Delivery Management
-
-- Gatekeeper records incoming delivery:
-  - Flat number, resident, vendor (Amazon / Flipkart / Swiggy / Zomato / Courier), package details
-- Status: `Received → Delivered`
-- Delivery listing with flat and date filters
-
-### Module 6 — Complaint Management
-
-- Resident raises a complaint with category and description
-- Categories: Security, Cleaning, Water, Electricity, Parking
-- Status workflow: `Open → In Progress → Resolved`
-- Admin can add notes to any complaint
-
-### Module 7 — Dashboard & Reports
-
-Admin dashboard with live stat cards:
-
-- Visitors Today
-- Visitors Currently Inside
-- Deliveries Today
-- Open Complaints
-- Total Residents
-
-Report pages with date range, flat, and status filters:
-
-- Visitor Report
-- Delivery Report
-- Complaint Report
+Each role has dedicated features designed to streamline society management and improve security.
 
 ---
 
-## Nice-to-Have Features *(only if time allows)*
+## Features
 
-- QR code on visitor pass — gatekeeper scans to auto-fill entry
-- Webcam photo capture at gate entry
-- Email notification to resident when visitor is marked as entered
-- CSV export on all report pages
+### Super Admin
+
+- Multi-Society Management
+- Society Administration & Monitoring
+- Centralized Dashboard & Analytics
+- System-Wide Analytics & Reports
+
+### Society Admin
+
+- Flat, Resident & Gatekeeper Management
+- Visitor & Delivery Monitoring
+- Complaint Management
+- Society Dashboard & Reports
+
+### Resident
+
+- Visitor Pass Management
+- Visitor History Tracking
+- Complaint Registration & Tracking
+- Delivery Management
+
+### Gatekeeper
+
+- Visitor Verification & Access Control
+- Entry & Exit Tracking
+- Delivery Logging & Status Management
+
+### Advanced Features
+
+- Multi-Tenant Architecture
+- Role-Based Access Control (RBAC)
+- Real-Time Visitor Tracking
+- QR-Based Visitor Verification
+- Dashboard Analytics & Reporting
+- CSV Report Export
+- Email Notifications
+- Secure Authentication & Authorization
 
 ---
 
-## Project Scope
+## Requirements
 
-This project is a trainee assignment at **Simform Solutions**. The scope is intentionally focused — 7 modules, 8 tables — to produce a complete, working application that demonstrates core Laravel concepts: Authentication, RBAC Middleware, CRUD, Eloquent Relationships, Validation, and Reporting.
+Before running the project, ensure the following software is installed:
+
+| Software | Version |
+|-----------|-----------|
+| PHP | 8.2 or higher |
+| Composer | 2.x |
+| MySQL | 8.0+ |
+| Node.js | 20+ |
+| NPM | 10+ |
+| Git | Latest |
+  
+---
+
+## Technology Stack
+
+- Laravel 12
+- PHP 8.2+
+- MySQL
+- Bootstrap 5
+- jQuery
+- DataTables
+- SweetAlert2
+
+---
+
+## Local Development Setup
+
+### 1. Clone Repository
+
+```bash
+git clone https://github.com/opensourcedept-simformsolutions/laravel-practical-2026.git
+cd laravel-practical-2026
+```
+
+---
+
+### 2. Install PHP Dependencies
+
+```bash
+composer install
+```
+
+---
+
+### 3. Install Frontend Dependencies
+
+```bash
+npm install
+```
+
+---
+
+### 4. Create Environment File
+
+```bash
+cp .env.example .env
+```
+
+---
+
+### 5. Configure Database
+
+Update the following values in your `.env` file:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=society
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+---
+
+### 6. Generate Application Key
+
+```bash
+php artisan key:generate
+```
+
+---
+
+### 7. Run Database Migrations
+
+```bash
+php artisan migrate
+```
+
+---
+
+### 8. Seed Sample Data (Optional)
+
+```bash
+php artisan db:seed
+```
+
+---
+
+### 9. Build Frontend Assets
+
+Production build:
+
+```bash
+npm run build
+```
+
+Development mode:
+
+```bash
+npm run dev
+```
+
+---
+
+### 10. Start Development Server
+
+```bash
+php artisan serve
+```
+
+Application URL:
+
+```text
+http://127.0.0.1:8000
+```
+
+---
+
+## Additional Commands
+
+### Create Storage Symlink
+
+```bash
+php artisan storage:link
+````
+
+### Start Email Queue Worker
+
+```bash
+php artisan queue:work --queue=emails
+```
+
+These commands are required for:
+
+* Serving uploaded files (visitor photos etc.)
+* Processing queued email notifications
+---
+
+## Dashboard
+
+The Super Admin Dashboard provides a centralized overview of societies, residents, gatekeepers, visitors, complaints, and deliveries.
+
+![Super Admin Dashboard](docs/screenshots/dashboard-overview.png)
+
+---
+
+## Additional Screenshots
+
+### Delivery Report
+![Delivery Report](docs/screenshots/report-delivery.png)
+
+### Complaint Report
+![Complaint Report](docs/screenshots/report-complaint.png)
+
+### Visitor Report
+![Visitor Report](docs/screenshots/report-visitor.png)
+
+---
+## License
+
+This project was developed as part of an internship and academic learning project.
+
+---
