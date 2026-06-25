@@ -23,7 +23,6 @@ class FlatController extends Controller
                 if ($request->filled('society_id')) {
                     $query->where('society_id', $request->society_id);
                 }
-
             } else {
 
                 $query = Flat::with('society')
@@ -31,6 +30,7 @@ class FlatController extends Controller
             }
 
             return DataTables::of($query)
+                ->addIndexColumn()
                 ->addColumn('society', function ($row) {
                     return $row->society?->name ?? '-';
                 })
@@ -102,11 +102,13 @@ class FlatController extends Controller
         }
     }
 
-    public function show(string $id) {}
-
     public function edit(Flat $flat)
     {
-        return view('flats.edit', compact('flat'));
+        $societies = auth()->user()->isSuperAdmin()
+            ? Society::all()
+            : collect();
+
+        return view('flats.edit', compact('flat', 'societies'));
     }
 
     public function update(UpdateFlatRequest $request, Flat $flat)

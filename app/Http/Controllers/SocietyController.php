@@ -48,47 +48,47 @@ class SocietyController extends Controller
                     $actions = '<div class="d-flex justify-content-center gap-2">';
 
                     $actions .= '
-                    <a href="' . route('societies.show', $society->id) . '"
-                        class="btn btn-info text-white">
-                        <i class="bi bi-eye"></i>
-                    </a>
-                ';
+                        <a href="' . route('societies.show', $society->id) . '"
+                            class="btn btn-info text-white">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    ';
 
                     if (!$society->trashed()) {
 
                         $actions .= '
-                        <a href="' . route('societies.edit', $society->id) . '"
-                            class="btn btn-primary">
-                            <i class="bi bi-pencil-square"></i>
-                        </a>
-                    ';
+                            <a href="' . route('societies.edit', $society->id) . '"
+                                class="btn btn-primary">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                        ';
 
                         $actions .= '
-                        <button
-                            class="btn btn-danger btn-action"
-                            data-url="' . route('societies.destroy', $society->id) . '"
-                            data-method="DELETE"
-                            data-title="Delete Society?"
-                            data-text="This action can be restored later."
-                            data-confirm="Yes, Delete"
-                            data-success="Society deleted successfully">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    ';
+                            <button
+                                class="btn btn-danger btn-action"
+                                data-url="' . route('societies.destroy', $society->id) . '"
+                                data-method="DELETE"
+                                data-title="Delete Society?"
+                                data-text="This action can be restored later."
+                                data-confirm="Yes, Delete"
+                                data-success="Society deleted successfully">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        ';
                     } else {
 
                         $actions .= '
-                        <button
-                            class="btn btn-success btn-action"
-                            data-url="' . route('societies.restore', $society->id) . '"
-                            data-method="PATCH"
-                            data-title="Restore Society?"
-                            data-text="Society will become active again."
-                            data-confirm="Yes, Restore"
-                            data-success="Society restored successfully">
-                            <i class="bi bi-arrow-counterclockwise"></i>
-                        </button>
-                    ';
+                            <button
+                                class="btn btn-success btn-action"
+                                data-url="' . route('societies.restore', $society->id) . '"
+                                data-method="PATCH"
+                                data-title="Restore Society?"
+                                data-text="Society will become active again."
+                                data-confirm="Yes, Restore"
+                                data-success="Society restored successfully">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                            </button>
+                        ';
                     }
 
                     $actions .= '</div>';
@@ -97,7 +97,6 @@ class SocietyController extends Controller
                 })
 
                 ->rawColumns(['actions', 'status'])
-
                 ->make(true);
         } catch (Exception $e) {
 
@@ -173,7 +172,6 @@ class SocietyController extends Controller
         return view('societies.edit', compact('society'));
     }
 
-
     public function update(UpdateSocietyRequest $request, Society $society)
     {
         $this->authorize('update', $society);
@@ -245,6 +243,33 @@ class SocietyController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong.'
+            ], 500);
+        }
+    }
+
+    public function flats(Society $society)
+    {
+        $this->authorize('view', $society);
+
+        try {
+
+            $flats = $society->flats()
+                ->select('id', 'flat_number', 'wing')
+                ->orderBy('wing')
+                ->orderBy('flat_number')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $flats,
+            ]);
+        } catch (Exception $e) {
+
+            Log::error($e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load flats.',
             ], 500);
         }
     }

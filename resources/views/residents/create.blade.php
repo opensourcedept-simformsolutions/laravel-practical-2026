@@ -49,7 +49,6 @@
                                             </div>
                                         @endif
 
-                                        {{-- Name --}}
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Name</label>
@@ -62,7 +61,6 @@
                                             </div>
                                         </div>
 
-                                        {{-- Email --}}
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Email</label>
@@ -75,7 +73,6 @@
                                             </div>
                                         </div>
 
-                                        {{-- Phone --}}
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Phone</label>
@@ -88,7 +85,6 @@
                                             </div>
                                         </div>
 
-                                        {{-- Flat --}}
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Flat</label>
@@ -110,7 +106,6 @@
                                             </div>
                                         </div>
 
-                                        {{-- Resident Type --}}
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Resident Type</label>
@@ -162,6 +157,13 @@
     <script>
         $(document).ready(function() {
 
+            $("#flat_id").select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Select Status',
+                allowClear: true,
+                width: '100%'
+            });
+
             $('#society_id').on('change', function() {
 
                 let societyId = $(this).val();
@@ -172,22 +174,33 @@
                 }
 
                 $.ajax({
-                    url: "{{ route('society.flats') }}/" + societyId,
+                    url: "/societies/" + societyId + "/flats",
                     type: 'GET',
-                    success: function(data) {
+                    success: function(response) {
+
+                        if (!response.success) {
+                            return;
+                        }
 
                         let options = '<option value="">Select Flat</option>';
 
-                        data.forEach(function(flat) {
-                            options += `<option value="${flat.id}">
-                            ${flat.flat_number} (${flat.wing})
-                        </option>`;
+                        response.data.forEach(function(flat) {
+                            options += `
+                                <option value="${flat.id}">
+                                    ${flat.wing}-${flat.flat_number}
+                                </option>
+                            `;
                         });
 
-                        $('#flat_id').html(options);
+                        $('#flat_id').html(options).trigger('change');
                     },
-                    error: function() {
+                    error: function(xhr) {
                         $('#flat_id').html('<option value="">Error loading flats</option>');
+
+                        Toast.fire({
+                            icon: 'error',
+                            title: xhr.responseJSON?.message ?? 'Failed to load flats.'
+                        });
                     }
                 });
 

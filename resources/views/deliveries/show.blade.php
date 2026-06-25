@@ -67,12 +67,14 @@
                     Back
                 </a>
 
-                @canany(['is-admin', 'is-gatekeeper'])
-                    <a href="{{ route('deliveries.edit', $delivery) }}" class="btn btn-warning py-2 mx-2">
-                        <i class="bi bi-pencil"></i>
-                        Edit Delivery
-                    </a>
-                @endcanany
+                @if ($delivery->status !== 'received')
+                    @canany(['is-admin', 'is-gatekeeper'])
+                        <a href="{{ route('deliveries.edit', $delivery) }}" class="btn btn-warning py-2 mx-2">
+                            <i class="bi bi-pencil"></i>
+                            Edit Delivery
+                        </a>
+                    @endcanany
+                @endif
             </div>
 
         </x-form.form-section>

@@ -27,8 +27,28 @@
                                     </p>
 
                                     <div class="row">
+                                        @if (auth()->user()->isSuperAdmin())
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Society</label>
 
-                                        {{-- NAME --}}
+                                                    <select name="society_id" id="society_id" class="form-select">
+                                                        <option value="">Select Society</option>
+                                                        @foreach ($societies as $society)
+                                                            <option value="{{ $society->id }}"
+                                                                  {{ old('society_id', $resident->flat->society_id) == $society->id ? 'selected' : '' }}>
+                                                                   {{ $society->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+
+                                                    @error('society_id')
+                                                        <div class="text-danger pt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                        @endif
+
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Name</label>
@@ -43,7 +63,6 @@
                                             </div>
                                         </div>
 
-                                        {{-- EMAIL --}}
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Email</label>
@@ -58,7 +77,6 @@
                                             </div>
                                         </div>
 
-                                        {{-- PHONE --}}
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Phone</label>
@@ -73,18 +91,15 @@
                                             </div>
                                         </div>
 
-                                        {{-- FLAT --}}
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Flat</label>
-
-                                                <select name="flat_id" class="form-select">
+                                                <select id="flat_id" name="flat_id" class="form-select">
                                                     <option value="">Select Flat</option>
-
                                                     @foreach ($flats as $flat)
                                                         <option value="{{ $flat->id }}"
                                                             {{ old('flat_id', $resident->flat_id) == $flat->id ? 'selected' : '' }}>
-                                                            {{ $flat->wing }} - {{ $flat->flat_number }}
+                                                            {{ $flat->wing }}-{{ $flat->flat_number }}
                                                         </option>
                                                     @endforeach
 
@@ -98,7 +113,6 @@
                                             </div>
                                         </div>
 
-                                        {{-- TYPE --}}
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Resident Type</label>
@@ -150,3 +164,66 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            const selectedFlat = {{ old('flat_id', $resident->flat_id) }};
+
+            $("#flat_id").select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Select Status',
+                allowClear: true,
+                width: '100%'
+            });
+
+            $('#society_id').on('change', function() {
+
+                let societyId = $(this).val();
+
+                if (!societyId) {
+                    $('#flat_id').html('<option value="">Select Flat</option>');
+                    return;
+                }
+
+                $.ajax({
+                    url: "/societies/" + societyId + "/flats",
+                    type: 'GET',
+                    success: function(response) {
+
+                        if (!response.success) {
+                            return;
+                        }
+
+                        let options = '<option value="">Select Flat</option>';
+
+                        response.data.forEach(function(flat) {
+
+                            const selected = selectedFlat == flat.id
+                                ? 'selected'
+                                : '';
+
+                            options += `
+                                <option value="${flat.id}" ${selected}>
+                                    ${flat.wing}-${flat.flat_number}
+                                </option>
+                            `;
+                        });
+
+                        $('#flat_id').html(options).trigger('change');
+                    },
+                    error: function(xhr) {
+                        $('#flat_id').html('<option value="">Error loading flats</option>');
+
+                        Toast.fire({
+                            icon: 'error',
+                            title: xhr.responseJSON?.message ?? 'Failed to load flats.'
+                        });
+                    }
+                });
+
+            });
+
+        });
+    </script>
+@endpush

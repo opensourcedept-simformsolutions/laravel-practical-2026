@@ -77,6 +77,29 @@
       border-color: #86b7fe;
       box-shadow: 0 0 0 .25rem rgba(13, 110, 253, .25);
     }
+
+    .impersonation-banner {
+      background: #fff3cd;
+      color: #664d03;
+      border: 1px solid #ffecb5;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 14px;
+    }
+
+    .impersonation-exit-btn {
+      background: transparent;
+      border: none;
+      padding: 0;
+      color: inherit;
+      text-decoration: underline;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .impersonation-exit-btn:hover {
+      opacity: 0.8;
+    }
   </style>
 </head>
 

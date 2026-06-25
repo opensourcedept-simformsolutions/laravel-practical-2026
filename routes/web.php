@@ -5,13 +5,13 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Delivery\DeliveryController;
 use App\Http\Controllers\FlatController;
 use App\Http\Controllers\GateKeeperController;
+use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Resident\VisitorPassController;
 use App\Http\Controllers\ResidentController;
 use App\Http\Controllers\SocietyController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitorLogController;
-use App\Models\Flat;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -105,6 +105,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/data', 'data')->name('data');
             Route::get('/create', 'create')->name('create');
             Route::post('/', 'store')->name('store');
+            Route::get('{society?}/flats', 'flats')->name('flats');
             Route::get('/{society}', 'show')->name('show');
             Route::get('/{society}/edit', 'edit')->name('edit');
             Route::put('/{society}', 'update')->name('update');
@@ -113,14 +114,18 @@ Route::middleware('auth')->group(function () {
         });
 
     Route::controller(DeliveryController::class)
+        ->prefix('deliveries')
+        ->name('deliveries.')
         ->group(function () {
-            Route::get('deliveries/data', 'data')
-                ->name('deliveries.data');
-
-            Route::resource('deliveries', DeliveryController::class);
-
-            Route::patch('deliveries/{delivery}/deliver', 'markDelivered')
-                ->name('deliveries.deliver');
+            Route::get('data', 'data')->name('data');
+            Route::patch('{delivery}/deliver', 'markDelivered')->name('deliver');
+            Route::get('/', 'index')->name('index');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+            Route::get('{delivery}', 'show')->name('show');
+            Route::get('{delivery}/edit', 'edit')->name('edit');
+            Route::put('{delivery}', 'update')->name('update');
+            Route::delete('{delivery}', 'destroy')->name('destroy');
         });
 
     Route::prefix('reports')
@@ -163,13 +168,14 @@ Route::middleware('auth')->group(function () {
             Route::post('/find-pass', 'findPass')->name('find-pass');
             Route::post('/mark-entry/{visitorLog}', 'markEntry')->name('mark-entry');
         });
+
+    Route::controller(ImpersonationController::class)
+        ->prefix('impersonate')
+        ->name('impersonate.')
+        ->group(function () {
+            Route::post('leave', 'stop')->name('stop');
+            Route::post('{user}', 'start')->name('start');
+        });
 });
 
-Route::get('/get-flats/{society?}', function ($society) {
-
-    return Flat::where('society_id', $society)
-        ->select('id', 'flat_number', 'wing')
-        ->get();
-})->name('society.flats');
-
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

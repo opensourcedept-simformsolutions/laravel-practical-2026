@@ -96,7 +96,7 @@ class DeliveryController extends Controller
                         compact('delivery')
                     )->render();
                 })
-                ->rawColumns(['package_details','status', 'actions'])
+                ->rawColumns(['package_details', 'status', 'actions'])
                 ->toJson();
         } catch (Exception $e) {
             $this->notificationService->failed(
@@ -408,6 +408,10 @@ class DeliveryController extends Controller
                 'status',
             ]);
 
+            if (isset($data['resident_id']) && $data['resident_id'] !== $delivery->resident_id) {
+                $data['flat_id'] = Resident::findOrFail($data['resident_id'])->flat_id;
+            }
+
             $delivery->fill($data);
 
             if (! $delivery->isDirty()) {
@@ -453,9 +457,8 @@ class DeliveryController extends Controller
         $this->authorize('delete', $delivery);
 
         try {
-            $this->notificationService->notify($delivery, 'Delivery deleted');
-
             $delivery->delete();
+            $this->notificationService->notify($delivery, 'Delivery deleted');
 
             return redirect()
                 ->route('deliveries.index')
