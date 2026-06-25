@@ -12,9 +12,9 @@ class VisitorFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->name(),
-            'phone' => '9'.$this->faker->numerify('#########'),
-            'vehicle_number' => strtoupper($this->faker->bothify('??-##-??-####')),
+            'name' => fake()->name(),
+            'phone' => fake()->numerify('##########'),
+            'vehicle_number' => strtoupper(fake()->bothify('??##??####')),
         ];
     }
 }

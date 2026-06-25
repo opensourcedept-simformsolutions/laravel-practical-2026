@@ -7,7 +7,6 @@ use App\Models\Society;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class UserFactory extends Factory
 {
@@ -16,14 +15,40 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->name(),
-            'email' => $this->faker->unique()->safeEmail(),
-            'phone' => '9'.$this->faker->numerify('#########'), // 10 digits starting with 9
-            'email_verified_at' => now(),
+            'name' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
+            'phone' => fake()->numerify('##########'),
             'password' => Hash::make('password'),
-            'remember_token' => Str::random(10),
             'role_id' => Role::factory(),
             'society_id' => Society::factory(),
         ];
+    }
+
+    public function superAdmin(): static
+    {
+        return $this->state(fn () => [
+            'role_id' => Role::firstOrCreate(['name' => 'super_admin'])->id,
+        ]);
+    }
+
+    public function admin(): static
+    {
+        return $this->state(fn () => [
+            'role_id' => Role::firstOrCreate(['name' => 'admin'])->id,
+        ]);
+    }
+
+    public function resident(): static
+    {
+        return $this->state(fn () => [
+            'role_id' => Role::firstOrCreate(['name' => 'resident'])->id,
+        ]);
+    }
+
+    public function gatekeeper(): static
+    {
+        return $this->state(fn () => [
+            'role_id' => Role::firstOrCreate(['name' => 'gatekeeper'])->id,
+        ]);
     }
 }

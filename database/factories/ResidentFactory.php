@@ -14,9 +14,26 @@ class ResidentFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
+            'user_id' => User::factory()->resident(),
             'flat_id' => Flat::factory(),
-            'resident_type' => $this->faker->randomElement(['owner', 'tenant']),
+            'resident_type' => fake()->randomElement([
+                'owner',
+                'tenant',
+            ]),
         ];
+    }
+
+    public function owner(): static
+    {
+        return $this->state([
+            'resident_type' => 'owner',
+        ]);
+    }
+
+    public function tenant(): static
+    {
+        return $this->state([
+            'resident_type' => 'tenant',
+        ]);
     }
 }

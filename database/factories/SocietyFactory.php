@@ -12,11 +12,11 @@ class SocietyFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->company().' Society',
-            'address' => $this->faker->streetAddress(),
-            'city' => $this->faker->city(),
-            'state' => $this->faker->state(),
-            'pincode' => $this->faker->numerify('######'),
+            'name' => fake()->company() . ' Society',
+            'address' => fake()->streetAddress(),
+            'city' => fake()->city(),
+            'state' => fake()->state(),
+            'pincode' => fake()->numerify('######'),
         ];
     }
 }

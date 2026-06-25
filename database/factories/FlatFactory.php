@@ -14,9 +14,37 @@ class FlatFactory extends Factory
     {
         return [
             'society_id' => Society::factory(),
-            'wing' => $this->faker->randomElement(['A', 'B', 'C', 'D']),
-            'floor' => $this->faker->numberBetween(1, 15),
-            'flat_number' => $this->faker->numberBetween(101, 1510),
+            'wing' => fake()->randomElement(['A', 'B', 'C', 'D']),
+            'floor' => fake()->numberBetween(1, 15),
+            'flat_number' => fake()->numberBetween(101, 1515),
         ];
+    }
+
+    public function wingA(): static
+    {
+        return $this->state([
+            'wing' => 'A',
+        ]);
+    }
+
+    public function wingB(): static
+    {
+        return $this->state([
+            'wing' => 'B',
+        ]);
+    }
+
+    public function wingC(): static
+    {
+        return $this->state([
+            'wing' => 'C',
+        ]);
+    }
+
+    public function wingD(): static
+    {
+        return $this->state([
+            'wing' => 'D',
+        ]);
     }
 }
