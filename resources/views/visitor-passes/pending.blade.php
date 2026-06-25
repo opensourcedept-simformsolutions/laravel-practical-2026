@@ -127,16 +127,16 @@
         @if (auth()->user()->isSuperAdmin())
         {
             data: 'society',
-            name: 'society'
+            name: 'societies.name'
         },
         @endif
           {
             data: 'visitor_name',
-            name: 'visitor.name'
+            name: 'visitors.name'
           },
           {
             data: 'phone',
-            name: 'visitor.phone'
+            name: 'visitors.phone'
           },
           {
             data: 'flat_details',

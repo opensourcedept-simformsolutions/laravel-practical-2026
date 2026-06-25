@@ -70,38 +70,38 @@ class VisitorLogController extends Controller
                 $user = auth()->user();
 
                 $query = VisitorLog::query()
-                    ->whereIn('status', ['pending', 'entered'])
-                    ->with([
-                        'visitor',
-                        'flat',
+                    ->whereIn('visitor_logs.status', ['pending', 'entered'])
+                    ->with(['visitor', 'flat'])
+                    ->select([
+                        'visitor_logs.*',
+                        'visitors.name as visitor_name_val',
+                        'visitors.phone as visitor_phone_val',
+                        'societies.name as society_name_val',
                     ])
-                    ->select('visitor_logs.*')
+                    ->leftJoin('visitors', 'visitor_logs.visitor_id', '=', 'visitors.id')
+                    ->leftJoin('flats', 'visitor_logs.flat_id', '=', 'flats.id')
+                    ->leftJoin('societies', 'flats.society_id', '=', 'societies.id')
                     ->orderByRaw("
                         CASE
-                            WHEN status = 'pending' THEN 1
-                            WHEN status = 'entered' THEN 2
+                            WHEN visitor_logs.status = 'pending' THEN 1
+                            WHEN visitor_logs.status = 'entered' THEN 2
                         END
-                    ")->latest();
-
+                    ");
 
                 if (!$user->isSuperAdmin()) {
-
-                    $query->whereHas('flat', function ($q) use ($user) {
-                        $q->where('society_id', $user->society_id);
-                    });
+                    $query->where('flats.society_id', $user->society_id);
                 }
 
                 return DataTables::of($query)
                     ->addIndexColumn()
                     ->addColumn('visitor_name', function ($log) {
-                        return $log->visitor?->name ?? 'N/A';
+                        return $log->visitor_name_val ?? 'N/A';
                     })
-                    ->addColumn('society',function($log){
-                        return $log->flat->society->name ?? 'N/A';
+                    ->addColumn('society', function ($log) {
+                        return $log->society_name_val ?? 'N/A';
                     })
-
                     ->addColumn('phone', function ($log) {
-                        return $log->visitor?->phone ?? 'N/A';
+                        return $log->visitor_phone_val ?? 'N/A';
                     })
 
                     ->addColumn('flat_details', function ($log) {
@@ -326,22 +326,24 @@ class VisitorLogController extends Controller
 
                 $user = auth()->user();
 
-                $query = VisitorLog::with([
-                    'visitor',
-                    'flat',
-                ])->where('status', 'exited');
+                $query = VisitorLog::query()
+                    ->where('visitor_logs.status', 'exited')
+                    ->select([
+                        'visitor_logs.*',
+                        'visitors.name as visitor_name_val',
+                        'visitors.phone as visitor_phone_val',
+                    ])
+                    ->leftJoin('visitors', 'visitor_logs.visitor_id', '=', 'visitors.id')
+                    ->leftJoin('flats', 'visitor_logs.flat_id', '=', 'flats.id');
 
                 if (!$user->isSuperAdmin()) {
-
-                    $query->whereHas('flat', function ($q) use ($user) {
-                        $q->where('society_id', $user->society_id);
-                    });
+                    $query->where('flats.society_id', $user->society_id);
                 }
 
                 return DataTables::of($query)
                     ->addIndexColumn()
-                    ->addColumn('visitor_name', fn($row) => $row->visitor?->name ?? 'N/A')
-                    ->addColumn('phone', fn($row) => $row->visitor?->phone ?? 'N/A')
+                    ->addColumn('visitor_name', fn($row) => $row->visitor_name_val ?? 'N/A')
+                    ->addColumn('phone', fn($row) => $row->visitor_phone_val ?? 'N/A')
                     ->addColumn(
                         'flat_details',
                         fn($row) => ($row->flat?->wing ?? '-') . '-' .

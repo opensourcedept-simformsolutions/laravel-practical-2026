@@ -59,11 +59,11 @@
           },
           {
             data: 'visitor_name',
-            name: 'visitor.name'
+            name: 'visitors.name'
           },
           {
             data: 'phone',
-            name: 'visitor.phone'
+            name: 'visitors.phone'
           },
           {
             data: 'flat_details',

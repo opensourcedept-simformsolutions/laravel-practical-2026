@@ -46,31 +46,35 @@ class DeliveryController extends Controller
     public function data()
     {
         try {
-            $query = Delivery::with([
-                'flat' => fn($q) => $q->withTrashed(),
-                'resident' => fn($q) => $q->withTrashed(),
-                'resident.user' => fn($q) => $q->withTrashed(),
-            ]);
+            $query = Delivery::query()
+                ->select([
+                    'deliveries.*',
+                    'users.name as resident_name',
+                    'flats.wing as flat_wing',
+                    'flats.floor as flat_floor',
+                    'flats.flat_number as flat_number',
+                ])
+                ->leftJoin('residents', 'deliveries.resident_id', '=', 'residents.id')
+                ->leftJoin('users', 'residents.user_id', '=', 'users.id')
+                ->leftJoin('flats', 'deliveries.flat_id', '=', 'flats.id');
 
             $user = auth()->user();
 
             if (! $user->isSuperAdmin()) {
                 if ($user->isResident()) {
-                    $query->where('flat_id', $user->resident->flat_id);
+                    $query->where('deliveries.flat_id', $user->resident->flat_id);
                 } else {
-                    $query->whereHas('flat', function ($query) use ($user) {
-                        $query->where('society_id', $user->society_id);
-                    });
+                    $query->where('flats.society_id', $user->society_id);
                 }
             }
 
-            return DataTables::eloquent($query)
+            return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('flat', function ($delivery) {
-                    return $delivery->flat->wing . ' - Floor ' . $delivery->flat->floor . ' - ' . $delivery->flat->flat_number;
+                    return $delivery->flat_wing . ' - Floor ' . $delivery->flat_floor . ' - ' . $delivery->flat_number;
                 })
                 ->addColumn('resident', function ($delivery) {
-                    return $delivery->resident->user->name;
+                    return $delivery->resident_name ?? '-';
                 })
                 ->editColumn('package_details', function ($delivery) {
                     $short = Str::limit($delivery->package_details, 50);

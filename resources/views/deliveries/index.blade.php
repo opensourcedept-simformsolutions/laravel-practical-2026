@@ -54,31 +54,31 @@
                     },
                     {
                         data: 'flat',
-                        name: 'flat'
+                        name: 'flats.flat_number'
                     },
                     {
                         data: 'resident',
-                        name: 'resident'
+                        name: 'users.name'
                     },
                     {
                         data: 'vendor',
-                        name: 'vendor'
+                        name: 'deliveries.vendor'
                     },
                     {
                         data: 'package_details',
-                        name: 'package_details'
+                        name: 'deliveries.package_details'
                     },
                     {
                         data: 'status',
-                        name: 'status'
+                        name: 'deliveries.status'
                     },
                     {
                         data: 'received_at',
-                        name: 'received_at'
+                        name: 'deliveries.received_at'
                     },
                     {
                         data: 'delivered_at',
-                        name: 'delivered_at'
+                        name: 'deliveries.delivered_at'
                     },
                     {
                         data: 'actions',

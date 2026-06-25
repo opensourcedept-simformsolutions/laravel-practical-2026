@@ -28,43 +28,48 @@ class ActivityLogController extends Controller
         try {
             $user = auth()->user();
 
-            $query = ActivityLog::with(['user.role', 'society'])
-                ->select('activity_logs.*')
-                ->latest();
+            $query = ActivityLog::with(['user.role'])
+                ->select([
+                    'activity_logs.*',
+                    'users.name as operator_name',
+                    'societies.name as society_name',
+                ])
+                ->leftJoin('users', 'activity_logs.user_id', '=', 'users.id')
+                ->leftJoin('societies', 'activity_logs.society_id', '=', 'societies.id');
 
             // Scope based on roles
             if (!$user->isSuperAdmin()) {
-                $query->where('society_id', $user->society_id);
+                $query->where('activity_logs.society_id', $user->society_id);
             } else {
                 if ($request->filled('society_id')) {
-                    $query->where('society_id', $request->society_id);
+                    $query->where('activity_logs.society_id', $request->society_id);
                 }
             }
 
             // Apply Filters
             if ($request->filled('action')) {
-                $query->where('action', $request->action);
+                $query->where('activity_logs.action', $request->action);
             }
 
             if ($request->filled('from_date')) {
-                $query->whereDate('created_at', '>=', $request->from_date);
+                $query->whereDate('activity_logs.created_at', '>=', $request->from_date);
             }
 
             if ($request->filled('to_date')) {
-                $query->whereDate('created_at', '<=', $request->to_date);
+                $query->whereDate('activity_logs.created_at', '<=', $request->to_date);
             }
 
             return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('operator', function ($row) {
-                    if (!$row->user) {
+                    if (!$row->user_id) {
                         return 'System / Guest';
                     }
                     $roleName = $row->user->role?->name ? ucfirst($row->user->role->name) : 'User';
-                    return e($row->user->name) . ' <span class="badge bg-secondary">' . e($roleName) . '</span>';
+                    return e($row->operator_name) . ' <span class="badge bg-secondary">' . e($roleName) . '</span>';
                 })
                 ->addColumn('society_name', function ($row) {
-                    return $row->society?->name ?? 'Global / Super';
+                    return $row->society_name ?? 'Global / Super';
                 })
                 ->editColumn('action', function ($row) {
                     $badgeClass = match ($row->action) {

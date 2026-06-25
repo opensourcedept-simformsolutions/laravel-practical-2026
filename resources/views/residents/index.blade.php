@@ -70,23 +70,23 @@
                     },
                     {
                         data: 'name',
-                        name: 'user.name'
+                        name: 'users.name'
                     },
                     {
                         data: 'email',
-                        name: 'user.email'
+                        name: 'users.email'
                     },
                     {
                         data: 'phone',
-                        name: 'user.phone'
+                        name: 'users.phone'
                     },
                     {
                         data: 'flat',
-                        name: 'flat.flat_number'
+                        name: 'flats.flat_number'
                     },
                     {
                         data: 'wing',
-                        name: 'flat.wing'
+                        name: 'flats.wing'
                     },
                     {
                         data: 'type',

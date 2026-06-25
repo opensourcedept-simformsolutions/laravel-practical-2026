@@ -24,22 +24,24 @@ class FlatController extends Controller
             if ($request->ajax()) {
 
                 if (auth()->user()->isSuperAdmin()) {
-
-                    $query = Flat::with('society');
-
+                    $query = Flat::query()
+                        ->select([
+                            'flats.*',
+                            'societies.name as society_name'
+                        ])
+                        ->leftJoin('societies', 'flats.society_id', '=', 'societies.id');
                     if ($request->filled('society_id')) {
-                        $query->where('society_id', $request->society_id);
+                        $query->where('flats.society_id', $request->society_id);
                     }
                 } else {
-
-                    $query = Flat::with('society')
+                    $query = Flat::query()
                         ->where('society_id', auth()->user()->society_id);
                 }
 
                 return DataTables::of($query)
                     ->addIndexColumn()
                     ->addColumn('society', function ($row) {
-                        return $row->society?->name ?? '-';
+                        return $row->society_name ?? '-';
                     })
                     ->addColumn('actions', function ($row) {
 

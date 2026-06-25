@@ -134,17 +134,17 @@
 
             const columns = [
                 { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-                { data: 'created_at', name: 'created_at' }
+                { data: 'created_at', name: 'activity_logs.created_at' }
             ];
 
             if (isSuperAdmin) {
-                columns.push({ data: 'society_name', name: 'society.name', orderable: false });
+                columns.push({ data: 'society_name', name: 'societies.name', orderable: true });
             }
 
             columns.push(
-                { data: 'operator', name: 'user.name' },
-                { data: 'action', name: 'action' },
-                { data: 'description', name: 'description' },
+                { data: 'operator', name: 'users.name' },
+                { data: 'action', name: 'activity_logs.action' },
+                { data: 'description', name: 'activity_logs.description' },
                 { data: 'actions', name: 'actions', orderable: false, searchable: false, class: 'text-center' }
             );
 

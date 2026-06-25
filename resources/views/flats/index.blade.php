@@ -91,7 +91,7 @@
                         searchable: false
                     },{
                         data: 'society',
-                        name: 'society',
+                        name: 'societies.name',
                         visible: "{{ auth()->user()->isSuperAdmin() ? 'true' : 'false' }}"
                     },
                     {

@@ -29,27 +29,30 @@ class ResidentController extends Controller
         try {
             if ($request->ajax()) {
 
-                $query = Resident::with([
-                    'user' => function ($q) {
-                        $q->withTrashed();
-                    },
-                    'flat',
-                ]);
+                $query = Resident::query()
+                    ->select([
+                        'residents.*',
+                        'users.name as user_name',
+                        'users.email as user_email',
+                        'users.phone as user_phone',
+                        'flats.flat_number as flat_number',
+                        'flats.wing as flat_wing',
+                    ])
+                    ->leftJoin('users', 'residents.user_id', '=', 'users.id')
+                    ->leftJoin('flats', 'residents.flat_id', '=', 'flats.id');
 
                 if (! auth()->user()->isSuperAdmin()) {
-                    $query->whereHas('flat', function ($q) {
-                        $q->where('society_id', auth()->user()->society_id);
-                    });
+                    $query->where('flats.society_id', auth()->user()->society_id);
                 }
 
                 return DataTables::of($query)
 
-                    ->addColumn('name', fn($row) => $row->user?->name ?? '-')
-                    ->addColumn('email', fn($row) => $row->user?->email ?? '-')
-                    ->addColumn('phone', fn($row) => $row->user?->phone ?? '-')
+                    ->addColumn('name', fn($row) => $row->user_name ?? '-')
+                    ->addColumn('email', fn($row) => $row->user_email ?? '-')
+                    ->addColumn('phone', fn($row) => $row->user_phone ?? '-')
 
-                    ->addColumn('flat', fn($row) => $row->flat?->flat_number ?? '-')
-                    ->addColumn('wing', fn($row) => $row->flat?->wing ?? '-')
+                    ->addColumn('flat', fn($row) => $row->flat_number ?? '-')
+                    ->addColumn('wing', fn($row) => $row->flat_wing ?? '-')
 
                     ->addColumn('type', function ($row) {
                         return $row->resident_type === 'owner'
