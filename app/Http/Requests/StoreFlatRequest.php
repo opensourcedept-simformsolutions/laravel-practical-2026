@@ -38,7 +38,7 @@ class StoreFlatRequest extends FormRequest
 
                         return $query->where(
                             'society_id',
-                            auth()->user()->society_id
+                            auth()->user()->isSuperAdmin() ? request('society_id') : auth()->user()->society_id
                         )->where(
                             'wing',
                             request('wing')

@@ -24,79 +24,103 @@ class ResidentController extends Controller
     {
         $this->authorize('viewAny', Resident::class);
 
-        if ($request->ajax()) {
+        try {
+            if ($request->ajax()) {
 
-            $query = Resident::with([
-                'user' => function ($q) {
-                    $q->withTrashed();
-                },
-                'flat',
-            ]);
+                $query = Resident::with([
+                    'user' => function ($q) {
+                        $q->withTrashed();
+                    },
+                    'flat',
+                ]);
 
-            if (! auth()->user()->isSuperAdmin()) {
-                $query->whereHas('flat', function ($q) {
-                    $q->where('society_id', auth()->user()->society_id);
-                });
+                if (! auth()->user()->isSuperAdmin()) {
+                    $query->whereHas('flat', function ($q) {
+                        $q->where('society_id', auth()->user()->society_id);
+                    });
+                }
+
+                return DataTables::of($query)
+
+                    ->addColumn('name', fn($row) => $row->user?->name ?? '-')
+                    ->addColumn('email', fn($row) => $row->user?->email ?? '-')
+                    ->addColumn('phone', fn($row) => $row->user?->phone ?? '-')
+
+                    ->addColumn('flat', fn($row) => $row->flat?->flat_number ?? '-')
+                    ->addColumn('wing', fn($row) => $row->flat?->wing ?? '-')
+
+                    ->addColumn('type', function ($row) {
+                        return $row->resident_type === 'owner'
+                            ? '<span class="badge bg-success">Owner</span>'
+                            : '<span class="badge bg-info">Tenant</span>';
+                    })
+
+                    ->addColumn('actions', function ($row) {
+
+                        $editUrl = route('residents.edit', $row->id);
+                        $deleteUrl = route('residents.destroy', $row->id);
+
+                        return '
+                        <div class="text-center">
+                        <a href="' . $editUrl . '" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
+
+                        <form action="' . $deleteUrl . '" method="POST" class="d-inline">
+                            ' . csrf_field() . '
+                            ' . method_field('DELETE') . '
+                            <button type="submit" class="btn btn-danger btn-sm"
+                                onclick="return confirm(\'Delete this resident?\')">
+                                  <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                        </div>
+                    ';
+                    })
+
+                    ->rawColumns(['type', 'actions'])
+                    ->make(true);
             }
 
-            return DataTables::of($query)
+            return view('residents.index');
+        } catch (Throwable $e) {
+            Log::error('Resident listing error: ' . $e->getMessage(), ['exception' => $e]);
 
-                ->addColumn('name', fn($row) => $row->user?->name ?? '-')
-                ->addColumn('email', fn($row) => $row->user?->email ?? '-')
-                ->addColumn('phone', fn($row) => $row->user?->phone ?? '-')
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to load residents.'
+                ], 500);
+            }
 
-                ->addColumn('flat', fn($row) => $row->flat?->flat_number ?? '-')
-                ->addColumn('wing', fn($row) => $row->flat?->wing ?? '-')
-
-                ->addColumn('type', function ($row) {
-                    return $row->resident_type === 'owner'
-                        ? '<span class="badge bg-success">Owner</span>'
-                        : '<span class="badge bg-info">Tenant</span>';
-                })
-
-                ->addColumn('actions', function ($row) {
-
-                    $editUrl = route('residents.edit', $row->id);
-                    $deleteUrl = route('residents.destroy', $row->id);
-
-                    return '
-                    <div class="text-center">
-                    <a href="' . $editUrl . '" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
-
-                    <form action="' . $deleteUrl . '" method="POST" class="d-inline">
-                        ' . csrf_field() . '
-                        ' . method_field('DELETE') . '
-                        <button type="submit" class="btn btn-danger btn-sm"
-                            onclick="return confirm(\'Delete this resident?\')">
-                              <i class="bi bi-trash"></i>
-                        </button>
-                    </form>
-                    </div>
-                ';
-                })
-
-                ->rawColumns(['type', 'actions'])
-                ->make(true);
+            return redirect()->back()->with([
+                'message' => 'Something went wrong.',
+                'status' => 'error'
+            ]);
         }
-
-        return view('residents.index');
     }
 
     public function create()
     {
         $this->authorize('create', Resident::class);
 
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        $societies = $user->isSuperAdmin()
-            ? Society::all()
-            : collect();
+            $societies = $user->isSuperAdmin()
+                ? Society::all()
+                : collect();
 
-        $flats = $user->isSuperAdmin()
-            ? collect()
-            : Flat::where('society_id', $user->society_id)->get();
+            $flats = $user->isSuperAdmin()
+                ? collect()
+                : Flat::where('society_id', $user->society_id)->get();
 
-        return view('residents.create', compact('societies', 'flats'));
+            return view('residents.create', compact('societies', 'flats'));
+        } catch (Throwable $e) {
+            Log::error('Resident create page error: ' . $e->getMessage(), ['exception' => $e]);
+            return redirect()->back()->with([
+                'message' => 'Something went wrong.',
+                'status' => 'error'
+            ]);
+        }
     }
 
     public function store(StoreResidentRequest $request)
@@ -170,18 +194,26 @@ class ResidentController extends Controller
     {
         $this->authorize('update', $resident);
 
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        $societies = $user->isSuperAdmin()
-            ? Society::all()
-            : collect();
+            $societies = $user->isSuperAdmin()
+                ? Society::all()
+                : collect();
 
             $flats = Flat::where(
-            'society_id',
-            $resident->flat->society_id
-        )->get();
+                'society_id',
+                $resident->flat->society_id
+            )->get();
 
-        return view('residents.edit', compact('resident', 'flats', 'societies'));
+            return view('residents.edit', compact('resident', 'flats', 'societies'));
+        } catch (Throwable $e) {
+            Log::error('Resident edit page error: ' . $e->getMessage(), ['exception' => $e]);
+            return redirect()->back()->with([
+                'message' => 'Something went wrong.',
+                'status' => 'error'
+            ]);
+        }
     }
 
     public function update(
@@ -198,11 +230,13 @@ class ResidentController extends Controller
                 $resident,
                 $data
             ) {
+                $flat = Flat::findOrFail($data['flat_id']);
 
                 $resident->user->update([
                     'name' => $data['name'],
                     'email' => $data['email'],
                     'phone' => $data['phone'],
+                    'society_id' => $flat->society_id,
                 ]);
 
                 $resident->update([

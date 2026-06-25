@@ -3,47 +3,68 @@
 @section('title', 'Add Delivery')
 
 @section('content')
-    <x-form.form :action="route('deliveries.store')" method="POST" class="mx-auto w-100" style="max-width: 760px;">
-        <x-form.form-section title="Add Delivery">
 
-            <x-form.field name="resident_id" label="Resident">
-            <x-form.select
-                    name="resident_id"
-                    id="resident_id"
-                    :options="$residentOptions"
-                    placeholder="Search Resident"
-                    required
-                />
-            </x-form.field>
+    <div class="card shadow-sm border-0 rounded-3">
 
-            <x-form.field name="vendor" label="Vendor">
-                <x-form.input
-                    name="vendor"
-                    id="vendor"
-                    placeholder="Enter vendor name"
-                    required
-                 />
-            </x-form.field>
+        <div class="card-header bg-white border-bottom py-3">
+            <h5 class="mb-0 fw-bold text-dark">Add Delivery</h5>
+        </div>
 
-            <x-form.field name="package_details" label="Package Details">
-                <x-form.textarea
-                    name="package_details"
-                    id="package_details" rows="4"
-                    placeholder="Enter package details"
-                    required
-                 />
-            </x-form.field>
+        <form action="{{ route('deliveries.store') }}" method="POST">
+            @csrf
 
-            <div class="d-flex justify-content-end">
-                <a href="{{ route('deliveries.index') }}" class="btn btn-light py-2 mx-2">
+            <div class="card-body p-4">
+
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        <label for="resident_id" class="form-label">Resident</label>
+                        <select name="resident_id" id="resident_id" class="form-select @error('resident_id') is-invalid @enderror">
+                            <option value="">Select Resident</option>
+                            @foreach ($residentOptions as $id => $label)
+                                <option value="{{ $id }}" @selected(old('resident_id') == $id)>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('resident_id')
+                            <div class="text-danger pt-1 fs-7">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="vendor" class="form-label">Vendor</label>
+                        <input type="text" name="vendor" id="vendor" class="form-control @error('vendor') is-invalid @enderror" value="{{ old('vendor') }}">
+                        @error('vendor')
+                            <div class="text-danger pt-1 fs-7">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-12">
+                        <label for="package_details" class="form-label">Package Details</label>
+                        <textarea name="package_details" id="package_details" rows="4" class="form-control @error('package_details') is-invalid @enderror">{{ old('package_details') }}</textarea>
+                        @error('package_details')
+                            <div class="text-danger pt-1 fs-7">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="card-footer bg-white border-top py-3 d-flex justify-content-end gap-2">
+                <a href="{{ route('deliveries.index') }}" class="btn btn-light">
                     Cancel
                 </a>
-                <x-form.submit-button>
+                <button type="submit" class="btn btn-primary">
                     Save Delivery
-                </x-form.submit-button>
+                </button>
             </div>
-        </x-form.form-section>
-    </x-form.form>
+
+        </form>
+
+    </div>
+
 @endsection
 
 @push('scripts')

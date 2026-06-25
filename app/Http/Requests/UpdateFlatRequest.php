@@ -43,12 +43,18 @@ class UpdateFlatRequest extends FormRequest
                 'between:1,9999',
                 Rule::unique('flats')
                     ->where(function ($query) {
-                        return $query->where('society_id', auth()->user()->society_id)
+                        $societyId = auth()->user()->isSuperAdmin()
+                            ? (request('society_id') ?? $this->route('flat')?->society_id)
+                            : auth()->user()->society_id;
+                        return $query->where('society_id', $societyId)
                             ->where('wing', request('wing'))
                             ->where('floor', request('floor'));
                     })
                     ->ignore($flatId),
             ],
+            'society_id' => auth()->user()->isSuperAdmin()
+                ? ['required', 'exists:societies,id']
+                : ['nullable'],
         ];
     }
 

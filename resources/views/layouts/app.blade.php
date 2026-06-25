@@ -110,6 +110,7 @@
     <div class="sidebar-container bg-dark min-vh-100 p-0" id="sidebarContainer">
       @include('partials.sidebar')
     </div>
+    <div class="sidebar-backdrop d-lg-none" id="sidebarBackdrop"></div>
 
     <div class="main-content-area">
       @include('partials.navbar')

@@ -1,120 +1,78 @@
-  @extends('layouts.app')
+@extends('layouts.app')
 
-  @section('title', 'Create Flat')
+@section('title', 'Create Flat')
 
-  @section('content')
+@section('content')
 
-    <div class="main-content">
-      <div class="page-content">
-        <div class="container-fluid">
+    <div class="card shadow-sm border-0 rounded-3">
 
-          <div class="row">
-            <div class="col-12">
+        <div class="card-header bg-white border-bottom py-3">
+            <h5 class="mb-0 fw-bold text-dark">Create Flat</h5>
+        </div>
 
-              <div class="card shadow">
+        <form method="POST" action="{{ route('flats.store') }}">
+            @csrf
 
-                <div class="card-header bg-white border-bottom-0">
-                  <h5 class="mb-0">Create Flat</h5>
-                </div>
+            <div class="card-body p-4">
 
-                <form method="POST" action="{{ route('flats.store') }}">
-                  @csrf
+                <div class="row g-3">
 
-                  <div class="card-body">
-
-                    <p class="text-secondary mb-3" style="text-decoration:underline">
-                      Flat Details
-                    </p>
-
-                    <div class="row">
-                      @if (auth()->user()->isSuperAdmin())
+                    @if (auth()->user()->isSuperAdmin())
                         <div class="col-md-6">
-                          <div class="mb-3">
                             <label class="form-label">Society</label>
-                            <select name="society_id" class="form-select">
-                              <option value="">Select Society</option>
-
-                              @foreach ($societies as $society)
-                                <option value="{{ $society->id }}"
-                                  {{ old('society_id') == $society->id ? 'selected' : '' }}>
-                                  {{ $society->name }}
-                                </option>
-                              @endforeach
+                            <select name="society_id" class="form-select @error('society_id') is-invalid @enderror">
+                                <option value="">Select Society</option>
+                                @foreach ($societies as $society)
+                                    <option value="{{ $society->id }}" @selected(old('society_id') == $society->id)>
+                                        {{ $society->name }}
+                                    </option>
+                                @endforeach
                             </select>
-
                             @error('society_id')
-                              <div class="text-danger pt-1">
-                                {{ $message }}
-                              </div>
+                                <div class="text-danger pt-1 fs-7">{{ $message }}</div>
                             @enderror
-                          </div>
                         </div>
-                      @endif
+                    @endif
 
-                      <div class="col-md-6">
-                        <div class="mb-3">
-                          <label class="form-label">Wing</label>
-                          <input type="text" name="wing" class="form-control" value="{{ old('wing') }}">
-
-                          @error('wing')
-                            <div class="text-danger pt-1">
-                              {{ $message }}
-                            </div>
-                          @enderror
-                        </div>
-                      </div>
-
-                      <div class="col-md-6">
-                        <div class="mb-3">
-                          <label class="form-label">Floor</label>
-                          <input type="number" name="floor" class="form-control" value="{{ old('floor') }}">
-
-                          @error('floor')
-                            <div class="text-danger pt-1">
-                              {{ $message }}
-                            </div>
-                          @enderror
-                        </div>
-                      </div>
-
-                      <div class="col-md-6">
-                        <div class="mb-3">
-                          <label class="form-label">Flat Number</label>
-                          <input type="text" name="flat_number" class="form-control" value="{{ old('flat_number') }}">
-
-                          @error('flat_number')
-                            <div class="text-danger pt-1">
-                              {{ $message }}
-                            </div>
-                          @enderror
-                        </div>
-                      </div>
-
+                    <div class="col-md-6">
+                        <label class="form-label">Wing</label>
+                        <input type="text" name="wing" class="form-control @error('wing') is-invalid @enderror" value="{{ old('wing') }}">
+                        @error('wing')
+                            <div class="text-danger pt-1 fs-7">{{ $message }}</div>
+                        @enderror
                     </div>
 
-                  </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Floor</label>
+                        <input type="number" name="floor" class="form-control @error('floor') is-invalid @enderror" value="{{ old('floor') }}">
+                        @error('floor')
+                            <div class="text-danger pt-1 fs-7">{{ $message }}</div>
+                        @enderror
+                    </div>
 
-                  <div class="card-footer bg-white d-flex justify-content-end border-top-0">
+                    <div class="col-md-6">
+                        <label class="form-label">Flat Number</label>
+                        <input type="text" name="flat_number" class="form-control @error('flat_number') is-invalid @enderror" value="{{ old('flat_number') }}">
+                        @error('flat_number')
+                            <div class="text-danger pt-1 fs-7">{{ $message }}</div>
+                        @enderror
+                    </div>
 
-                    <a href="{{ route('flats.index') }}" class="btn btn-light me-2">
-                      Cancel
-                    </a>
-
-                    <button type="submit" class="btn btn-primary">
-                      Create Flat
-                    </button>
-
-                  </div>
-
-                </form>
-
-              </div>
+                </div>
 
             </div>
-          </div>
 
-        </div>
-      </div>
+            <div class="card-footer bg-white border-top py-3 d-flex justify-content-end gap-2">
+                <a href="{{ route('flats.index') }}" class="btn btn-light">
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    Create Flat
+                </button>
+            </div>
+
+        </form>
+
     </div>
 
-  @endsection
+@endsection

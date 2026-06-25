@@ -10,9 +10,54 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
 
-
 class VisitorLogController extends Controller
 {
+    public function scanPage()
+    {
+        return view('visitor-passes.scan');
+    }
+
+    public function findPass(Request $request)
+    {
+        try {
+            $visitorLogId = decrypt($request->qr_code);
+
+            $visitorLog = VisitorLog::with([
+                'visitor',
+                'flat',
+            ])->findOrFail($visitorLogId);
+        } catch (Exception $e) {
+            Log::error('VisitorLogController findPass decryption/notfound error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'qr_code' => $request->qr_code
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid or expired QR pass.',
+            ], 422);
+        }
+
+        $this->authorize('view', $visitorLog);
+
+        if ($visitorLog->status !== 'pending') {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Visitor already entered or pass not valid.',
+            ], 422);
+        }
+
+        return response()->json([
+            'id' => $visitorLog->id,
+            'visitor' => $visitorLog->visitor->name,
+            'phone' => $visitorLog->visitor->phone,
+            'purpose' => $visitorLog->purpose,
+            'status' => $visitorLog->status,
+            'flat' => $visitorLog->flat->wing.'-'.$visitorLog->flat->flat_number,
+        ]);
+    }
+
     public function pending(Request $request)
     {
         $this->authorize('viewAny', VisitorLog::class);
@@ -20,29 +65,29 @@ class VisitorLogController extends Controller
         try {
             if ($request->ajax()) {
 
-            $user = auth()->user();
+                $user = auth()->user();
 
-            $query = VisitorLog::query()
-                ->whereIn('status', ['pending', 'entered'])
-                ->with([
-                    'visitor',
-                    'flat',
-                ])
-                ->select('visitor_logs.*')
-                ->orderByRaw("
-                    CASE
-                        WHEN status = 'pending' THEN 1
-                        WHEN status = 'entered' THEN 2
-                    END
-                ")->latest();
+                $query = VisitorLog::query()
+                    ->whereIn('status', ['pending', 'entered'])
+                    ->with([
+                        'visitor',
+                        'flat',
+                    ])
+                    ->select('visitor_logs.*')
+                    ->orderByRaw("
+                        CASE
+                            WHEN status = 'pending' THEN 1
+                            WHEN status = 'entered' THEN 2
+                        END
+                    ")->latest();
 
 
-            if (!$user->isSuperAdmin()) {
+                if (!$user->isSuperAdmin()) {
 
-                $query->whereHas('flat', function ($q) use ($user) {
-                    $q->where('society_id', $user->society_id);
-                });
-            }
+                    $query->whereHas('flat', function ($q) use ($user) {
+                        $q->where('society_id', $user->society_id);
+                    });
+                }
 
                 return DataTables::of($query)
                     ->addIndexColumn()
@@ -148,7 +193,7 @@ class VisitorLogController extends Controller
                     ->make(true);
             }
 
-            return view('visitor-logs.pending');
+            return view('visitor-passes.pending');
         } catch (Exception $e) {
 
             Log::error('Visitor Log Pending Error: ' . $e->getMessage(), [
@@ -270,62 +315,78 @@ class VisitorLogController extends Controller
     {
         $this->authorize('viewAny', VisitorLog::class);
 
-        if ($request->ajax()) {
+        try {
+            if ($request->ajax()) {
 
-        $user = auth()->user();
+                $user = auth()->user();
 
-        $query = VisitorLog::with([
-            'visitor',
-            'flat',
-        ])->where('status', 'exited');
+                $query = VisitorLog::with([
+                    'visitor',
+                    'flat',
+                ])->where('status', 'exited');
 
-        if (!$user->isSuperAdmin()) {
+                if (!$user->isSuperAdmin()) {
 
-            $query->whereHas('flat', function ($q) use ($user) {
-                $q->where('society_id', $user->society_id);
-            });
+                    $query->whereHas('flat', function ($q) use ($user) {
+                        $q->where('society_id', $user->society_id);
+                    });
+                }
+
+                return DataTables::of($query)
+                    ->addIndexColumn()
+                    ->addColumn('visitor_name', fn($row) => $row->visitor?->name ?? 'N/A')
+                    ->addColumn('phone', fn($row) => $row->visitor?->phone ?? 'N/A')
+                    ->addColumn(
+                        'flat_details',
+                        fn($row) => ($row->flat?->wing ?? '-') . '-' .
+                            ($row->flat?->floor ?? '-') . '-' .
+                            ($row->flat?->flat_number ?? '-')
+                    )
+                    ->addColumn(
+                        'entry_date',
+                        fn($row) => $row->entry_time?->format('d M Y') ?? '-'
+                    )
+                    ->addColumn(
+                        'entry_time',
+                        fn($row) => $row->entry_time?->format('h:i A') ?? '-'
+                    )
+                    ->addColumn(
+                        'exit_date',
+                        fn($row) => $row->exit_time?->format('d M Y') ?? '-'
+                    )
+                    ->addColumn(
+                        'exit_time',
+                        fn($row) => $row->exit_time?->format('h:i A') ?? '-'
+                    )
+                    ->addColumn('photo', function ($row) {
+                        if(!$row->photo_path){
+                            return '-';
+                        }
+                        return '
+                            <a href="'.asset('storage/'.$row->photo_path).'" target="_blank" class="btn btn-info btn-sm" title="View Photo">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        ';
+                    })
+                    ->rawColumns(['photo'])
+                    ->make(true);
+            }
+
+            return view('visitor-passes.exited');
+        } catch (Exception $e) {
+            Log::error('Visitor log exited page datatable error: ' . $e->getMessage(), ['exception' => $e]);
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Something went wrong while loading visitor logs.',
+                ], 500);
+            }
+
+            return redirect()->back()->with([
+                'message' => 'Something went wrong. Please try again.',
+                'status' => 'error',
+            ]);
         }
-
-            return DataTables::of($query)
-                ->addIndexColumn()
-                ->addColumn('visitor_name', fn($row) => $row->visitor?->name ?? 'N/A')
-                ->addColumn('phone', fn($row) => $row->visitor?->phone ?? 'N/A')
-                ->addColumn(
-                    'flat_details',
-                    fn($row) => ($row->flat?->wing ?? '-') . '-' .
-                        ($row->flat?->floor ?? '-') . '-' .
-                        ($row->flat?->flat_number ?? '-')
-                )
-                ->addColumn(
-                    'entry_date',
-                    fn($row) => $row->entry_time?->format('d M Y') ?? '-'
-                )
-                ->addColumn(
-                    'entry_time',
-                    fn($row) => $row->entry_time?->format('h:i A') ?? '-'
-                )
-                ->addColumn(
-                    'exit_date',
-                    fn($row) => $row->exit_time?->format('d M Y') ?? '-'
-                )
-                ->addColumn(
-                    'exit_time',
-                    fn($row) => $row->exit_time?->format('h:i A') ?? '-'
-                )
-                ->addColumn('photo', function ($row) {
-                    if(!$row->photo_path){
-                        return '-';
-                    }
-                    return '
-                        <a href="'.asset('storage/'.$row->photo_path).'" target="_blank" class="btn btn-info btn-sm" title="View Photo">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                    ';
-                })
-                ->rawColumns(['photo'])
-                ->make(true);
-        }
-
-        return view('visitor-logs.exited');
     }
 }

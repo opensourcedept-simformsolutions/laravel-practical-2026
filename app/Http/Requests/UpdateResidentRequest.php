@@ -52,6 +52,10 @@ class UpdateResidentRequest extends FormRequest
                 'required',
                 Rule::in(['owner', 'tenant']),
             ],
+            'society_id' => [
+                auth()->user()->isSuperAdmin() ? 'required' : 'nullable',
+                'exists:societies,id',
+            ],
         ];
     }
 

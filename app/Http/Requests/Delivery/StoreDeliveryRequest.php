@@ -4,6 +4,7 @@ namespace App\Http\Requests\Delivery;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * Handle validation for creating a new delivery record.
@@ -29,7 +30,18 @@ class StoreDeliveryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'resident_id' => ['required', 'exists:residents,id'],
+            'resident_id' => [
+                'required',
+                Rule::exists('residents', 'id')->where(function ($query) {
+                    if (!auth()->user()->isSuperAdmin()) {
+                        $query->whereIn('flat_id', function ($q) {
+                            $q->select('id')
+                              ->from('flats')
+                              ->where('society_id', auth()->user()->society_id);
+                        });
+                    }
+                }),
+            ],
             'vendor' => ['required', 'string', 'max:255'],
             'package_details' => ['required', 'string', 'min:3', 'max:1000'],
         ];

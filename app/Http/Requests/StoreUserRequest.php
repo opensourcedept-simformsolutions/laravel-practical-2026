@@ -42,7 +42,9 @@ class StoreUserRequest extends FormRequest
             ],
             'phone' => [
                 'required',
-                'digits_between:10,15',
+                'string',
+                'min:7',
+                'max:20',
                 'unique:users,phone',
                 'regex:/^[0-9+\-\s()]+$/'
             ],

@@ -43,7 +43,10 @@ class UpdateUserRequest extends FormRequest
 
             'phone' => [
                 'required',
-                'digits_between:10,15',
+                'string',
+                'min:7',
+                'max:20',
+                'regex:/^[0-9+\-\s()]+$/',
                 Rule::unique('users', 'phone')
                     ->ignore($user->id),
             ],

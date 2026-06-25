@@ -3,81 +3,87 @@
 @section('title', 'Delivery Details')
 
 @section('content')
-    <div class="mx-auto w-100" style="max-width: 1000px;">
-        <x-form.form-section title="Delivery #{{ $delivery->id }} Details">
 
-            <div class="detail-grid">
+    <div class="card shadow-sm border-0 rounded-3">
 
-                <div class="detail-item">
-                    <span class="detail-label">Flat</span>
-                    <span class="detail-value">
-                        {{ $delivery->flat->flat_number }}
-                    </span>
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-dark">Delivery #{{ $delivery->id }} Details</h5>
+            <span class="badge {{ $delivery->status === 'delivered' ? 'bg-success' : 'bg-primary' }}">
+                {{ ucfirst($delivery->status) }}
+            </span>
+        </div>
+
+        <div class="card-body p-4">
+
+            {{-- Details Grid --}}
+            <div class="row g-3">
+
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded border border-light">
+                        <div class="text-muted small">Flat</div>
+                        <div class="fw-semibold">{{ $delivery->flat->wing }}-{{ $delivery->flat->flat_number }}</div>
+                    </div>
                 </div>
 
-                <div class="detail-item">
-                    <span class="detail-label">Resident</span>
-                    <span class="detail-value">
-                        {{ $delivery->resident->user->name }}
-                    </span>
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded border border-light">
+                        <div class="text-muted small">Resident</div>
+                        <div class="fw-semibold">{{ $delivery->resident->user->name }}</div>
+                    </div>
                 </div>
 
-                <div class="detail-item">
-                    <span class="detail-label">Vendor</span>
-                    <span class="detail-value">
-                        {{ $delivery->vendor }}
-                    </span>
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded border border-light">
+                        <div class="text-muted small">Vendor</div>
+                        <div class="fw-semibold">{{ $delivery->vendor }}</div>
+                    </div>
                 </div>
 
-                <div class="detail-item">
-                    <span class="detail-label">Status</span>
-
-                    <span
-                        class="badge rounded-pill {{ $delivery->status === 'delivered' ? 'text-bg-success' : 'text-bg-primary' }}">
-                        {{ ucfirst($delivery->status) }}
-                    </span>
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded border border-light">
+                        <div class="text-muted small">Status</div>
+                        <div class="fw-semibold">{{ ucfirst($delivery->status) }}</div>
+                    </div>
                 </div>
 
-                <div class="detail-item">
-                    <span class="detail-label">Received At</span>
-                    <span class="detail-value">
-                        {{ $delivery->received_at?->format('d M Y h:i A') }}
-                    </span>
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded border border-light">
+                        <div class="text-muted small">Received At</div>
+                        <div class="fw-semibold">{{ $delivery->received_at?->format('d M Y h:i A') }}</div>
+                    </div>
                 </div>
 
-                <div class="detail-item">
-                    <span class="detail-label">Delivered At</span>
-                    <span class="detail-value">
-                        {{ $delivery->delivered_at?->format('d M Y h:i A') ?? 'Not Delivered Yet' }}
-                    </span>
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded border border-light">
+                        <div class="text-muted small">Delivered At</div>
+                        <div class="fw-semibold">{{ $delivery->delivered_at?->format('d M Y h:i A') ?? 'Not Delivered Yet' }}</div>
+                    </div>
                 </div>
 
-                <div class="detail-item detail-item-full">
-                    <span class="detail-label">Package Details</span>
-                    <span class="detail-value">
-                        {{ $delivery->package_details }}
-                    </span>
+                <div class="col-12">
+                    <div class="p-3 bg-light rounded border border-light">
+                        <div class="text-muted small">Package Details</div>
+                        <div class="fw-semibold" style="white-space: pre-line;">{{ $delivery->package_details }}</div>
+                    </div>
                 </div>
 
             </div>
 
-            <div class="section-actions mt-3">
-                <a href="{{ route('deliveries.index') }}" class="btn btn-secondary py-2">
-                    <i class="bi bi-arrow-left"></i>
-                    Back
-                </a>
+        </div>
 
-                @if ($delivery->status !== 'received')
-                    @canany(['is-admin', 'is-gatekeeper'])
-                        <a href="{{ route('deliveries.edit', $delivery) }}" class="btn btn-warning py-2 mx-2">
-                            <i class="bi bi-pencil"></i>
-                            Edit Delivery
-                        </a>
-                    @endcanany
-                @endif
-            </div>
-
-        </x-form.form-section>
+        <div class="card-footer bg-white border-top py-3 d-flex justify-content-end gap-2">
+            <a href="{{ route('deliveries.index') }}" class="btn btn-light">
+                Back
+            </a>
+            @if ($delivery->status !== 'delivered')
+                @canany(['is-admin', 'is-gatekeeper'])
+                    <a href="{{ route('deliveries.edit', $delivery) }}" class="btn btn-warning">
+                        Edit Delivery
+                    </a>
+                @endcanany
+            @endif
+        </div>
 
     </div>
+
 @endsection

@@ -4,13 +4,12 @@ use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Delivery\DeliveryController;
 use App\Http\Controllers\FlatController;
-use App\Http\Controllers\GateKeeperController;
 use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Resident\VisitorPassController;
+use App\Http\Controllers\VisitorPassController;
 use App\Http\Controllers\ResidentController;
 use App\Http\Controllers\SocietyController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\VisitorLogController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -160,7 +159,7 @@ Route::middleware('auth')->group(function () {
         });
 
     Route::middleware(['role:admin,gatekeeper'])
-        ->controller(GateKeeperController::class)
+        ->controller(VisitorLogController::class)
         ->prefix('gatekeeper')
         ->name('gatekeeper.')
         ->group(function () {

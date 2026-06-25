@@ -10,6 +10,8 @@ use App\Policies\ComplaintPolicy;
 use App\Policies\DeliveryPolicy;
 use App\Listeners\SendVisitorEntryMail;
 use App\Listeners\SendVisitorExitMail;
+use App\Models\Flat;
+use App\Policies\FlatPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
@@ -26,6 +28,7 @@ class AppServiceProvider extends ServiceProvider
         require_once app_path('Helpers/helpers.php');
 
         Gate::policy(Delivery::class, DeliveryPolicy::class);
+        Gate::policy(Flat::class, FlatPolicy::class);
 
         Gate::before(function ($user, $ability) {
             if ($user->isSuperAdmin()) {

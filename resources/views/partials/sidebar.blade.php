@@ -1,7 +1,12 @@
 <aside class="sidebar" id="appSidebar">
     <div class="sidebar-header">
-        <i class="bi bi-buildings"></i>
-        <span class="sidebar-brand-text">SocietyMS</span>
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-buildings text-primary"></i>
+            <span class="sidebar-brand-text">SocietyMS</span>
+        </div>
+        <button type="button" class="btn text-white p-0 d-lg-none" id="sidebarClose" aria-label="Close sidebar">
+            <i class="bi bi-x-lg fs-4"></i>
+        </button>
     </div>
 
     <div class="sidebar-menu">
@@ -20,32 +25,6 @@
             </x-sidebar-link>
         @endcan
 
-        {{-- Passes --}}
-        @canany(['is-admin', 'is-resident'])
-            <x-sidebar-link :href="route('passes.index')" :active="request()->routeIs('passes.*')">
-                <i class="bi bi-person-vcard"></i>
-                <span class="sidebar-link-label">Visitor Passes</span>
-            </x-sidebar-link>
-        @endcanany
-
-        @canany(['is-admin', 'is-gatekeeper'])
-            <x-sidebar-link :href="route('gatekeeper.visitor-logs.pending')" :active="request()->routeIs('gatekeeper.visitor-logs.*')">
-                <i class="bi bi-person-check"></i>
-                <span class="sidebar-link-label">Pending Passes</span>
-            </x-sidebar-link>
-
-            {{-- qr code scanner  --}}
-            <x-sidebar-link :href="route('gatekeeper.scan')" :active="request()->routeIs('gatekeeper.scan')">
-
-                <i class="bi bi-qr-code-scan"></i>
-
-                <span class="sidebar-link-label">
-                    Scan Visitor Pass
-                </span>
-
-            </x-sidebar-link>
-        @endcanany
-
         @can('is-admin')
             {{-- Flats --}}
             <x-sidebar-link :href="route('flats.index')" :active="request()->routeIs('flats.index')">
@@ -58,26 +37,46 @@
                 <i class="bi bi-people-fill"></i>
                 <span class="sidebar-link-label">Residents</span>
             </x-sidebar-link>
-        @endcan
 
-        {{-- user management --}}
-        @can('is-admin')
+            {{-- Users Management --}}
             <x-sidebar-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('admin.users.index')">
-                <i class="bi bi-people"></i>
-                <span class="sidebar-link-label"> Users Management</span>
+                <i class="bi bi-person-gear"></i>
+                <span class="sidebar-link-label">Users Management</span>
             </x-sidebar-link>
         @endcan
+
+        {{-- Visitor Passes --}}
+        @canany(['is-admin', 'is-resident'])
+            <x-sidebar-link :href="route('passes.index')" :active="request()->routeIs('passes.*')">
+                <i class="bi bi-person-vcard"></i>
+                <span class="sidebar-link-label">Visitor Passes</span>
+            </x-sidebar-link>
+        @endcanany
+
+        @canany(['is-admin', 'is-gatekeeper'])
+            {{-- Pending Passes --}}
+            <x-sidebar-link :href="route('gatekeeper.visitor-logs.pending')" :active="request()->routeIs('gatekeeper.visitor-logs.*')">
+                <i class="bi bi-person-check"></i>
+                <span class="sidebar-link-label">Pending Passes</span>
+            </x-sidebar-link>
+
+            {{-- Scan Visitor Pass --}}
+            <x-sidebar-link :href="route('gatekeeper.scan')" :active="request()->routeIs('gatekeeper.scan')">
+                <i class="bi bi-qr-code-scan"></i>
+                <span class="sidebar-link-label">Scan Visitor Pass</span>
+            </x-sidebar-link>
+        @endcanany
+
+        {{-- Delivery --}}
+        <x-sidebar-link :href="route('deliveries.index')" :active="request()->routeIs('deliveries.*')">
+            <i class="bi bi-truck"></i>
+            <span class="sidebar-link-label">Delivery</span>
+        </x-sidebar-link>
 
         {{-- Complaints --}}
         <x-sidebar-link :href="route('complaints.index')" :active="request()->routeIs('complaints.*')">
             <i class="bi bi-exclamation-circle"></i>
             <span class="sidebar-link-label">Complaints</span>
-        </x-sidebar-link>
-
-        {{-- Delivery --}}
-        <x-sidebar-link :href="route('deliveries.index')" :active="request()->routeIs('deliveries.index')">
-            <i class="bi bi-truck"></i>
-            <span class="sidebar-link-label">Delivery</span>
         </x-sidebar-link>
 
         {{-- Reports --}}
@@ -106,7 +105,8 @@
                     <span class="sidebar-link-label">Complaint Report</span>
                 </x-sidebar-link>
 
-                <x-sidebar-link :href="route('reports.passes.')" :active="request()->routeIs('reports.passes*')"> <i class="bi bi-person-vcard"></i>
+                <x-sidebar-link :href="route('reports.passes.')" :active="request()->routeIs('reports.passes*')">
+                    <i class="bi bi-person-vcard"></i>
                     <span class="sidebar-link-label">Visitor Report</span>
                 </x-sidebar-link>
 

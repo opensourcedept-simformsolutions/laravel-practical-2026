@@ -1,13 +1,16 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\Role;
 use App\Models\Society;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -146,112 +149,123 @@ class UserController extends Controller
     {
         $this->authorize('create', User::class);
 
-        $roles = Role::whereIn('name', ['admin', 'gatekeeper'])->get();
+        try {
+            $roles = Role::whereIn('name', ['admin', 'gatekeeper'])->get();
 
-        $societies = auth()->user()->isSuperAdmin()
-            ? Society::orderBy('name')->get()
-            : collect();
+            $societies = auth()->user()->isSuperAdmin()
+                ? Society::orderBy('name')->get()
+                : collect();
 
-        return view(
-            'admin.users.create',
-            compact(
-                'roles',
-                'societies'
-            )
-        );
+            return view(
+                'admin.users.create',
+                compact(
+                    'roles',
+                    'societies'
+                )
+            );
+        } catch (Exception $e) {
+            Log::error('User create page error: ' . $e->getMessage(), ['exception' => $e]);
+            return redirect()->back()->with(['message' => 'Something went wrong.', 'status' => 'error']);
+        }
     }
 
     public function store(StoreUserRequest $request)
     {
         $this->authorize('create', User::class);
 
-        $validated = $request->validated();
+        try {
+            $validated = $request->validated();
 
-        if (auth()->user()->isAdmin()) {
+            if (auth()->user()->isAdmin()) {
+                $validated['society_id'] = auth()->user()->society_id;
+            }
 
-            $validated['society_id'] =
-                auth()->user()->society_id;
+            User::create($validated);
+
+            Session::flash('message', 'User created successfully.');
+            Session::flash('status', 'success');
+
+            return redirect()->route('admin.users.index');
+        } catch (Exception $e) {
+            Log::error('User store error: ' . $e->getMessage(), ['exception' => $e]);
+
+            Session::flash('message', 'Something went wrong.');
+            Session::flash('status', 'error');
+
+            return redirect()->back()->withInput();
         }
-
-        User::create($validated);
-        Session::flash(
-            'message',
-            'User created successfully.'
-        );
-
-        Session::flash(
-            'status',
-            'success'
-        );
-
-        return redirect()
-            ->route('admin.users.index');
     }
 
     public function edit(User $user)
     {
         $this->authorize('update', $user);
 
-        $roles = Role::whereIn('name', ['resident', 'admin', 'gatekeeper'])->get();
+        try {
+            $roles = Role::whereIn('name', ['resident', 'admin', 'gatekeeper'])->get();
 
-        $societies = auth()->user()->isSuperAdmin()
-            ? Society::orderBy('name')->get()
-            : collect();
+            $societies = auth()->user()->isSuperAdmin()
+                ? Society::orderBy('name')->get()
+                : collect();
 
-        return view(
-            'admin.users.edit',
-            compact('user', 'roles', 'societies')
-        );
+            return view(
+                'admin.users.edit',
+                compact('user', 'roles', 'societies')
+            );
+        } catch (Exception $e) {
+            Log::error('User edit page error: ' . $e->getMessage(), ['exception' => $e]);
+            return redirect()->back()->with(['message' => 'Something went wrong.', 'status' => 'error']);
+        }
     }
 
-    public function update(
-        UpdateUserRequest $request,
-        User $user
-    ) {
+    public function update(UpdateUserRequest $request, User $user)
+    {
         $this->authorize('update', $user);
 
-        $validated = $request->validated();
+        try {
+            $validated = $request->validated();
 
-        if (empty($validated['password'])) {
-            unset($validated['password']);
+            if (empty($validated['password'])) {
+                unset($validated['password']);
+            }
+
+            if (auth()->user()->isAdmin()) {
+                unset($validated['society_id']);
+            }
+            
+            $user->update($validated);
+
+            Session::flash('message', 'User updated successfully.');
+            Session::flash('status', 'success');
+
+            return redirect()->route('admin.users.index');
+        } catch (Exception $e) {
+            Log::error('User update error: ' . $e->getMessage(), ['exception' => $e]);
+
+            Session::flash('message', 'Something went wrong.');
+            Session::flash('status', 'error');
+
+            return redirect()->back()->withInput();
         }
-
-        if (auth()->user()->isAdmin()) {
-            unset($validated['society_id']);
-        }
-        $user->update($validated);
-
-        Session::flash(
-            'message',
-            'User updated successfully.'
-        );
-
-        Session::flash(
-            'status',
-            'success'
-        );
-
-        return redirect()
-            ->route('admin.users.index');
     }
 
     public function destroy(User $user)
     {
         $this->authorize('delete', $user);
 
-        $user->delete();
+        try {
+            $user->delete();
 
-        Session::flash(
-            'message',
-            'User deleted successfully.'
-        );
+            Session::flash('message', 'User deleted successfully.');
+            Session::flash('status', 'success');
 
-        Session::flash(
-            'status',
-            'success'
-        );
+            return redirect()->route('admin.users.index');
+        } catch (Exception $e) {
+            Log::error('User delete error: ' . $e->getMessage(), ['exception' => $e]);
 
-        return redirect()
-            ->route('admin.users.index');
+            Session::flash('message', 'Something went wrong.');
+            Session::flash('status', 'error');
+
+            return redirect()->back();
+        }
     }
 }

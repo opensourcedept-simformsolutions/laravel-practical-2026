@@ -3,114 +3,80 @@
 @section('title', 'Edit Society')
 
 @section('content')
-  <div class="main-content">
-    <div class="page-content">
-      <div class="container-fluid">
 
-        <div class="row">
-          <div class="col-12">
+    <div class="card shadow-sm border-0 rounded-3">
 
-            <div class="card shadow">
+        <div class="card-header bg-white border-bottom py-3">
+            <h5 class="mb-0 fw-bold text-dark">Edit Society</h5>
+        </div>
 
-              <div class="card-header bg-white border-bottom-0">
-                <h5 class="mb-0">Edit Society</h5>
-              </div>
+        <form method="POST" action="{{ route('societies.update', $society) }}">
+            @csrf
+            @method('PUT')
 
-              <form method="POST" action="{{ route('societies.update', $society) }}">
-                @csrf
-                @method('PUT')
+            <div class="card-body p-4">
 
-                <div class="card-body">
-
-                  <div class="row">
+                <div class="row g-3">
 
                     <div class="col-md-6">
-                      <div class="mb-3">
                         <label class="form-label">Society Name</label>
-
-                        <input type="text" name="name" class="form-control"
-                          value="{{ old('name', $society->name) }}">
-
+                        <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
+                            value="{{ old('name', $society->name) }}">
                         @error('name')
-                          <div class="text-danger pt-1">{{ $message }}</div>
+                            <div class="text-danger pt-1 fs-7">{{ $message }}</div>
                         @enderror
-                      </div>
                     </div>
 
                     <div class="col-md-6">
-                      <div class="mb-3">
                         <label class="form-label">Pincode</label>
-
-                        <input type="text" name="pincode" class="form-control"
-                          value="{{ old('pincode', $society->pincode) }}">
-
+                        <input type="text" name="pincode" class="form-control @error('pincode') is-invalid @enderror"
+                            value="{{ old('pincode', $society->pincode) }}">
                         @error('pincode')
-                          <div class="text-danger pt-1">{{ $message }}</div>
+                            <div class="text-danger pt-1 fs-7">{{ $message }}</div>
                         @enderror
-                      </div>
                     </div>
 
                     <div class="col-12">
-                      <div class="mb-3">
                         <label class="form-label">Address</label>
-
-                        <textarea name="address" rows="3" class="form-control">{{ old('address', $society->address) }}</textarea>
-
+                        <textarea name="address" rows="3" class="form-control @error('address') is-invalid @enderror">{{ old('address', $society->address) }}</textarea>
                         @error('address')
-                          <div class="text-danger pt-1">{{ $message }}</div>
+                            <div class="text-danger pt-1 fs-7">{{ $message }}</div>
                         @enderror
-                      </div>
                     </div>
 
                     <div class="col-md-6">
-                      <div class="mb-3">
                         <label class="form-label">City</label>
-
-                        <input type="text" name="city" class="form-control"
-                          value="{{ old('city', $society->city) }}">
-
+                        <input type="text" name="city" class="form-control @error('city') is-invalid @enderror"
+                            value="{{ old('city', $society->city) }}">
                         @error('city')
-                          <div class="text-danger pt-1">{{ $message }}</div>
+                            <div class="text-danger pt-1 fs-7">{{ $message }}</div>
                         @enderror
-                      </div>
                     </div>
 
                     <div class="col-md-6">
-                      <div class="mb-3">
                         <label class="form-label">State</label>
-
-                        <input type="text" name="state" class="form-control"
-                          value="{{ old('state', $society->state) }}">
-
+                        <input type="text" name="state" class="form-control @error('state') is-invalid @enderror"
+                            value="{{ old('state', $society->state) }}">
                         @error('state')
-                          <div class="text-danger pt-1">{{ $message }}</div>
+                            <div class="text-danger pt-1 fs-7">{{ $message }}</div>
                         @enderror
-                      </div>
                     </div>
 
-                  </div>
-
                 </div>
-
-                <div class="card-footer bg-white d-flex justify-content-end">
-
-                  <a href="{{ route('societies.index') }}" class="btn btn-light me-2">
-                    Cancel
-                  </a>
-
-                  <button type="submit" class="btn btn-primary">
-                    Update Society
-                  </button>
-
-                </div>
-
-              </form>
 
             </div>
 
-          </div>
-        </div>
-      </div>
+            <div class="card-footer bg-white border-top py-3 d-flex justify-content-end gap-2">
+                <a href="{{ route('societies.index') }}" class="btn btn-light">
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    Update Society
+                </button>
+            </div>
+
+        </form>
+
     </div>
-  </div>
+
 @endsection
