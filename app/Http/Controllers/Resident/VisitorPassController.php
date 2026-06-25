@@ -450,7 +450,7 @@ class VisitorPassController extends Controller
 
         return DataTables::of($query)
             ->addIndexColumn()
-
+            ->addColumn('society', fn($row) => $row->society ?? '-')
             ->addColumn('visitor', fn($row) => $row->visitor_name ?? '-')
             ->addColumn('phone', fn($row) => $row->visitor_phone ?? '-')
 
@@ -493,6 +493,7 @@ class VisitorPassController extends Controller
 
             fputcsv($handle, [
                 'ID',
+                'Society',
                 'Visitor',
                 'Phone',
                 'Flat',
@@ -507,6 +508,7 @@ class VisitorPassController extends Controller
             foreach ($query->get() as $visitorLog) {
                 fputcsv($handle, [
                     $visitorLog->id,
+                    $visitorLog->society ?? '-',
                     $visitorLog->visitor_name ?? '-',
                     $visitorLog->visitor_phone ?? '-',
                     $visitorLog->flat_wing && $visitorLog->flat_number
@@ -534,10 +536,12 @@ class VisitorPassController extends Controller
                 'flats.wing as flat_wing',
                 'flats.flat_number as flat_number',
                 'users.name as gatekeeper_name',
+                'societies.name as society'
             ])
             ->leftJoin('visitors', 'visitors.id', '=', 'visitor_logs.visitor_id')
             ->leftJoin('flats', 'flats.id', '=', 'visitor_logs.flat_id')
             ->leftJoin('users', 'users.id', '=', 'visitor_logs.gatekeeper_id')
+            ->leftJoin('societies', 'flats.society_id','=','societies.id')
             ->latest();
 
         if ($request->filled('status')) {

@@ -68,6 +68,7 @@
                     <thead>
                         <tr>
                             <th>ID</th>
+                            <th>Society</th>
                             <th>Visitor</th>
                             <th>Phone</th>
                             <th>Flat</th>
@@ -135,6 +136,9 @@
                         name: 'DT_RowIndex',
                         orderable: false,
                         searchable: false
+                    },{
+                        data:'society',
+                        name:'society'
                     },
                     {
                         data: 'visitor',

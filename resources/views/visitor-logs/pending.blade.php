@@ -33,7 +33,7 @@
                     <tr>
                         <th>ID</th>
                     @if(auth()->user()->isSuperAdmin())
-                        <th>Socity Name</th>
+                        <th>Society Name</th>
                     @endif
                         <th>Visitor</th>
                         <th>Phone</th>
@@ -126,8 +126,8 @@
           },
         @if (auth()->user()->isSuperAdmin())
         {
-            data: 'socity',
-            name: 'socity'
+            data: 'society',
+            name: 'society'
         },
         @endif
           {
