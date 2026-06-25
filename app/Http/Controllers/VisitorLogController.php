@@ -49,6 +49,9 @@ class VisitorLogController extends Controller
                     ->addColumn('visitor_name', function ($log) {
                         return $log->visitor?->name ?? 'N/A';
                     })
+                    ->addColumn('society',function($log){
+                        return $log->flat->society->name ?? 'N/A';
+                    })
 
                     ->addColumn('phone', function ($log) {
                         return $log->visitor?->phone ?? 'N/A';

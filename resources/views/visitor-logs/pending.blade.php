@@ -32,6 +32,9 @@
                 <thead>
                     <tr>
                         <th>ID</th>
+                    @if(auth()->user()->isSuperAdmin())
+                        <th>Society Name</th>
+                    @endif
                         <th>Visitor</th>
                         <th>Phone</th>
                         <th>Flat</th>
@@ -121,6 +124,12 @@
             orderable: false,
             searchable: false
           },
+        @if (auth()->user()->isSuperAdmin())
+        {
+            data: 'society',
+            name: 'society'
+        },
+        @endif
           {
             data: 'visitor_name',
             name: 'visitor.name'
