@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Complaint;
 
+use App\Http\Controllers\Controller;
 use App\Enums\ComplaintCategory;
 use App\Enums\ComplaintStatus;
 use App\Http\Requests\StoreComplaintRequest;
@@ -353,7 +354,7 @@ class ComplaintController extends Controller
                         <button type="button"
                                 class="btn btn-link btn-sm p-0 ms-1"
                                 data-bs-toggle="tooltip"
-                                title="'.$description.'">
+                                data-bs-title="'.$description.'">
                             <i class="bi bi-eye"></i>
                         </button>
                     ';

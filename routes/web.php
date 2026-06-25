@@ -1,12 +1,12 @@
 <?php
 
-use App\Http\Controllers\ComplaintController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Complaint\ComplaintController;
+use App\Http\Controllers\Common\DashboardController;
 use App\Http\Controllers\Delivery\DeliveryController;
 use App\Http\Controllers\Admin\FlatController;
-use App\Http\Controllers\ImpersonationController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\VisitorPassController;
+use App\Http\Controllers\Admin\ImpersonationController;
+use App\Http\Controllers\Common\ProfileController;
+use App\Http\Controllers\VisitorPass\VisitorPassController;
 use App\Http\Controllers\Admin\ResidentController;
 use App\Http\Controllers\SuperAdmin\SocietyController;
 use App\Http\Controllers\Admin\UserController;

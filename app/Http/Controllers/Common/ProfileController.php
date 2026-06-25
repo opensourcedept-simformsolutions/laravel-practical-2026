@@ -1,11 +1,15 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Common;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\ActivityLogger;
+use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
@@ -39,12 +43,22 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        try {
+            $user = $request->user();
+            $user->fill($request->validated());
+            $user->save();
 
-        $request->user()->save();
+            ActivityLogger::log('update', $user, "Updated personal profile information.");
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+            return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        } catch (Exception $e) {
+            Log::error('Profile Update Error', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'exception' => $e,
+            ]);
+
+            return Redirect::route('profile.edit')->with('error', 'Something went wrong while updating the profile.');
+        }
     }
-
-
 }

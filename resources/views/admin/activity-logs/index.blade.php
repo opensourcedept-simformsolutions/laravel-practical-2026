@@ -23,35 +23,50 @@
                             @endforeach
                         </select>
                     </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold text-secondary small">Action</label>
+                        <select id="action_filter" class="form-select">
+                            <option value="">All Actions</option>
+                            <option value="create">Create</option>
+                            <option value="update">Update</option>
+                            <option value="delete">Delete</option>
+                            <option value="login">Login</option>
+                            <option value="logout">Logout</option>
+                            <option value="impersonate_start">Impersonation Start</option>
+                            <option value="impersonate_stop">Impersonation Stop</option>
+                            <option value="mark_entry">Visitor Entry</option>
+                            <option value="mark_exit">Visitor Exit</option>
+                            <option value="deliver">Package Delivered</option>
+                            <option value="cancel">Pass Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold text-secondary small">Date Range</label>
+                        <input type="text" id="date_range" class="form-control bg-white" placeholder="Select Date Range" readonly style="cursor: pointer;">
+                    </div>
+                @else
+                    <div class="col-md-5">
+                        <label class="form-label fw-semibold text-secondary small">Action</label>
+                        <select id="action_filter" class="form-select">
+                            <option value="">All Actions</option>
+                            <option value="create">Create</option>
+                            <option value="update">Update</option>
+                            <option value="delete">Delete</option>
+                            <option value="login">Login</option>
+                            <option value="logout">Logout</option>
+                            <option value="impersonate_start">Impersonation Start</option>
+                            <option value="impersonate_stop">Impersonation Stop</option>
+                            <option value="mark_entry">Visitor Entry</option>
+                            <option value="mark_exit">Visitor Exit</option>
+                            <option value="deliver">Package Delivered</option>
+                            <option value="cancel">Pass Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label fw-semibold text-secondary small">Date Range</label>
+                        <input type="text" id="date_range" class="form-control bg-white" placeholder="Select Date Range" readonly style="cursor: pointer;">
+                    </div>
                 @endif
-
-                <div class="col-md-3">
-                    <label class="form-label fw-semibold text-secondary small">Action</label>
-                    <select id="action_filter" class="form-select">
-                        <option value="">All Actions</option>
-                        <option value="create">Create</option>
-                        <option value="update">Update</option>
-                        <option value="delete">Delete</option>
-                        <option value="login">Login</option>
-                        <option value="logout">Logout</option>
-                        <option value="impersonate_start">Impersonation Start</option>
-                        <option value="impersonate_stop">Impersonation Stop</option>
-                        <option value="mark_entry">Visitor Entry</option>
-                        <option value="mark_exit">Visitor Exit</option>
-                        <option value="deliver">Package Delivered</option>
-                        <option value="cancel">Pass Cancelled</option>
-                    </select>
-                </div>
-
-                <div class="col-md-2">
-                    <label class="form-label fw-semibold text-secondary small">From Date</label>
-                    <input type="date" id="from_date_filter" class="form-select">
-                </div>
-
-                <div class="col-md-2">
-                    <label class="form-label fw-semibold text-secondary small">To Date</label>
-                    <input type="date" id="to_date_filter" class="form-select">
-                </div>
 
                 <div class="col-md-2 d-flex align-items-end">
                     <button type="button" id="reset_filters" class="btn btn-outline-secondary w-100">
@@ -138,8 +153,8 @@
                     data: function(d) {
                         d.society_id = $('#society_filter').val();
                         d.action = $('#action_filter').val();
-                        d.from_date = $('#from_date_filter').val();
-                        d.to_date = $('#to_date_filter').val();
+                        d.from_date = fromDate;
+                        d.to_date = toDate;
                     }
                 },
                 columns: columns,
@@ -153,17 +168,63 @@
                 }
             });
 
+            // Date Range Picker Initialization
+            let fromDate = '';
+            let toDate = '';
+
+            $('#date_range').daterangepicker({
+                autoUpdateInput: false,
+                locale: {
+                    cancelLabel: 'Clear',
+                    format: 'YYYY-MM-DD'
+                }
+            });
+
+            $('#date_range').on('apply.daterangepicker', function(ev, picker) {
+                fromDate = picker.startDate.format('YYYY-MM-DD');
+                toDate = picker.endDate.format('YYYY-MM-DD');
+                $(this).val(fromDate + ' - ' + toDate);
+                table.draw();
+            });
+
+            $('#date_range').on('cancel.daterangepicker', function() {
+                fromDate = '';
+                toDate = '';
+                $(this).val('');
+                table.draw();
+            });
+
+            // Select2 initialization for filters
+            $('#action_filter').select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Select Action',
+                allowClear: true,
+                width: '100%'
+            });
+
+            if (isSuperAdmin) {
+                $('#society_filter').select2({
+                    theme: 'bootstrap-5',
+                    placeholder: 'Select Society',
+                    allowClear: true,
+                    width: '100%'
+                });
+            }
+
             // Filter triggers
-            $('#society_filter, #action_filter, #from_date_filter, #to_date_filter').on('change', function() {
+            $('#society_filter, #action_filter').on('change', function() {
                 table.draw();
             });
 
             // Reset filters
             $('#reset_filters').on('click', function() {
-                $('#society_filter').val('');
-                $('#action_filter').val('');
-                $('#from_date_filter').val('');
-                $('#to_date_filter').val('');
+                if (isSuperAdmin) {
+                    $('#society_filter').val(null).trigger('change');
+                }
+                $('#action_filter').val(null).trigger('change');
+                $('#date_range').val('');
+                fromDate = '';
+                toDate = '';
                 table.draw();
             });
 

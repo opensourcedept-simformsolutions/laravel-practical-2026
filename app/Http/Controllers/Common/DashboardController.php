@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Common;
 
+use App\Http\Controllers\Controller;
 use App\Models\Complaint;
 use App\Models\Delivery;
 use App\Models\Flat;
 use App\Models\Resident;
 use App\Models\Society;
 use App\Models\User;
-use App\Models\Visitor;
 use App\Models\VisitorLog;
 
 class DashboardController extends Controller
