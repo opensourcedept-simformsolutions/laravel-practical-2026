@@ -128,6 +128,10 @@
         $(document).ready(function() {
             const isSuperAdmin = {{ auth()->user()->isSuperAdmin() ? 'true' : 'false' }};
 
+            // Date Range Picker Initialization
+            let fromDate = '';
+            let toDate = '';
+
             const columns = [
                 { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
                 { data: 'created_at', name: 'created_at' }
@@ -167,10 +171,6 @@
                     }
                 }
             });
-
-            // Date Range Picker Initialization
-            let fromDate = '';
-            let toDate = '';
 
             $('#date_range').daterangepicker({
                 autoUpdateInput: false,
