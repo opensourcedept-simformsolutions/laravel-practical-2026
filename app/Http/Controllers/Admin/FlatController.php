@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreFlatRequest;
-use App\Http\Requests\UpdateFlatRequest;
+use App\Http\Requests\Flat\StoreFlatRequest;
+use App\Http\Requests\Flat\UpdateFlatRequest;
 use App\Models\Flat;
 use App\Models\Society;
 use App\Services\ActivityLogger;

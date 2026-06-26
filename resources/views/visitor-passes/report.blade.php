@@ -39,7 +39,7 @@
 
                         @foreach ($flats as $flat)
                             <option value="{{ $flat->id }}">
-                                {{ $flat->wing }} - Floor {{ $flat->floor }} - {{ $flat->flat_number }}
+                                {{ $flat->wing }}-{{ $flat->flat_number }}
                             </option>
                         @endforeach
                     </select>
@@ -114,7 +114,7 @@
                 table.draw();
             });
 
-            let table = $('#reportTable').DataTable({
+            table = $('#reportTable').DataTable({
                 processing: true,
                 serverSide: true,
                 responsive: true,

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\VisitorPass;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreVisitorPassRequest;
-use App\Http\Requests\UpdateVisitorPassRequest;
+use App\Http\Requests\VisitorPass\StoreVisitorPassRequest;
+use App\Http\Requests\VisitorPass\UpdateVisitorPassRequest;
 use App\Models\Flat;
 use App\Models\Visitor;
 use App\Models\VisitorLog;

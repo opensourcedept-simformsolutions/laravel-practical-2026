@@ -33,7 +33,7 @@
 
                         @foreach ($flats as $flat)
                             <option value="{{ $flat->id }}">
-                                {{ $flat->wing }} - Floor {{ $flat->floor }} - {{ $flat->flat_number }}
+                                {{ $flat->wing }}-{{ $flat->flat_number }}
                             </option>
                         @endforeach
                     </select>
@@ -119,7 +119,7 @@
                 table.draw();
             });
 
-            let table = $('#deliveries-table').DataTable({
+            table = $('#deliveries-table').DataTable({
                 processing: true,
                 serverSide: true,
                 responsive: true,
@@ -143,7 +143,7 @@
                     },
                     {
                         data: 'society',
-                        name: 'society'
+                        name: 'societies.name'
                     },
                     {
                         data: 'flat',
@@ -151,7 +151,7 @@
                     },
                     {
                         data: 'resident',
-                        name: 'resident'
+                        name: 'users.name'
                     },
                     {
                         data: 'vendor',
@@ -201,12 +201,9 @@
                 table.draw();
             });
 
-            $('#from-date, #to-date').on('change', function() {
-                table.draw();
-            });
-
             $('#export-btn').click(function() {
                 let params = $.param({
+                    status: $('#status-filter').val(),
                     flat_id: $('#flat-filter').val(),
                     vendor: $('#vendor-filter').val(),
                     from_date: fromDate,
@@ -217,6 +214,7 @@
             });
 
             $('#reset-filters').click(function() {
+                $('#status-filter').val(null).trigger('change');
                 $('#flat-filter').val(null).trigger('change');
                 $('#vendor-filter').val(null).trigger('change');
                 $('#date-range').val('');

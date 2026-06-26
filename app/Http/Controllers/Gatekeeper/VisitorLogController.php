@@ -94,6 +94,7 @@ class VisitorLogController extends Controller
 
                 return DataTables::of($query)
                     ->addIndexColumn()
+
                     ->addColumn('visitor_name', function ($log) {
                         return $log->visitor_name_val ?? 'N/A';
                     })
@@ -103,20 +104,9 @@ class VisitorLogController extends Controller
                     ->addColumn('phone', function ($log) {
                         return $log->visitor_phone_val ?? 'N/A';
                     })
-
                     ->addColumn('flat_details', function ($log) {
-                        return ($log->flat?->wing ?? '-') . ' - ' . ($log->flat?->flat_number ?? '-');
+                        return ($log->flat?->wing ?? '-') . '-' . ($log->flat?->flat_number ?? '-');
                     })
-
-                    ->editColumn('status', function ($log) {
-                        return match ($log->status) {
-                            'pending' => '<span class="badge bg-warning">Pending</span>',
-                            'entered' => '<span class="badge bg-success">Entered</span>',
-                            'exited' => '<span class="badge bg-secondary">Exited</span>',
-                            default => ucfirst($log->status),
-                        };
-                    })
-
                     ->addColumn('action', function ($log) {
 
                         $buttons = '';
@@ -187,6 +177,14 @@ class VisitorLogController extends Controller
                         }
 
                         return '<span class="badge bg-secondary">Exited</span>';
+                    })
+                    ->editColumn('status', function ($log) {
+                        return match ($log->status) {
+                            'pending' => '<span class="badge bg-warning">Pending</span>',
+                            'entered' => '<span class="badge bg-success">Entered</span>',
+                            'exited' => '<span class="badge bg-secondary">Exited</span>',
+                            default => ucfirst($log->status),
+                        };
                     })
                     ->rawColumns([
                         'status',
@@ -273,7 +271,9 @@ class VisitorLogController extends Controller
     public function markExit(VisitorLog $visitorLog)
     {
         $this->authorize('markExit', $visitorLog);
+
         try {
+
             if ($visitorLog->status !== 'entered') {
                 return redirect()->back()->with([
                     'message' => 'Only Entered Visitors Can Exit!',
@@ -322,6 +322,7 @@ class VisitorLogController extends Controller
         $this->authorize('viewAny', VisitorLog::class);
 
         try {
+            
             if ($request->ajax()) {
 
                 $user = auth()->user();
@@ -347,7 +348,6 @@ class VisitorLogController extends Controller
                     ->addColumn(
                         'flat_details',
                         fn($row) => ($row->flat?->wing ?? '-') . '-' .
-                            ($row->flat?->floor ?? '-') . '-' .
                             ($row->flat?->flat_number ?? '-')
                     )
                     ->addColumn(

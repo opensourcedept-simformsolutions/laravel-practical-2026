@@ -114,7 +114,7 @@
                 searchable: false
             });
 
-            let table = $('#usersTable').DataTable({
+            table = $('#usersTable').DataTable({
 
                 processing: true,
 

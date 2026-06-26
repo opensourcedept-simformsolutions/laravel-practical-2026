@@ -54,7 +54,7 @@
                     },
                     {
                         data: 'flat',
-                        name: 'flats.flat_number'
+                        name: 'flat'
                     },
                     {
                         data: 'resident',

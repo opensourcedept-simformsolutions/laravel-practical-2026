@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Society;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateSocietyRequest extends FormRequest
+class StoreSocietyRequest extends FormRequest
 {
     public function authorize(): bool
     {

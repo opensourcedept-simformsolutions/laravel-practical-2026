@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Common;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\ProfileUpdateRequest;
+use App\Http\Requests\User\ProfileUpdateRequest;
 use App\Services\ActivityLogger;
 use Exception;
 use Illuminate\Http\RedirectResponse;

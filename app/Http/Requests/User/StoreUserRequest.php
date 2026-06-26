@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\User;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class UpdateUserRequest extends FormRequest
+class StoreUserRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -17,13 +16,12 @@ class UpdateUserRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Get the validation rules that ap http://127.0.0.1:8000/admin/users ply to the request.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
-
         $user = $this->route('user');
 
         return [
@@ -31,41 +29,42 @@ class UpdateUserRequest extends FormRequest
             'name' => [
                 'required',
                 'string',
-                'max:255',
+                'min:3',
+                'max:100',
+                'regex:/^[A-Za-z\s\.\'-]+$/'
             ],
 
             'email' => [
                 'required',
                 'email',
-                Rule::unique('users')
-                    ->ignore($user->id),
-            ],
+                'unique:users,email',
 
+            ],
             'phone' => [
                 'required',
                 'string',
                 'min:7',
                 'max:20',
-                'regex:/^[0-9+\-\s()]+$/',
-                Rule::unique('users', 'phone')
-                    ->ignore($user->id),
+                'unique:users,phone',
+                'regex:/^[0-9+\-\s()]+$/'
+            ],
+
+            'password' => [
+                'required',
+                'min:1',
             ],
 
             'role_id' => [
                 'required',
                 'exists:roles,id',
             ],
-            'password' => [
-                'nullable',
-                'confirmed',
-                'min:1',
-            ],
             'society_id' => [
-                auth()->user()->isSuperAdmin()
+                auth()->user()?->isSuperAdmin()
                     ? 'required'
                     : 'nullable',
                 'exists:societies,id',
             ],
+
         ];
     }
 }

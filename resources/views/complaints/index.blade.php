@@ -69,7 +69,7 @@
 <script>
     $(document).ready(function () {
 
-    let table = $('#complaintsTable').DataTable({
+    table = $('#complaintsTable').DataTable({
 
         processing: true,
         serverSide: true,
