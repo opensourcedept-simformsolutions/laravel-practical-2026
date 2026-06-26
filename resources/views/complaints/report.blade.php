@@ -153,9 +153,7 @@
                     @if (auth()->user()->isSuperAdmin())
                         {
                             data: 'society',
-                            name: 'society',
-                            orderable: false,
-                            searchable: false
+                            name: 'societies.name'
                         },
                     @endif {
                         data: 'user_name',
@@ -183,8 +181,8 @@
                     }
                 ],
 
-                drawCallback: function () {
-                    $('[data-bs-toggle="tooltip"]').each(function () {
+                drawCallback: function() {
+                    $('[data-bs-toggle="tooltip"]').each(function() {
                         new bootstrap.Tooltip(this);
                     });
                 }

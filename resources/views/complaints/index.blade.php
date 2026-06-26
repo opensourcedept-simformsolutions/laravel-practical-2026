@@ -89,18 +89,14 @@
             @can('is-admin')
             {
                 data: 'resident_name',
-                name: 'user.name',
-                orderable: false,
-                searchable: false
+                name: 'users.name'
             },
             @endcan
 
             @if(auth()->user()->isSuperAdmin())
             {
                 data: 'society',
-                name: 'society',
-                orderable: false,
-                searchable: false
+                name: 'societies.name'
             },
             @endif
 

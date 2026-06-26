@@ -25,10 +25,11 @@ class VisitorPassController extends Controller
         try {
             return view('visitor-passes.index');
         } catch (Exception $e) {
-            Log::error('Visitor pass index page error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Visitor pass index page error: '.$e->getMessage(), ['exception' => $e]);
+
             return redirect()->back()->with([
                 'message' => 'Something went wrong.',
-                'status' => 'error'
+                'status' => 'error',
             ]);
         }
     }
@@ -55,7 +56,7 @@ class VisitorPassController extends Controller
                 ->leftJoin('users as creators', 'creators.id', '=', 'visitor_logs.created_by')
                 ->leftJoin('users as gatekeepers', 'gatekeepers.id', '=', 'visitor_logs.gatekeeper_id');
 
-            if (!$user->isSuperAdmin()) {
+            if (! $user->isSuperAdmin()) {
                 if ($user->isResident()) {
                     $query->where('visitor_logs.flat_id', $user->resident->flat_id);
                 } else {
@@ -68,39 +69,39 @@ class VisitorPassController extends Controller
             return DataTables::of($query)
                 ->addIndexColumn()
 
-                ->editColumn('visitor', fn($row) => $row->visitor_name ?? '-')
-                ->editColumn('phone', fn($row) => $row->visitor_phone ?? '-')
+                ->editColumn('visitor', fn ($row) => $row->visitor_name ?? '-')
+                ->editColumn('phone', fn ($row) => $row->visitor_phone ?? '-')
 
                 ->editColumn(
                     'flat',
-                    fn($row) => $row->flat_wing && $row->flat_number
-                        ? $row->flat_wing . '-' . $row->flat_number
+                    fn ($row) => $row->flat_wing && $row->flat_number
+                        ? $row->flat_wing.'-'.$row->flat_number
                         : '-'
                 )
 
-                ->editColumn('creator', fn($row) => $row->creator_name ?? '-')
-                ->editColumn('gatekeeper', fn($row) => $row->gatekeeper_name ?? '-')
+                ->editColumn('creator', fn ($row) => $row->creator_name ?? '-')
+                ->editColumn('gatekeeper', fn ($row) => $row->gatekeeper_name ?? '-')
 
-                ->editColumn('purpose', fn($row) => $row->purpose ?? '-')
-                ->editColumn('status', fn($row) => ucfirst($row->status))
+                ->editColumn('purpose', fn ($row) => $row->purpose ?? '-')
+                ->editColumn('status', fn ($row) => ucfirst($row->status))
 
                 ->editColumn(
                     'entry_time',
-                    fn($row) => $row->entry_time
+                    fn ($row) => $row->entry_time
                         ? format_date($row->entry_time)
                         : '-'
                 )
 
                 ->editColumn(
                     'exit_time',
-                    fn($row) => $row->exit_time
+                    fn ($row) => $row->exit_time
                         ? format_date($row->exit_time)
                         : '-'
                 )
 
                 ->editColumn(
                     'visit_date',
-                    fn($row) => $row->visit_date
+                    fn ($row) => $row->visit_date
                         ? format_date($row->visit_date, 'd M Y')
                         : '-'
                 )
@@ -110,14 +111,14 @@ class VisitorPassController extends Controller
                     $actions = '<div class="d-flex justify-content-center gap-2">';
 
                     $actions .= '
-                        <a href="' . route('passes.show', $row->id) . '" class="btn btn-info text-white" title="View Pass">
+                        <a href="'.route('passes.show', $row->id).'" class="btn btn-info text-white" title="View Pass">
                             <i class="bi bi-eye"></i>
                         </a>
                     ';
 
                     if ($row->status === 'pending') {
                         $actions .= '
-                            <a href="' . route('passes.edit', $row->id) . '" class="btn btn-primary" title="Edit Pass">
+                            <a href="'.route('passes.edit', $row->id).'" class="btn btn-primary" title="Edit Pass">
                                 <i class="bi bi-pencil-square"></i>
                             </a>
                         ';
@@ -127,7 +128,7 @@ class VisitorPassController extends Controller
                         $actions .= '
                             <button
                                 class="btn btn-danger btn-action"
-                                data-url="' . route('passes.cancel', $row->id) . '"
+                                data-url="'.route('passes.cancel', $row->id).'"
                                 data-method="PATCH"
                                 data-title="Cancel Visitor Pass?"
                                 data-text="This action cannot be undone."
@@ -147,13 +148,14 @@ class VisitorPassController extends Controller
                 ->rawColumns(['actions'])
                 ->make(true);
         } catch (Exception $e) {
-            Log::error('Visitor pass datatable loading error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Visitor pass datatable loading error: '.$e->getMessage(), ['exception' => $e]);
+
             return response()->json([
                 'draw' => 0,
                 'recordsTotal' => 0,
                 'recordsFiltered' => 0,
                 'data' => [],
-                'error' => 'Failed to load visitor pass data.'
+                'error' => 'Failed to load visitor pass data.',
             ], 500);
         }
     }
@@ -176,10 +178,11 @@ class VisitorPassController extends Controller
 
             return view('visitor-passes.create', compact('flats'));
         } catch (Exception $e) {
-            Log::error('Visitor pass create page error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Visitor pass create page error: '.$e->getMessage(), ['exception' => $e]);
+
             return redirect()->back()->with([
                 'message' => 'Something went wrong.',
-                'status' => 'error'
+                'status' => 'error',
             ]);
         }
     }
@@ -243,11 +246,10 @@ class VisitorPassController extends Controller
 
             return redirect()->route('passes.index');
         } catch (Exception $e) {
-            Log::error('Visitor pass store error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Visitor pass store error: '.$e->getMessage(), ['exception' => $e]);
 
             Session::flash('message', 'Something went wrong.');
             Session::flash('status', 'error');
-
 
             return redirect()->back()->withInput();
         }
@@ -266,10 +268,11 @@ class VisitorPassController extends Controller
 
             return view('visitor-passes.show', compact('visitorLog'));
         } catch (Exception $e) {
-            Log::error('Visitor pass show page error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Visitor pass show page error: '.$e->getMessage(), ['exception' => $e]);
+
             return redirect()->back()->with([
                 'message' => 'Something went wrong.',
-                'status' => 'error'
+                'status' => 'error',
             ]);
         }
     }
@@ -295,10 +298,11 @@ class VisitorPassController extends Controller
                 'flats'
             ));
         } catch (Exception $e) {
-            Log::error('Visitor pass edit page error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Visitor pass edit page error: '.$e->getMessage(), ['exception' => $e]);
+
             return redirect()->back()->with([
                 'message' => 'Something went wrong.',
-                'status' => 'error'
+                'status' => 'error',
             ]);
         }
     }
@@ -343,7 +347,7 @@ class VisitorPassController extends Controller
 
             return redirect()->route('passes.index');
         } catch (Exception $e) {
-            Log::error('Visitor pass update error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Visitor pass update error: '.$e->getMessage(), ['exception' => $e]);
 
             Session::flash('message', 'Something went wrong.');
             Session::flash('status', 'error');
@@ -376,7 +380,7 @@ class VisitorPassController extends Controller
                 'message' => 'Visitor pass cancelled successfully.',
             ]);
         } catch (Exception $e) {
-            Log::error('Visitor pass cancel error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Visitor pass cancel error: '.$e->getMessage(), ['exception' => $e]);
 
             return response()->json([
                 'success' => false,
@@ -397,10 +401,11 @@ class VisitorPassController extends Controller
 
             return view('visitor-passes.report', compact('flats'));
         } catch (Exception $e) {
-            Log::error('Visitor pass report page error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Visitor pass report page error: '.$e->getMessage(), ['exception' => $e]);
+
             return redirect()->back()->with([
                 'message' => 'Something went wrong.',
-                'status' => 'error'
+                'status' => 'error',
             ]);
         }
     }
@@ -414,46 +419,41 @@ class VisitorPassController extends Controller
 
             return DataTables::of($query)
                 ->addIndexColumn()
-                ->addColumn('society', fn($row) => $row->society ?? '-')
-                ->addColumn('visitor', fn($row) => $row->visitor_name ?? '-')
-                ->addColumn('phone', fn($row) => $row->visitor_phone ?? '-')
-
                 ->addColumn('flat', function ($row) {
-                    return $row->flat_wing && $row->flat_number
-                        ? $row->flat_wing . '-' . $row->flat_number
-                        : '-';
+                    return "{$row->flat_wing}-{$row->flat_number}";
                 })
-
-                ->addColumn('status', fn($row) => ucfirst($row->status))
-
                 ->addColumn(
                     'entry_time',
-                    fn($row) => $row->entry_time ? format_date($row->entry_time) : '-'
+                    fn ($row) => $row->entry_time ? format_date($row->entry_time) : '-'
                 )
-
                 ->addColumn(
                     'exit_time',
-                    fn($row) => $row->exit_time ? format_date($row->exit_time) : '-'
+                    fn ($row) => $row->exit_time ? format_date($row->exit_time) : '-'
                 )
-
                 ->addColumn(
                     'visit_date',
-                    fn($row) => $row->visit_date ? format_date($row->visit_date, 'd M Y') : '-'
+                    fn ($row) => $row->visit_date ? format_date($row->visit_date, 'd M Y') : '-'
                 )
-
-                ->addColumn('gatekeeper', fn($row) => $row->gatekeeper_name ?? '-')
-
+                ->editColumn('society', fn ($row) => $row->society ?? '-')
+                ->editColumn('visitor', fn ($row) => $row->visitor_name ?? '-')
+                ->editColumn('phone', fn ($row) => $row->visitor_phone ?? '-')
+                ->editColumn('status', fn ($row) => ucfirst($row->status))
+                ->editColumn('gatekeeper', fn ($row) => $row->gatekeeper_name ?? '-')
+                ->orderColumn('flat', function ($query, $order) {
+                    $query->orderBy('flats.wing', $order)
+                        ->orderBy('flats.flat_number', $order);
+                })
                 ->rawColumns([])
-
                 ->make(true);
         } catch (Exception $e) {
-            Log::error('Visitor pass report data loading error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Visitor pass report data loading error: '.$e->getMessage(), ['exception' => $e]);
+
             return response()->json([
                 'draw' => 0,
                 'recordsTotal' => 0,
                 'recordsFiltered' => 0,
                 'data' => [],
-                'error' => 'Failed to load report data.'
+                'error' => 'Failed to load report data.',
             ], 500);
         }
     }
@@ -488,8 +488,7 @@ class VisitorPassController extends Controller
                         $visitorLog->society ?? '-',
                         $visitorLog->visitor_name ?? '-',
                         $visitorLog->visitor_phone ?? '-',
-                        $visitorLog->flat_wing && $visitorLog->flat_number
-                            ? $visitorLog->flat_wing . '-' . $visitorLog->flat_number : '-',
+                        $visitorLog->flat_wing && $visitorLog->flat_number ? $visitorLog->flat_wing.'-'.$visitorLog->flat_number : '-',
                         $visitorLog->purpose ?? '-',
                         ucfirst($visitorLog->status),
                         $visitorLog->entry_time ? date('Y-m-d H:i:s', strtotime($visitorLog->entry_time)) : '-',
@@ -502,10 +501,11 @@ class VisitorPassController extends Controller
                 fclose($handle);
             }, 'visitor-report.csv');
         } catch (Exception $e) {
-            Log::error('Visitor pass report export error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Visitor pass report export error: '.$e->getMessage(), ['exception' => $e]);
+
             return back()->with([
                 'message' => 'Something went wrong.',
-                'status' => 'error'
+                'status' => 'error',
             ]);
         }
     }
@@ -520,23 +520,23 @@ class VisitorPassController extends Controller
                 'visitors.name as visitor_name',
                 'visitors.phone as visitor_phone',
                 'flats.wing as flat_wing',
-                'flats.flat_number as flat_number',
-                'users.name as gatekeeper_name',
-                'societies.name as society'
+                'flats.floor as flat_floor',
+                'flats.flat_number',
+                'creators.name as creator_name',
+                'gatekeepers.name as gatekeeper_name',
+                'societies.name as society',
             ])
             ->leftJoin('visitors', 'visitors.id', '=', 'visitor_logs.visitor_id')
             ->leftJoin('flats', 'flats.id', '=', 'visitor_logs.flat_id')
-            ->leftJoin('users', 'users.id', '=', 'visitor_logs.gatekeeper_id')
-            ->leftJoin('societies', 'flats.society_id','=','societies.id')
-            ->latest();
+            ->leftJoin('users as creators', 'creators.id', '=', 'visitor_logs.created_by')
+            ->leftJoin('users as gatekeepers', 'gatekeepers.id', '=', 'visitor_logs.gatekeeper_id')
+            ->leftJoin('societies', 'societies.id', '=', 'flats.society_id');
 
-        if (!$user->isSuperAdmin()) {
+        if (! $user->isSuperAdmin()) {
             if ($user->isResident()) {
                 $query->where('visitor_logs.flat_id', $user->resident->flat_id);
             } else {
-                $query->whereHas('flat', function ($q) use ($user) {
-                    $q->where('society_id', $user->society_id);
-                });
+                $query->where('flats.society_id', $user->society_id);
             }
         }
 
@@ -579,7 +579,8 @@ class VisitorPassController extends Controller
                 'status' => 'success',
             ]);
         } catch (Exception $e) {
-            Log::error('Visitor pass delete error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Visitor pass delete error: '.$e->getMessage(), ['exception' => $e]);
+
             return redirect()->back()->with([
                 'message' => 'Something went wrong.',
                 'status' => 'error',

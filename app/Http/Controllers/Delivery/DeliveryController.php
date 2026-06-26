@@ -52,11 +52,14 @@ class DeliveryController extends Controller
                     'users.name as resident_name',
                     'flats.wing as flat_wing',
                     'flats.floor as flat_floor',
-                    'flats.flat_number as flat_number',
+                    'flats.flat_number',
+                    'flats.society_id',
+                    'societies.name as society_name',
                 ])
                 ->leftJoin('residents', 'deliveries.resident_id', '=', 'residents.id')
                 ->leftJoin('users', 'residents.user_id', '=', 'users.id')
-                ->leftJoin('flats', 'deliveries.flat_id', '=', 'flats.id');
+                ->leftJoin('flats', 'deliveries.flat_id', '=', 'flats.id')
+                ->leftJoin('societies', 'flats.society_id', '=', 'societies.id');
 
             $user = auth()->user();
 
@@ -73,12 +76,17 @@ class DeliveryController extends Controller
                 ->addColumn('flat', function ($delivery) {
                     return "{$delivery->flat_wing}-{$delivery->flat_number}";
                 })
-                ->orderColumn('flat', function ($query, $order) {
-                    $query->orderBy('flats.wing', $order)
-                        ->orderBy('flats.flat_number', $order);
+                ->addColumn('society', function ($delivery) {
+                    return $delivery->society_name;
                 })
                 ->addColumn('resident', function ($delivery) {
                     return $delivery->resident_name ?? '-';
+                })
+                ->addColumn('actions', function ($delivery) {
+                    return view(
+                        'deliveries.partials.actions',
+                        compact('delivery')
+                    )->render();
                 })
                 ->editColumn('package_details', function ($delivery) {
                     $short = Str::limit($delivery->package_details, 50);
@@ -94,16 +102,17 @@ class DeliveryController extends Controller
                         . '</span>';
                 })
                 ->editColumn('received_at', function ($delivery) {
-                    return $delivery->received_at?->format('d M Y H:i');
+                    return $delivery->received_at?->format('d M Y');
                 })
                 ->editColumn('delivered_at', function ($delivery) {
-                    return $delivery->delivered_at?->format('d M Y H:i') ?? '-';
+                    return $delivery->delivered_at?->format('d M Y') ?? '-';
                 })
-                ->addColumn('actions', function ($delivery) {
-                    return view(
-                        'deliveries.partials.actions',
-                        compact('delivery')
-                    )->render();
+                ->orderColumn('society', function ($query, $order) {
+                    $query->orderBy('societies.name', $order);
+                })
+                ->orderColumn('flat', function ($query, $order) {
+                    $query->orderBy('flats.wing', $order)
+                        ->orderBy('flats.flat_number', $order);
                 })
                 ->rawColumns(['package_details', 'status', 'actions'])
                 ->toJson();
@@ -139,11 +148,7 @@ class DeliveryController extends Controller
                 ->addColumn('flat', function ($delivery) {
                     return "{$delivery->flat_wing}-{$delivery->flat_number}";
                 })
-                ->orderColumn('flat', function ($query, $order) {
-                    $query->orderBy('flats.wing', $order)
-                        ->orderBy('flats.floor', $order)
-                        ->orderBy('flats.flat_number', $order);
-                })
+
                 ->addColumn('resident', function ($delivery) {
                     return $delivery->resident_name ?? '-';
                 })
@@ -151,7 +156,6 @@ class DeliveryController extends Controller
                     $short = Str::limit($delivery->package_details, 50);
                     return '<span title="' . e($delivery->package_details) . '">' . e($short) . '</span>';
                 })
-                ->rawColumns(['package_details'])
                 ->editColumn('status', function ($delivery) {
                     return ucfirst($delivery->status);
                 })
@@ -161,6 +165,15 @@ class DeliveryController extends Controller
                 ->editColumn('delivered_at', function ($delivery) {
                     return $delivery->delivered_at?->format('d M Y') ?? '-';
                 })
+                ->orderColumn('society', function ($query, $order) {
+                    $query->orderBy('societies.name', $order);
+                })
+                ->orderColumn('flat', function ($query, $order) {
+                    $query->orderBy('flats.wing', $order)
+                        ->orderBy('flats.floor', $order)
+                        ->orderBy('flats.flat_number', $order);
+                })
+                ->rawColumns(['package_details'])
                 ->toJson();
         } catch (Exception $e) {
             $this->notificationService->failed(

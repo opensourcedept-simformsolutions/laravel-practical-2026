@@ -20,6 +20,9 @@
                     <thead>
                         <tr>
                             <th>ID</th>
+                            @if (Auth()->user()->isSuperAdmin())
+                                <th>Society</th>
+                            @endif
                             <th>Flat</th>
                             <th>Resident</th>
                             <th>Vendor</th>
@@ -52,6 +55,12 @@
                         orderable: false,
                         searchable: false
                     },
+                    @if (Auth()->user()->isSuperAdmin())
+                        {
+                            data: 'society',
+                            name: 'societies.name'
+                        },
+                    @endif
                     {
                         data: 'flat',
                         name: 'flat'

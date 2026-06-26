@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Complaint;
 
-use App\Http\Controllers\Controller;
 use App\Enums\ComplaintCategory;
 use App\Enums\ComplaintStatus;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Complaint\StoreComplaintRequest;
 use App\Http\Requests\Complaint\UpdateComplaintRequest;
 use App\Models\Complaint;
@@ -44,7 +44,7 @@ class ComplaintController extends Controller
                 'status' => ComplaintStatus::OPEN,
             ]);
 
-            ActivityLogger::log('create', $complaint, "Complaint raised under category '" . ucfirst($complaint->category) . "'.");
+            ActivityLogger::log('create', $complaint, "Complaint raised under category '".ucfirst($complaint->category)."'.");
 
             return redirect()
                 ->route('complaints.index')
@@ -70,33 +70,33 @@ class ComplaintController extends Controller
         $this->authorize('viewAny', Complaint::class);
 
         try {
-
             if ($request->ajax()) {
-
-                $query = Complaint::with('user.society');
+                $query = Complaint::query()
+                    ->select([
+                        'complaints.*',
+                        'users.name as resident_name',
+                        'societies.name as society_name',
+                    ])
+                    ->leftJoin('users', 'users.id', '=', 'complaints.user_id')
+                    ->leftJoin('societies', 'societies.id', '=', 'users.society_id');
 
                 $user = auth()->user();
 
                 if ($user->isResident() || $user->isGatekeeper()) {
 
-                    $query->where('user_id', $user->id);
+                    $query->where('complaints.user_id', $user->id);
 
                 } elseif ($user->isAdmin()) {
 
-                    $query->whereHas('user', function ($q) use ($user) {
-                        $q->where('society_id', $user->society_id);
-                    });
+                    $query->where('users.society_id', $user->society_id);
                 }
 
                 return DataTables::of($query)
                     ->addIndexColumn()
-                    ->addColumn('resident_name', function ($complaint) {
-                        return $complaint->user?->name ?? 'N/A';
-                    })
 
-                    ->addColumn('society', function ($complaint) {
-                        return $complaint->user->society?->name ?? 'N/A';
-                    })
+                    ->editColumn('resident_name', fn ($complaint) => $complaint->resident_name ?? 'N/A')
+
+                    ->editColumn('society', fn ($complaint) => $complaint->society_name ?? 'N/A')
 
                     ->editColumn('category', function ($complaint) {
                         return ucfirst($complaint->category);
@@ -108,14 +108,14 @@ class ComplaintController extends Controller
 
                         if (strlen($complaint->description) > 40) {
                             return '
-                                '.Str::limit($description, 40).'
-                                <button type="button"
-                                        class="btn btn-link btn-sm p-0 ms-1"
-                                        data-bs-toggle="tooltip"
-                                        title="'.$description.'">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                            ';
+                                    '.Str::limit($description, 40).'
+                                    <button type="button"
+                                            class="btn btn-link btn-sm p-0 ms-1"
+                                            data-bs-toggle="tooltip"
+                                            title="'.$description.'">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                ';
                         }
 
                         return $description;
@@ -123,11 +123,11 @@ class ComplaintController extends Controller
 
                     ->editColumn('status', function ($complaint) {
                         return match ($complaint->status) {
-                            'open'        => '<span class="badge bg-primary">Open</span>',
+                            'open' => '<span class="badge bg-primary">Open</span>',
                             'in_progress' => '<span class="badge bg-warning">In Progress</span>',
-                            'resolved'    => '<span class="badge bg-success">Resolved</span>',
-                            default       => '<span class="badge bg-secondary">' .
-                                ucwords(str_replace('_', ' ', $complaint->status)) .
+                            'resolved' => '<span class="badge bg-success">Resolved</span>',
+                            default => '<span class="badge bg-secondary">'.
+                                ucwords(str_replace('_', ' ', $complaint->status)).
                                 '</span>',
                         };
                     })
@@ -137,7 +137,6 @@ class ComplaintController extends Controller
                     })
 
                     ->addColumn('action', function ($complaint) {
-
                         $buttons = '
                         <a href="'.route('complaints.show', $complaint).'"
                            class="btn btn-info btn-sm" title="view">
@@ -175,9 +174,9 @@ class ComplaintController extends Controller
                             </div>
                         ';
                     })
-
-                    ->rawColumns(['action','status','description'])
+                    ->rawColumns(['action', 'status', 'description'])
                     ->make(true);
+
             }
 
             return view('complaints.index');
@@ -271,7 +270,7 @@ class ComplaintController extends Controller
                 ]);
             }
 
-            ActivityLogger::log('update', $complaint, "Complaint updated (status: " . ucfirst($complaint->status) . ").");
+            ActivityLogger::log('update', $complaint, 'Complaint updated (status: '.ucfirst($complaint->status).').');
 
             return redirect()
                 ->route('complaints.show', $complaint)
@@ -302,7 +301,7 @@ class ComplaintController extends Controller
 
         try {
 
-            ActivityLogger::log('delete', $complaint, "Complaint deleted.");
+            ActivityLogger::log('delete', $complaint, 'Complaint deleted.');
             $complaint->delete();
 
             return redirect()
@@ -337,12 +336,8 @@ class ComplaintController extends Controller
 
         return DataTables::of($query)
             ->addIndexColumn()
-            ->addColumn('society', function ($complaint) {
-                return $complaint->user->society?->name ?? 'N/A';
-            })
-            ->addColumn('user_name', function ($complaint) {
-                return $complaint->user?->name ?? '-';
-            })
+            ->editColumn('society', fn ($complaint) => $complaint->society ?? '-')
+            ->editColumn('user_name', fn ($complaint) => $complaint->user_name ?? '-')
             ->editColumn('category', function ($complaint) {
                 return ucfirst($complaint->category);
             })
@@ -359,7 +354,8 @@ class ComplaintController extends Controller
                         </button>
                     ';
                 }
-                    return $description;
+
+                return $description;
             })
             ->editColumn('status', function ($complaint) {
                 return ucwords(str_replace('_', ' ', $complaint->status));
@@ -369,7 +365,6 @@ class ComplaintController extends Controller
             })
             ->rawColumns(['description'])
             ->make(true);
-
     }
 
     public function export(Request $request)
@@ -393,8 +388,8 @@ class ComplaintController extends Controller
             foreach ($query->get() as $complaint) {
                 fputcsv($handle, [
                     $complaint->id,
-                    $complaint->user?->name ?? '-',
-                    $complaint->user?->society?->name ?? '-',
+                    $complaint->user_name ?? '-',
+                    $complaint->society ?? '-',
                     ucfirst($complaint->category),
                     $complaint->description,
                     $complaint->admin_notes ?? '-',
@@ -410,35 +405,37 @@ class ComplaintController extends Controller
 
     private function getReportQuery(Request $request)
     {
-        $query = Complaint::with('user.society');
+        $query = Complaint::query()
+            ->select([
+                'complaints.*',
+                'users.name as user_name',
+                'societies.name as society',
+            ])
+            ->leftJoin('users', 'users.id', '=', 'complaints.user_id')
+            ->leftJoin('societies', 'societies.id', '=', 'users.society_id');
 
         $user = auth()->user();
 
         if ($user->isResident() || $user->isGatekeeper()) {
-
-            $query->where('user_id', $user->id);
-
+            $query->where('complaints.user_id', $user->id);
         } elseif ($user->isAdmin()) {
-
-            $query->whereHas('user', function ($q) use ($user) {
-                $q->where('society_id', $user->society_id);
-            });
+            $query->where('users.society_id', $user->society_id);
         }
 
         if ($request->filled('category')) {
-            $query->where('category', $request->category);
+            $query->where('complaints.category', $request->category);
         }
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->where('complaints.status', $request->status);
         }
 
         if ($request->filled('from_date')) {
-            $query->whereDate('created_at', '>=', $request->from_date);
+            $query->whereDate('complaints.created_at', '>=', $request->from_date);
         }
 
         if ($request->filled('to_date')) {
-            $query->whereDate('created_at', '<=', $request->to_date);
+            $query->whereDate('complaints.created_at', '<=', $request->to_date);
         }
 
         return $query;

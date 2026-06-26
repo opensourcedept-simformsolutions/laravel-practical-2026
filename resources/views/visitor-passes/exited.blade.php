@@ -35,7 +35,7 @@
           <tbody></tbody>
         </table>
       </div>
-      
+
     </div>
   </div>
 
@@ -68,8 +68,7 @@
           },
           {
             data: 'flat_details',
-            name: 'flat.flat_number',
-            orderable: false
+            name: 'flat_details'
           },
           {
             data: 'purpose',
@@ -96,14 +95,13 @@
             orderable: false
           },
           {
-            data: 'photo',
-            name: 'photo',
+            data: 'photo_path',
+            name: 'photo_path',
             searchable: false,
             orderable: false
           }
         ]
       });
-
     });
   </script>
 @endpush

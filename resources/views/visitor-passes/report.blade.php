@@ -134,9 +134,9 @@
                         name: 'DT_RowIndex',
                         orderable: false,
                         searchable: false
-                    },{
-                        data:'society',
-                        name:'society'
+                    }, {
+                        data: 'society',
+                        name: 'society'
                     },
                     {
                         data: 'visitor',
@@ -147,13 +147,8 @@
                         name: 'visitors.phone'
                     },
                     {
-                        data: null,
-                        name: 'flats.flat_number',
-                        render: function(data, type, row) {
-                            return row.flat_wing && row.flat_number ?
-                                row.flat_wing + '-' + row.flat_number :
-                                '-';
-                        }
+                        data: 'flat',
+                        name: 'flat'
                     },
                     {
                         data: 'purpose',
@@ -176,8 +171,8 @@
                         name: 'visitor_logs.visit_date'
                     },
                     {
-                        data: 'gatekeeper',
-                        name: 'users.name'
+                        data: 'gatekeeper_name',
+                        name: 'gatekeepers.name'
                     }
                 ]
             });

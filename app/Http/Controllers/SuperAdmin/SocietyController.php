@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Flat;
 use App\Models\Society;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
