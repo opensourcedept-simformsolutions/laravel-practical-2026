@@ -112,6 +112,78 @@ composer install
 npm install
 ```
 
+SocietyMS is a web-based Society Gatekeeper Management System built with Laravel 12. The application helps residential societies manage residents, visitors, deliveries, complaints, and gatekeeper operations through a centralized platform.
+
+---
+
+## Overview
+
+The system provides role-based access for:
+
+- Super Administrators
+- Society Administrators
+- Residents
+- Gatekeepers
+
+Each role has dedicated features designed to streamline society management and improve security.
+
+---
+
+## Features
+
+### Super Admin
+
+- Multi-Society Management
+- Society Administration & Monitoring
+- Centralized Dashboard & Analytics
+- System-Wide Analytics & Reports
+
+### Society Admin
+
+- Flat, Resident & Gatekeeper Management
+- Visitor & Delivery Monitoring
+- Complaint Management
+- Society Dashboard & Reports
+
+### Resident
+
+- Visitor Pass Management
+- Visitor History Tracking
+- Complaint Registration & Tracking
+- Delivery Management
+
+### Gatekeeper
+
+- Visitor Verification & Access Control
+- Entry & Exit Tracking
+- Delivery Logging & Status Management
+
+### Advanced Features
+
+- Multi-Tenant Architecture
+- Role-Based Access Control (RBAC)
+- Real-Time Visitor Tracking
+- QR-Based Visitor Verification
+- Dashboard Analytics & Reporting
+- CSV Report Export
+- Email Notifications
+- Secure Authentication & Authorization
+
+---
+
+## Requirements
+
+Before running the project, ensure the following software is installed:
+
+| Software | Version |
+|-----------|-----------|
+| PHP | 8.2 or higher |
+| Composer | 2.x |
+| MySQL | 8.0+ |
+| Node.js | 20+ |
+| NPM | 10+ |
+| Git | Latest |
+  
 ---
 
 ### 4. Create Environment File
