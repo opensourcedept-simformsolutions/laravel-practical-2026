@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\ActivityLogger;
+use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules\Password;
 
 class PasswordController extends Controller
@@ -20,10 +23,23 @@ class PasswordController extends Controller
             'password' => ['required', Password::defaults(), 'confirmed'],
         ]);
 
-        $request->user()->update([
-            'password' => Hash::make($validated['password']),
-        ]);
+        try {
+            $user = $request->user();
+            $user->update([
+                'password' => Hash::make($validated['password']),
+            ]);
 
-        return back()->with('status', 'password-updated');
+            ActivityLogger::log('update', $user, "Changed account password.");
+
+            return back()->with('status', 'password-updated');
+        } catch (Exception $e) {
+            Log::error('Password Update Error', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'exception' => $e,
+            ]);
+
+            return back()->withErrors(['password' => 'Something went wrong while updating your password.'], 'updatePassword');
+        }
     }
 }

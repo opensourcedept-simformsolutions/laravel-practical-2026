@@ -5,14 +5,9 @@
 @section('content')
 
     <div class="container-fluid">
-
         <div class="row justify-content-center">
-
             <div class="col-lg-12">
-
                 <div class="row g-3">
-
-                    <!-- Profile Information -->
                     <div class="col-md-6">
                         <div class="card shadow-sm h-100">
 
@@ -27,7 +22,6 @@
                         </div>
                     </div>
 
-                    <!-- Change Password -->
                     <div class="col-md-6">
                         <div class="card shadow-sm h-100">
 

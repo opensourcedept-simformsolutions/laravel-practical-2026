@@ -31,7 +31,18 @@ class UpdateDeliveryRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'resident_id' => ['required', 'exists:residents,id'],
+            'resident_id' => [
+                'required',
+                Rule::exists('residents', 'id')->where(function ($query) {
+                    if (!auth()->user()->isSuperAdmin()) {
+                        $query->whereIn('flat_id', function ($q) {
+                            $q->select('id')
+                              ->from('flats')
+                              ->where('society_id', auth()->user()->society_id);
+                        });
+                    }
+                }),
+            ],
             'vendor' => ['required', 'string', 'max:255'],
             'package_details' => ['required', 'string', 'min:3', 'max:1000'],
         ];

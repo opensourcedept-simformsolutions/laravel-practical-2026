@@ -10,6 +10,7 @@ use App\Models\Delivery;
 use App\Models\Flat;
 use App\Models\Resident;
 use App\Services\DeliveryNotificationService;
+use App\Services\ActivityLogger;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -45,31 +46,47 @@ class DeliveryController extends Controller
     public function data()
     {
         try {
-            $query = Delivery::with([
-                'flat' => fn($q) => $q->withTrashed(),
-                'resident' => fn($q) => $q->withTrashed(),
-                'resident.user' => fn($q) => $q->withTrashed(),
-            ]);
+            $query = Delivery::query()
+                ->select([
+                    'deliveries.*',
+                    'users.name as resident_name',
+                    'flats.wing as flat_wing',
+                    'flats.floor as flat_floor',
+                    'flats.flat_number',
+                    'flats.society_id',
+                    'societies.name as society_name',
+                ])
+                ->leftJoin('residents', 'deliveries.resident_id', '=', 'residents.id')
+                ->leftJoin('users', 'residents.user_id', '=', 'users.id')
+                ->leftJoin('flats', 'deliveries.flat_id', '=', 'flats.id')
+                ->leftJoin('societies', 'flats.society_id', '=', 'societies.id');
 
             $user = auth()->user();
 
             if (! $user->isSuperAdmin()) {
                 if ($user->isResident()) {
-                    $query->where('flat_id', $user->resident->flat_id);
+                    $query->where('deliveries.flat_id', $user->resident->flat_id);
                 } else {
-                    $query->whereHas('flat', function ($query) use ($user) {
-                        $query->where('society_id', $user->society_id);
-                    });
+                    $query->where('flats.society_id', $user->society_id);
                 }
             }
 
-            return DataTables::eloquent($query)
+            return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('flat', function ($delivery) {
-                    return $delivery->flat->wing . ' - Floor ' . $delivery->flat->floor . ' - ' . $delivery->flat->flat_number;
+                    return "{$delivery->flat_wing}-{$delivery->flat_number}";
+                })
+                ->addColumn('society', function ($delivery) {
+                    return $delivery->society_name;
                 })
                 ->addColumn('resident', function ($delivery) {
-                    return $delivery->resident->user->name;
+                    return $delivery->resident_name ?? '-';
+                })
+                ->addColumn('actions', function ($delivery) {
+                    return view(
+                        'deliveries.partials.actions',
+                        compact('delivery')
+                    )->render();
                 })
                 ->editColumn('package_details', function ($delivery) {
                     $short = Str::limit($delivery->package_details, 50);
@@ -85,16 +102,17 @@ class DeliveryController extends Controller
                         . '</span>';
                 })
                 ->editColumn('received_at', function ($delivery) {
-                    return $delivery->received_at?->format('d M Y H:i');
+                    return $delivery->received_at?->format('d M Y');
                 })
                 ->editColumn('delivered_at', function ($delivery) {
-                    return $delivery->delivered_at?->format('d M Y H:i') ?? '-';
+                    return $delivery->delivered_at?->format('d M Y') ?? '-';
                 })
-                ->addColumn('actions', function ($delivery) {
-                    return view(
-                        'deliveries.partials.actions',
-                        compact('delivery')
-                    )->render();
+                ->orderColumn('society', function ($query, $order) {
+                    $query->orderBy('societies.name', $order);
+                })
+                ->orderColumn('flat', function ($query, $order) {
+                    $query->orderBy('flats.wing', $order)
+                        ->orderBy('flats.flat_number', $order);
                 })
                 ->rawColumns(['package_details', 'status', 'actions'])
                 ->toJson();
@@ -125,28 +143,37 @@ class DeliveryController extends Controller
             return DataTables::eloquent($query)
                 ->addIndexColumn()
                 ->addColumn('society', function ($delivery) {
-                    return $delivery->flat->society->name;
+                    return $delivery->society_name;
                 })
                 ->addColumn('flat', function ($delivery) {
-                    return $delivery->flat->wing . ' - Floor ' . $delivery->flat->floor . ' - ' . $delivery->flat->flat_number;
+                    return "{$delivery->flat_wing}-{$delivery->flat_number}";
                 })
+
                 ->addColumn('resident', function ($delivery) {
-                    return $delivery->resident->user->name;
+                    return $delivery->resident_name ?? '-';
                 })
                 ->editColumn('package_details', function ($delivery) {
                     $short = Str::limit($delivery->package_details, 50);
                     return '<span title="' . e($delivery->package_details) . '">' . e($short) . '</span>';
                 })
-                ->rawColumns(['package_details'])
                 ->editColumn('status', function ($delivery) {
                     return ucfirst($delivery->status);
                 })
                 ->editColumn('received_at', function ($delivery) {
-                    return $delivery->received_at->format('d M Y H:i');
+                    return $delivery->received_at->format('d M Y');
                 })
                 ->editColumn('delivered_at', function ($delivery) {
-                    return $delivery->delivered_at?->format('d M Y H:i') ?? '-';
+                    return $delivery->delivered_at?->format('d M Y') ?? '-';
                 })
+                ->orderColumn('society', function ($query, $order) {
+                    $query->orderBy('societies.name', $order);
+                })
+                ->orderColumn('flat', function ($query, $order) {
+                    $query->orderBy('flats.wing', $order)
+                        ->orderBy('flats.floor', $order)
+                        ->orderBy('flats.flat_number', $order);
+                })
+                ->rawColumns(['package_details'])
                 ->toJson();
         } catch (Exception $e) {
             $this->notificationService->failed(
@@ -189,10 +216,10 @@ class DeliveryController extends Controller
                 foreach ($query->get() as $delivery) {
                     fputcsv($handle, [
                         $delivery->id,
-                        $delivery->flat->society_id,
-                        $delivery->flat->society->name,
-                        $delivery->flat->wing . ' - Floor ' . $delivery->flat->floor . ' - ' . $delivery->flat->flat_number,
-                        $delivery->resident->user->name,
+                        $delivery->society_id,
+                        $delivery->society_name,
+                        $delivery->flat_wing . '-' . $delivery->flat_number,
+                        $delivery->resident_name ?? '-',
                         $delivery->package_details,
                         $delivery->vendor,
                         ucfirst($delivery->status),
@@ -310,6 +337,8 @@ class DeliveryController extends Controller
                 'delivered_at' => null,
             ]);
 
+            ActivityLogger::log('create', $delivery, "Delivery from {$delivery->vendor} for flat " . ($delivery->flat?->wing ?? '-') . "-" . ($delivery->flat?->flat_number ?? '-') . " logged.");
+
             $this->notificationService->notify($delivery, 'Delivery received');
 
             return redirect()->route('deliveries.index')
@@ -359,6 +388,8 @@ class DeliveryController extends Controller
                 'status' => DeliveryStatus::DELIVERED->value,
                 'delivered_at' => now(),
             ]);
+
+            ActivityLogger::log('deliver', $delivery, "Delivery from {$delivery->vendor} marked as delivered.");
 
             $this->notificationService->notify($delivery, 'Delivery delivered');
 
@@ -422,6 +453,8 @@ class DeliveryController extends Controller
 
             $delivery->save();
 
+            ActivityLogger::log('update', $delivery, "Delivery details updated.");
+
             $newValues = $delivery->only([
                 'flat_id',
                 'resident_id',
@@ -457,6 +490,7 @@ class DeliveryController extends Controller
         $this->authorize('delete', $delivery);
 
         try {
+            ActivityLogger::log('delete', $delivery, "Delivery record deleted.");
             $delivery->delete();
             $this->notificationService->notify($delivery, 'Delivery deleted');
 
@@ -509,42 +543,49 @@ class DeliveryController extends Controller
      */
     private function getReportQuery(Request $request)
     {
-        $query = Delivery::with([
-            'flat' => fn($q) => $q->withTrashed(),
-            'flat.society' => fn($q) => $q->withTrashed(),
-            'resident' => fn($q) => $q->withTrashed(),
-            'resident.user' => fn($q) => $q->withTrashed(),
-        ]);
+        $query = Delivery::query()
+            ->select([
+                'deliveries.*',
+                'users.name as resident_name',
+                'flats.wing as flat_wing',
+                'flats.floor as flat_floor',
+                'flats.flat_number',
+                'flats.society_id',
+                'societies.name as society_name',
+            ])
+            ->leftJoin('residents', 'deliveries.resident_id', '=', 'residents.id')
+            ->leftJoin('users', 'residents.user_id', '=', 'users.id')
+            ->leftJoin('flats', 'deliveries.flat_id', '=', 'flats.id')
+            ->leftJoin('societies', 'flats.society_id', '=', 'societies.id');
 
         $user = auth()->user();
 
         if (! $user->isSuperAdmin()) {
             if ($user->isResident()) {
-                $query->where('flat_id', $user->resident->flat_id);
+                $query->where('deliveries.flat_id', $user->resident->flat_id);
             } else {
-                $query->whereHas('flat', function ($query) use ($user) {
-                    $query->where('society_id', $user->society_id);
-                });
+                $query->where('flats.society_id', $user->society_id);
             }
         }
+
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->where('deliveries.status', $request->status);
         }
 
         if ($request->filled('flat_id')) {
-            $query->where('flat_id', $request->flat_id);
+            $query->where('deliveries.flat_id', $request->flat_id);
         }
 
         if ($request->filled('vendor')) {
-            $query->where('vendor', 'like', '%' . $request->vendor . '%');
+            $query->where('deliveries.vendor', 'like', "%{$request->vendor}%");
         }
 
         if ($request->filled('from_date')) {
-            $query->whereDate('received_at', '>=', $request->from_date);
+            $query->whereDate('deliveries.received_at', '>=', $request->from_date);
         }
 
         if ($request->filled('to_date')) {
-            $query->whereDate('received_at', '<=', $request->to_date);
+            $query->whereDate('deliveries.received_at', '<=', $request->to_date);
         }
 
         return $query;

@@ -6,8 +6,8 @@
 
     <div class="card shadow-sm border-0 rounded-3">
 
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <span class="fw-semibold">Residents List</span>
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-dark">Resident List</h5>
 
             <a href="{{ route('residents.create') }}" type="button" class="btn btn-primary btn-sm">
                 <i class="bi bi-plus-square me-1"></i> Add Resident
@@ -17,7 +17,7 @@
         <div class="card-body">
 
             <div class="table-responsive">
-                <table id="residentsTable" class="table table-hover table-striped align-middle w-100 app-datatable">
+                <table id="residentsTable" class="table table-hover table-striped align-middle w-100">
 
                     <thead class="table-light">
                         <tr>
@@ -31,9 +31,7 @@
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
-
                     <tbody></tbody>
-
                 </table>
             </div>
 
@@ -70,23 +68,23 @@
                     },
                     {
                         data: 'name',
-                        name: 'user.name'
+                        name: 'users.name'
                     },
                     {
                         data: 'email',
-                        name: 'user.email'
+                        name: 'users.email'
                     },
                     {
                         data: 'phone',
-                        name: 'user.phone'
+                        name: 'users.phone'
                     },
                     {
                         data: 'flat',
-                        name: 'flat.flat_number'
+                        name: 'flats.flat_number'
                     },
                     {
                         data: 'wing',
-                        name: 'flat.wing'
+                        name: 'flats.wing'
                     },
                     {
                         data: 'type',

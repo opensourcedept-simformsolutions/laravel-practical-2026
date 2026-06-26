@@ -3,8 +3,8 @@
 @section('title', 'Deliveries')
 @section('content')
     <div class="card shadow-sm border-0 rounded-3">
-        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
-            <span class="fw-semibold">Deliveries</span>
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-dark">Delivery List</h5>
 
             @canany(['is-gatekeeper', 'is-admin'])
                 <a href="{{ route('deliveries.create') }}" class="btn btn-primary btn-sm">
@@ -20,6 +20,9 @@
                     <thead>
                         <tr>
                             <th>ID</th>
+                            @if (Auth()->user()->isSuperAdmin())
+                                <th>Society</th>
+                            @endif
                             <th>Flat</th>
                             <th>Resident</th>
                             <th>Vendor</th>
@@ -27,7 +30,7 @@
                             <th>Status</th>
                             <th>Received At</th>
                             <th>Delivered At</th>
-                            <th>Actions</th>
+                            <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                 </table>
@@ -52,33 +55,38 @@
                         orderable: false,
                         searchable: false
                     },
-                    {
+                    @if (Auth()->user()->isSuperAdmin())
+                        {
+                            data: 'society',
+                            name: 'societies.name'
+                        },
+                    @endif {
                         data: 'flat',
                         name: 'flat'
                     },
                     {
                         data: 'resident',
-                        name: 'resident'
+                        name: 'users.name'
                     },
                     {
                         data: 'vendor',
-                        name: 'vendor'
+                        name: 'deliveries.vendor'
                     },
                     {
                         data: 'package_details',
-                        name: 'package_details'
+                        name: 'deliveries.package_details'
                     },
                     {
                         data: 'status',
-                        name: 'status'
+                        name: 'deliveries.status'
                     },
                     {
                         data: 'received_at',
-                        name: 'received_at'
+                        name: 'deliveries.received_at'
                     },
                     {
                         data: 'delivered_at',
-                        name: 'delivered_at'
+                        name: 'deliveries.delivered_at'
                     },
                     {
                         data: 'actions',

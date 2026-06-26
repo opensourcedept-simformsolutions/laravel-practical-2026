@@ -2,16 +2,15 @@
 
 namespace App\Providers;
 
-use App\Models\Complaint;
-use App\Models\Delivery;
 use App\Events\VisitorEntered;
 use App\Events\VisitorExited;
-use App\Policies\ComplaintPolicy;
-use App\Policies\DeliveryPolicy;
 use App\Listeners\SendVisitorEntryMail;
 use App\Listeners\SendVisitorExitMail;
-use Illuminate\Support\Facades\Gate;
+use App\Services\ActivityLogger;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -25,15 +24,11 @@ class AppServiceProvider extends ServiceProvider
     {
         require_once app_path('Helpers/helpers.php');
 
-        Gate::policy(Delivery::class, DeliveryPolicy::class);
-
         Gate::before(function ($user, $ability) {
             if ($user->isSuperAdmin()) {
                 return true;
             }
         });
-
-        Gate::policy(Complaint::class, ComplaintPolicy::class);
 
         Gate::define('is-admin', function ($user) {
             return $user->isAdmin();
@@ -47,14 +42,18 @@ class AppServiceProvider extends ServiceProvider
             return $user->isResident();
         });
 
-        Event::listen(
-            VisitorEntered::class,
-            SendVisitorEntryMail::class
-        );
+        Event::listen(VisitorEntered::class, SendVisitorEntryMail::class);
 
-        Event::listen(
-            VisitorExited::class,
-            SendVisitorExitMail::class
-        );
+        Event::listen(VisitorExited::class, SendVisitorExitMail::class);
+
+        Event::listen(Login::class, function ($event) {
+            ActivityLogger::log('login', $event->user, "User {$event->user->name} logged in.");
+        });
+
+        Event::listen(Logout::class, function ($event) {
+            if ($event->user) {
+                ActivityLogger::log('logout', $event->user, "User {$event->user->name} logged out.");
+            }
+        });
     }
 }

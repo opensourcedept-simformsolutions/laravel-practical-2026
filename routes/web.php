@@ -1,17 +1,17 @@
 <?php
 
-use App\Http\Controllers\ComplaintController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Complaint\ComplaintController;
+use App\Http\Controllers\Common\DashboardController;
 use App\Http\Controllers\Delivery\DeliveryController;
-use App\Http\Controllers\FlatController;
-use App\Http\Controllers\GateKeeperController;
-use App\Http\Controllers\ImpersonationController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Resident\VisitorPassController;
-use App\Http\Controllers\ResidentController;
-use App\Http\Controllers\SocietyController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\VisitorLogController;
+use App\Http\Controllers\Admin\FlatController;
+use App\Http\Controllers\Admin\ImpersonationController;
+use App\Http\Controllers\Common\ProfileController;
+use App\Http\Controllers\VisitorPass\VisitorPassController;
+use App\Http\Controllers\Admin\ResidentController;
+use App\Http\Controllers\SuperAdmin\SocietyController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Gatekeeper\VisitorLogController;
+use App\Http\Controllers\Admin\ActivityLogController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +45,9 @@ Route::middleware('auth')->group(function () {
 
                     Route::resource('users', UserController::class)
                         ->except(['show']);
+
+                    Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+                    Route::get('activity-logs/data', [ActivityLogController::class, 'data'])->name('activity-logs.data');
                 });
 
             Route::resource('flats', FlatController::class);
@@ -160,7 +163,7 @@ Route::middleware('auth')->group(function () {
         });
 
     Route::middleware(['role:admin,gatekeeper'])
-        ->controller(GateKeeperController::class)
+        ->controller(VisitorLogController::class)
         ->prefix('gatekeeper')
         ->name('gatekeeper.')
         ->group(function () {

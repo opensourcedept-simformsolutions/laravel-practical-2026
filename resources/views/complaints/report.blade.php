@@ -3,16 +3,14 @@
 @section('title', 'Complaints')
 
 @section('content')
-    <div class="card shadow-sm border-0">
+    <div class="card shadow-sm border-0 rounded-3">
 
-        <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
-            <h2 class="h3 fw-bold mb-0">
-                Complaints Report
-            </h2>
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-dark">Complaints Report</h5>
 
             <div class="d-flex gap-2">
 
-                <a id="export-btn" class="btn btn-success">
+                <a id="export-btn" class="btn btn-success btn-sm">
                     <i class="bi bi-download"></i>
                     Export CSV
                 </a>
@@ -131,7 +129,7 @@
                 table.draw();
             });
 
-            let table = $('#complaintsTable').DataTable({
+            table = $('#complaintsTable').DataTable({
                 processing: true,
                 serverSide: true,
                 responsive: true,
@@ -155,38 +153,37 @@
                     @if (auth()->user()->isSuperAdmin())
                         {
                             data: 'society',
-                            name: 'society',
-                            orderable: false,
-                            searchable: false
+                            name: 'societies.name'
                         },
-                    @endif {
+                    @endif
+                    {
                         data: 'user_name',
-                        name: 'user.name'
+                        name: 'users.name'
                     },
                     {
                         data: 'category',
-                        name: 'category'
+                        name: 'complaints.category'
                     },
                     {
                         data: 'description',
-                        name: 'description'
+                        name: 'complaints.description'
                     },
                     {
                         data: 'admin_notes',
-                        name: 'admin_notes'
+                        name: 'complaints.admin_notes'
                     },
                     {
                         data: 'status',
-                        name: 'status'
+                        name: 'complaints.status'
                     },
                     {
                         data: 'created_at',
-                        name: 'created_at'
+                        name: 'complaints.created_at'
                     }
                 ],
 
-                drawCallback: function () {
-                    $('[data-bs-toggle="tooltip"]').each(function () {
+                drawCallback: function() {
+                    $('[data-bs-toggle="tooltip"]').each(function() {
                         new bootstrap.Tooltip(this);
                     });
                 }

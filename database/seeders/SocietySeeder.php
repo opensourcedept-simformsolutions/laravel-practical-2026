@@ -34,6 +34,27 @@ class SocietySeeder extends Seeder
                 'state' => 'Gujarat',
                 'pincode' => '380005',
             ],
+            [
+                'name' => 'Serene Meadows',
+                'address' => 'Infocity Road',
+                'city' => 'Gandhinagar',
+                'state' => 'Gujarat',
+                'pincode' => '382007',
+            ],
+            [
+                'name' => 'Plaza Premium Apartments',
+                'address' => 'Bodakdev',
+                'city' => 'Ahmedabad',
+                'state' => 'Gujarat',
+                'pincode' => '380054',
+            ],
+            [
+                'name' => 'Vibrant Towers',
+                'address' => 'Chandkheda',
+                'city' => 'Ahmedabad',
+                'state' => 'Gujarat',
+                'pincode' => '382424',
+            ],
         ];
 
         foreach ($societies as $society) {
