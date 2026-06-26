@@ -50,13 +50,13 @@ class FlatController extends Controller
 
                         return '
                         <div class="text-center">
-                        <a href="' . $editUrl . '" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
+                        <a href="' . $editUrl . '" class="btn btn-sm btn-primary" title="Edit Flat"><i class="bi bi-pencil-square"></i></a>
 
                         <form action="' . $deleteUrl . '" method="POST" style="display:inline-block;">
                             ' . csrf_field() . '
                             ' . method_field('DELETE') . '
                             <button type="submit" class="btn btn-sm btn-danger"
-                                onclick="return confirm(\'Are you sure?\')">
+                                onclick="return confirm(\'Are you sure?\')" title="Delete Flat">
                                   <i class="bi bi-trash"></i>
                             </button>
                         </form>

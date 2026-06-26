@@ -67,13 +67,13 @@ class ResidentController extends Controller
 
                         return '
                         <div class="text-center">
-                        <a href="' . $editUrl . '" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
+                        <a href="' . $editUrl . '" class="btn btn-primary btn-sm" title="Edit Resident"><i class="bi bi-pencil-square"></i></a>
 
                         <form action="' . $deleteUrl . '" method="POST" class="d-inline">
                             ' . csrf_field() . '
                             ' . method_field('DELETE') . '
                             <button type="submit" class="btn btn-danger btn-sm"
-                                onclick="return confirm(\'Delete this resident?\')">
+                                onclick="return confirm(\'Delete this resident?\')" title="Delete Resident">
                                   <i class="bi bi-trash"></i>
                             </button>
                         </form>

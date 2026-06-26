@@ -110,14 +110,14 @@ class VisitorPassController extends Controller
                     $actions = '<div class="d-flex justify-content-center gap-2">';
 
                     $actions .= '
-                        <a href="' . route('passes.show', $row->id) . '" class="btn btn-info text-white">
+                        <a href="' . route('passes.show', $row->id) . '" class="btn btn-info text-white" title="View Pass">
                             <i class="bi bi-eye"></i>
                         </a>
                     ';
 
                     if ($row->status === 'pending') {
                         $actions .= '
-                            <a href="' . route('passes.edit', $row->id) . '" class="btn btn-primary">
+                            <a href="' . route('passes.edit', $row->id) . '" class="btn btn-primary" title="Edit Pass">
                                 <i class="bi bi-pencil-square"></i>
                             </a>
                         ';
@@ -132,7 +132,8 @@ class VisitorPassController extends Controller
                                 data-title="Cancel Visitor Pass?"
                                 data-text="This action cannot be undone."
                                 data-confirm="Yes, Cancel"
-                                data-success="Visitor pass cancelled successfully">
+                                data-success="Visitor pass cancelled successfully"
+                                title="Cancel Pass">
                                 <i class="bi bi-x-lg"></i>
                             </button>
                         ';

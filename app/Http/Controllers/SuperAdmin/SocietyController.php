@@ -51,7 +51,7 @@ class SocietyController extends Controller
 
                     $actions .= '
                         <a href="' . route('societies.show', $society->id) . '"
-                            class="btn btn-info text-white">
+                            class="btn btn-info text-white" title="View Society">
                             <i class="bi bi-eye"></i>
                         </a>
                     ';
@@ -60,7 +60,7 @@ class SocietyController extends Controller
 
                         $actions .= '
                             <a href="' . route('societies.edit', $society->id) . '"
-                                class="btn btn-primary">
+                                class="btn btn-primary" title="Edit Society">
                                 <i class="bi bi-pencil-square"></i>
                             </a>
                         ';
@@ -73,7 +73,8 @@ class SocietyController extends Controller
                                 data-title="Delete Society?"
                                 data-text="This action can be restored later."
                                 data-confirm="Yes, Delete"
-                                data-success="Society deleted successfully">
+                                data-success="Society deleted successfully"
+                                title="Delete Society">
                                 <i class="bi bi-trash"></i>
                             </button>
                         ';
@@ -87,7 +88,8 @@ class SocietyController extends Controller
                                 data-title="Restore Society?"
                                 data-text="Society will become active again."
                                 data-confirm="Yes, Restore"
-                                data-success="Society restored successfully">
+                                data-success="Society restored successfully"
+                                title="Restore Society">
                                 <i class="bi bi-arrow-counterclockwise"></i>
                             </button>
                         ';

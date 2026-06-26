@@ -95,14 +95,14 @@ class UserController extends Controller
 
                     return '
                         <div class="text-center">
-                            <a href="' . $editUrl . '" class="btn btn-primary btn-sm">
+                            <a href="' . $editUrl . '" class="btn btn-primary btn-sm" title="Edit User">
                                 <i class="bi bi-pencil-square"></i>
                             </a>
 
                             <form action="' . $impersonateUrl . '" method="POST" class="d-inline">
                                 ' . csrf_field() . '
                                 <button type="submit"
-                                    class="btn btn-dark btn-sm">
+                                    class="btn btn-dark btn-sm" title="Impersonate User">
                                     <i class="bi bi-person-check"></i>
                                 </button>
                             </form>
@@ -116,7 +116,7 @@ class UserController extends Controller
 
                                 <button
                                     class="btn btn-danger btn-sm"
-                                    onclick="return confirm(\'Delete this user?\')">
+                                    onclick="return confirm(\'Delete this user?\')" title="Delete User">
                                     <i class="bi bi-trash"></i>
                                 </button>
 
