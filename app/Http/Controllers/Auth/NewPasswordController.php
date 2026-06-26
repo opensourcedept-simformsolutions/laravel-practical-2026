@@ -8,6 +8,8 @@ use Exception;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
@@ -23,6 +25,27 @@ class NewPasswordController extends Controller
      */
     public function create(Request $request): View
     {
+
+        $record = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->first();
+
+        if (! $record) {
+            abort(404);
+        }
+
+        if (! Hash::check($request->route('token'), $record->token)) {
+            abort(403);
+        }
+
+        if (
+            Carbon::parse($record->created_at)
+                ->addMinutes(config('auth.passwords.users.expire'))
+                ->isPast()
+        ) {
+            abort(410);
+        }
+
         return view('auth.reset-password', ['request' => $request]);
     }
 
