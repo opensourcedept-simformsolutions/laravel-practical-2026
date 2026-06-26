@@ -81,12 +81,6 @@ class VisitorLogController extends Controller
                     ->leftJoin('visitors', 'visitor_logs.visitor_id', '=', 'visitors.id')
                     ->leftJoin('flats', 'visitor_logs.flat_id', '=', 'flats.id')
                     ->leftJoin('societies', 'flats.society_id', '=', 'societies.id')
-                    ->orderByRaw("
-        CASE
-            WHEN visitor_logs.status = 'pending' THEN 1
-            WHEN visitor_logs.status = 'entered' THEN 2
-        END
-    ");
 
                 if (! $user->isSuperAdmin()) {
                     $query->where('flats.society_id', $user->society_id);
