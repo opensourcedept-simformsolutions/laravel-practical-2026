@@ -1,4 +1,4 @@
-<div class="d-flex flex-wrap gap-2">
+<div class="d-flex justify-content-center gap-2">
     <a href="{{ route('deliveries.show', $delivery) }}"
        class="btn btn-sm btn-primary rounded"
        data-bs-toggle="tooltip"

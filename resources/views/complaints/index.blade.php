@@ -6,15 +6,15 @@
 
 <div class="card shadow-sm border-0 rounded-3">
 
-    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
 
         <div>
             @if(auth()->user()->isSuperAdmin())
-                <span class="fw-semibold">All Complaints</span>
+                <h5 class="mb-0 fw-bold text-dark">All Complaints</h5>
             @elseif(auth()->user()->isAdmin())
-                <span class="fw-semibold">Society Complaints</span>
+                <h5 class="mb-0 fw-bold text-dark">Society Complaints</h5>
             @else
-                <span class="fw-semibold">My Complaints</span>
+                <h5 class="mb-0 fw-bold text-dark">My Complaints</h5>
             @endif
         </div>
 

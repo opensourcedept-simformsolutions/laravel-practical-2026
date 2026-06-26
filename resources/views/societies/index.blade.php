@@ -5,8 +5,8 @@
 @section('content')
 
   <div class="card shadow-sm border-0 rounded-3">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-      <span class="fw-semibold">Society List</span>
+    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+      <h5 class="mb-0 fw-bold text-dark">Society List</h5>
 
       <a href="{{ route('societies.create') }}" class="btn btn-primary btn-sm">
         <i class="bi bi-plus-square me-1"></i> Add Society

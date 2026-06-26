@@ -15,9 +15,9 @@
     </div>
 
     <div class="card-body">
-      <div class="table-responsive">
 
-        <table id="exitedVisitorsTable" class="table table-bordered table-striped w-100">
+      <div class="table-responsive">
+        <table id="exitedVisitorsTable" class="table table-hover table-striped align-middle w-100">
           <thead>
             <tr>
               <th>ID</th>
@@ -32,9 +32,10 @@
               <th>Photo</th>
             </tr>
           </thead>
+          <tbody></tbody>
         </table>
-
       </div>
+      
     </div>
   </div>
 

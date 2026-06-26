@@ -4,14 +4,10 @@
 
 @section('content')
 
-
     <div class="card shadow-sm border-0 rounded-3">
 
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-
-            <span class="fw-semibold">
-                User Management
-            </span>
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-dark">User Management</h5>
 
             <a href="{{ route('admin.users.create') }}" class="btn btn-primary btn-sm">
                 <i class="bi bi-plus-square me-1"></i>

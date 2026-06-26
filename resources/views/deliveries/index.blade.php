@@ -27,7 +27,7 @@
                             <th>Status</th>
                             <th>Received At</th>
                             <th>Delivered At</th>
-                            <th>Actions</th>
+                            <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                 </table>

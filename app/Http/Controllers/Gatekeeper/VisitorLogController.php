@@ -163,7 +163,7 @@ class VisitorLogController extends Controller
                             }
 
                             return '
-                                <div class="d-flex gap-1">
+                                <div class="d-flex justify-content-center gap-2">
                                     '.$buttons.'
                                 </div>
                             ';

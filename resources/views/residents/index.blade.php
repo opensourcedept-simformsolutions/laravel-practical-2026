@@ -17,7 +17,7 @@
         <div class="card-body">
 
             <div class="table-responsive">
-                <table id="residentsTable" class="table table-hover table-striped align-middle w-100 app-datatable">
+                <table id="residentsTable" class="table table-hover table-striped align-middle w-100">
 
                     <thead class="table-light">
                         <tr>
@@ -31,9 +31,7 @@
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
-
                     <tbody></tbody>
-
                 </table>
             </div>
 
