@@ -94,9 +94,9 @@ class ComplaintController extends Controller
                 return DataTables::of($query)
                     ->addIndexColumn()
 
-                    ->editColumn('resident_name', fn ($complaint) => $complaint->resident_name ?? 'N/A')
+                    ->editColumn('resident_name', fn ($complaint) => $complaint->resident_name ?? '-')
 
-                    ->editColumn('society', fn ($complaint) => $complaint->society_name ?? 'N/A')
+                    ->editColumn('society', fn ($complaint) => $complaint->society_name ?? '-')
 
                     ->editColumn('category', function ($complaint) {
                         return ucfirst($complaint->category);

@@ -155,29 +155,30 @@
                             data: 'society',
                             name: 'societies.name'
                         },
-                    @endif {
+                    @endif
+                    {
                         data: 'user_name',
-                        name: 'user.name'
+                        name: 'users.name'
                     },
                     {
                         data: 'category',
-                        name: 'category'
+                        name: 'complaints.category'
                     },
                     {
                         data: 'description',
-                        name: 'description'
+                        name: 'complaints.description'
                     },
                     {
                         data: 'admin_notes',
-                        name: 'admin_notes'
+                        name: 'complaints.admin_notes'
                     },
                     {
                         data: 'status',
-                        name: 'status'
+                        name: 'complaints.status'
                     },
                     {
                         data: 'created_at',
-                        name: 'created_at'
+                        name: 'complaints.created_at'
                     }
                 ],
 

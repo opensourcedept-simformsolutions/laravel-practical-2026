@@ -5,15 +5,12 @@
 @section('content')
 
     <div class="card shadow-sm border-0 rounded-3">
-
         <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
             <h5 class="mb-0 fw-bold text-dark">Visitor Details</h5>
             <span class="badge bg-secondary">{{ ucfirst($visitorLog->status) }}</span>
         </div>
 
         <div class="card-body p-4">
-
-            {{-- TOP SUMMARY --}}
             <div class="d-flex justify-content-between align-items-start mb-4">
                 <div>
                     <h5 class="mb-1 text-primary fw-bold">
@@ -34,7 +31,6 @@
                 </div>
             </div>
 
-            {{-- QR CODE --}}
             <div class="text-center mb-4">
                 <h6 class="mb-3 fw-semibold">Visitor Pass QR</h6>
 
@@ -53,7 +49,6 @@
                 </div>
             </div>
 
-            {{-- DETAILS GRID --}}
             <div class="row g-3">
                 <div class="col-md-6">
                     <div class="p-3 bg-light rounded border border-light">

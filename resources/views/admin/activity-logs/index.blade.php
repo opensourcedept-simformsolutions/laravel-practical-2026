@@ -11,7 +11,6 @@
         </div>
 
         <div class="card-body">
-            <!-- Filter Section -->
             <div class="row g-3 mb-4">
                 @if (auth()->user()->isSuperAdmin())
                     <div class="col-md-3">
@@ -75,7 +74,6 @@
                 </div>
             </div>
 
-            <!-- Table Section -->
             <div class="table-responsive">
                 <table id="activityLogsTable" class="table table-hover table-striped align-middle w-100 app-datatable">
                     <thead class="table-light">
@@ -98,7 +96,6 @@
         </div>
     </div>
 
-    <!-- Properties Details Modal -->
     <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg">
@@ -128,7 +125,6 @@
         $(document).ready(function() {
             const isSuperAdmin = {{ auth()->user()->isSuperAdmin() ? 'true' : 'false' }};
 
-            // Date Range Picker Initialization
             let fromDate = '';
             let toDate = '';
 
@@ -162,7 +158,7 @@
                     }
                 },
                 columns: columns,
-                order: [[1, 'desc']], // Order by Timestamp desc by default
+                order: [[1, 'desc']],
                 layout: {
                     topStart: null,
                     topEnd: {
@@ -194,7 +190,6 @@
                 table.draw();
             });
 
-            // Select2 initialization for filters
             $('#action_filter').select2({
                 theme: 'bootstrap-5',
                 placeholder: 'Select Action',
@@ -211,12 +206,10 @@
                 });
             }
 
-            // Filter triggers
             $('#society_filter, #action_filter').on('change', function() {
                 table.draw();
             });
 
-            // Reset filters
             $('#reset_filters').on('click', function() {
                 if (isSuperAdmin) {
                     $('#society_filter').val(null).trigger('change');
@@ -228,14 +221,13 @@
                 table.draw();
             });
 
-            // Show Details Modal Handler
             $(document).on('click', '.view-properties-btn', function() {
                 const rawProps = $(this).attr('data-properties');
                 try {
                     const parsedProps = JSON.parse(rawProps);
                     const formattedJson = JSON.stringify(parsedProps, null, 4);
                     $('#propertiesContent').text(formattedJson);
-                    
+
                     const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
                     modal.show();
                 } catch (e) {

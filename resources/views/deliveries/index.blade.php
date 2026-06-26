@@ -60,8 +60,7 @@
                             data: 'society',
                             name: 'societies.name'
                         },
-                    @endif
-                    {
+                    @endif {
                         data: 'flat',
                         name: 'flat'
                     },

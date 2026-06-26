@@ -14,10 +14,7 @@
         </div>
 
         <div class="card-body p-4">
-
-            {{-- Details Grid --}}
             <div class="row g-3">
-
                 <div class="col-md-6">
                     <div class="p-3 bg-light rounded border border-light">
                         <div class="text-muted small">Flat</div>
@@ -56,7 +53,8 @@
                 <div class="col-md-6">
                     <div class="p-3 bg-light rounded border border-light">
                         <div class="text-muted small">Delivered At</div>
-                        <div class="fw-semibold">{{ $delivery->delivered_at?->format('d M Y h:i A') ?? 'Not Delivered Yet' }}</div>
+                        <div class="fw-semibold">
+                            {{ $delivery->delivered_at?->format('d M Y h:i A') ?? 'Not Delivered Yet' }}</div>
                     </div>
                 </div>
 
@@ -66,9 +64,7 @@
                         <div class="fw-semibold" style="white-space: pre-line;">{{ $delivery->package_details }}</div>
                     </div>
                 </div>
-
             </div>
-
         </div>
 
         <div class="card-footer bg-white border-top py-3 d-flex justify-content-end gap-2">
@@ -83,7 +79,5 @@
                 @endcanany
             @endif
         </div>
-
     </div>
-
 @endsection

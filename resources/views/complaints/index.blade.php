@@ -4,136 +4,127 @@
 
 @section('content')
 
-<div class="card shadow-sm border-0 rounded-3">
+    <div class="card shadow-sm border-0 rounded-3">
 
-    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
 
-        <div>
-            @if(auth()->user()->isSuperAdmin())
-                <h5 class="mb-0 fw-bold text-dark">All Complaints</h5>
-            @elseif(auth()->user()->isAdmin())
-                <h5 class="mb-0 fw-bold text-dark">Society Complaints</h5>
-            @else
-                <h5 class="mb-0 fw-bold text-dark">My Complaints</h5>
-            @endif
-        </div>
+            <div>
+                @if (auth()->user()->isSuperAdmin())
+                    <h5 class="mb-0 fw-bold text-dark">All Complaints</h5>
+                @elseif(auth()->user()->isAdmin())
+                    <h5 class="mb-0 fw-bold text-dark">Society Complaints</h5>
+                @else
+                    <h5 class="mb-0 fw-bold text-dark">My Complaints</h5>
+                @endif
+            </div>
 
-        @canany(['is-gatekeeper','is-resident'])
-            <a href="{{ route('complaints.create') }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-square me-1"></i>
-                Create Complaint
-            </a>
-        @endcan
-
-    </div>
-
-    <div class="card-body">
-
-        <div class="table-responsive">
-
-            <table id="complaintsTable" class="table table-hover table-striped align-middle w-100 app-datatable">
-
-                <thead class="table-light">
-                    <tr>
-                        <th>ID</th>
-
-                    @can('is-admin')
-                        <th>Resident</th>
-                    @endcan
-
-                    @if(auth()->user()->isSuperAdmin())
-                        <th>Society</th>
-                    @endif
-
-                        <th>Category</th>
-                        <th>Description</th>
-                        <th>Status</th>
-                        <th>Created At</th>
-                        <th class="text-center">Actions</th>
-                    </tr>
-                </thead>
-
-                <tbody></tbody>
-
-            </table>
+            @canany(['is-gatekeeper', 'is-resident'])
+                <a href="{{ route('complaints.create') }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-square me-1"></i>
+                    Create Complaint
+                </a>
+            @endcan
 
         </div>
 
-    </div>
+        <div class="card-body">
 
-</div>
+            <div class="table-responsive">
+
+                <table id="complaintsTable" class="table table-hover table-striped align-middle w-100 app-datatable">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+
+                            @can('is-admin')
+                                <th>Resident</th>
+                            @endcan
+
+                            @if (auth()->user()->isSuperAdmin())
+                                <th>Society</th>
+                            @endif
+
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Created At</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody></tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
 
 @endsection
 
 @push('scripts')
-<script>
-    $(document).ready(function () {
+    <script>
+        $(document).ready(function() {
 
-    table = $('#complaintsTable').DataTable({
+            table = $('#complaintsTable').DataTable({
 
-        processing: true,
-        serverSide: true,
+                processing: true,
+                serverSide: true,
 
-        ajax: {
-            url: "{{ route('complaints.index') }}",
-        },
+                ajax: {
+                    url: "{{ route('complaints.index') }}",
+                },
 
-        columns: [
-            {
-                data: 'DT_RowIndex',
-                name: 'DT_RowIndex',
-                searchable: false,
-                orderable: false
-            },
+                columns: [{
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex',
+                        searchable: false,
+                        orderable: false
+                    },
+                    @can('is-admin')
+                        {
+                            data: 'resident_name',
+                            name: 'users.name'
+                        },
+                    @endcan
+                    @if (auth()->user()->isSuperAdmin())
+                        {
+                            data: 'society',
+                            name: 'societies.name'
+                        },
+                    @endif {
+                        data: 'category',
+                        name: 'complaints.category'
+                    },
+                    {
+                        data: 'description',
+                        name: 'complaints.description'
+                    },
+                    {
+                        data: 'status',
+                        name: 'complaints.status'
+                    },
+                    {
+                        data: 'created_at',
+                        name: 'complaints.created_at'
+                    },
+                    {
+                        data: 'action',
+                        name: 'action',
+                        orderable: false,
+                        searchable: false
+                    }
+                ],
 
-            @can('is-admin')
-            {
-                data: 'resident_name',
-                name: 'users.name'
-            },
-            @endcan
-
-            @if(auth()->user()->isSuperAdmin())
-            {
-                data: 'society',
-                name: 'societies.name'
-            },
-            @endif
-
-            {
-                data: 'category',
-                name: 'category'
-            },
-
-            {
-                data: 'description',
-                name: 'description'
-            },
-
-            {
-                data: 'status',
-                name: 'status'
-            },
-
-            {
-                data: 'created_at',
-                name: 'created_at'
-            },
-
-            {
-                data: 'action',
-                name: 'action',
-                orderable: false,
-                searchable: false
-            }
-        ],
-
-        drawCallback: function () {
-            $('[data-bs-toggle="tooltip"]').each(function () {
-                new bootstrap.Tooltip(this);
+                drawCallback: function() {
+                    $('[data-bs-toggle="tooltip"]').each(function() {
+                        new bootstrap.Tooltip(this);
+                    });
+                }
             });
-        }
-    });
-});
-</script>
+        });
+    </script>
 @endpush

@@ -16,8 +16,7 @@
 
             <div class="card-body p-4">
 
-                {{-- ADMIN FORM --}}
-                @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
+                @if (auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
                     <p class="text-secondary mb-3 text-decoration-underline fw-semibold">
                         Complaint Status
                     </p>
@@ -51,10 +50,7 @@
                         </div>
 
                     </div>
-
                 @else
-
-                    {{-- RESIDENT / GATEKEEPER FORM --}}
                     <p class="text-secondary mb-3 text-decoration-underline fw-semibold">
                         Complaint Details
                     </p>
@@ -64,7 +60,7 @@
                         <div class="col-md-6">
                             <label class="form-label">Category</label>
                             <select name="category" class="form-select @error('category') is-invalid @enderror">
-                                @foreach(\App\Enums\ComplaintCategory::cases() as $category)
+                                @foreach (\App\Enums\ComplaintCategory::cases() as $category)
                                     <option value="{{ $category->value }}" @selected(old('category', $complaint->category) === $category->value)>
                                         {{ ucfirst($category->value) }}
                                     </option>

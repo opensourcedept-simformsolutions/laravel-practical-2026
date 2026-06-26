@@ -134,9 +134,10 @@
                         name: 'DT_RowIndex',
                         orderable: false,
                         searchable: false
-                    }, {
+                    },
+                    {
                         data: 'society',
-                        name: 'society'
+                        name: 'societies.name'
                     },
                     {
                         data: 'visitor',
@@ -171,7 +172,7 @@
                         name: 'visitor_logs.visit_date'
                     },
                     {
-                        data: 'gatekeeper_name',
+                        data: 'gatekeeper',
                         name: 'gatekeepers.name'
                     }
                 ]

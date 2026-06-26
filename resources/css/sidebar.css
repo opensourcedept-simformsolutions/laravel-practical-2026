@@ -195,7 +195,6 @@
     transition: transform .2s ease;
 }
 
-/* Sidebar Backdrop */
 .sidebar-backdrop {
     position: fixed;
     top: 0;
@@ -229,6 +228,6 @@
 
     .sidebar-container.collapsed {
         transform: translateX(-100%);
-        width: 260px; /* Keep full width when sliding out on mobile */
+        width: 260px;
     }
 }

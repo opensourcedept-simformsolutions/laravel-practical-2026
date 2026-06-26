@@ -4,12 +4,11 @@ function applySidebarState($sidebarContainer, $toggleButton, isCollapsed) {
     $sidebarContainer.toggleClass('collapsed', isCollapsed);
     $toggleButton.attr('aria-expanded', String(!isCollapsed));
 
-    // Handle backdrop visibility on mobile
     const $backdrop = $('#sidebarBackdrop');
     if ($backdrop.length) {
         if (window.innerWidth < 992 && !isCollapsed) {
             $backdrop.addClass('show');
-            $('body').css('overflow', 'hidden'); // Prevent scrolling body when mobile menu is open
+            $('body').css('overflow', 'hidden');
         } else {
             $backdrop.removeClass('show');
             $('body').css('overflow', '');
@@ -30,14 +29,12 @@ $(function () {
     let lastWidth = window.innerWidth;
 
     function syncSidebarState() {
-        // Only trigger layout sync if actual viewport width changes (ignore mobile virtual keyboard/scroll resize)
         if (window.innerWidth === lastWidth) {
             return;
         }
         lastWidth = window.innerWidth;
 
         if (window.innerWidth < 992) {
-            // Collapse by default on mobile viewports
             applySidebarState($sidebarContainer, $toggleButton, true);
         } else {
             const isCollapsed = localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true';
@@ -45,7 +42,6 @@ $(function () {
         }
     }
 
-    // Initial load sync
     if (window.innerWidth < 992) {
         applySidebarState($sidebarContainer, $toggleButton, true);
     } else {

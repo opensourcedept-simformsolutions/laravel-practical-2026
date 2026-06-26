@@ -9,7 +9,7 @@
         <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
             <h5 class="mb-0 fw-bold text-dark">Complaint #{{ $complaint->id }}</h5>
             @php
-                $badgeClass = match($complaint->status) {
+                $badgeClass = match ($complaint->status) {
                     'resolved' => 'bg-success',
                     'in_progress' => 'bg-warning',
                     default => 'bg-danger',
@@ -21,8 +21,6 @@
         </div>
 
         <div class="card-body p-4">
-
-            {{-- Top Summary --}}
             <div class="d-flex justify-content-between align-items-start mb-4">
                 <div>
                     <h5 class="mb-1 text-primary fw-bold">
@@ -45,7 +43,6 @@
 
             <hr>
 
-            {{-- Details Grid --}}
             <div class="row g-3">
 
                 <div class="col-md-6">
@@ -72,7 +69,8 @@
                 <div class="col-12">
                     <div class="p-3 bg-light rounded border border-light">
                         <div class="text-muted small">Admin Notes</div>
-                        <div class="fw-semibold" style="white-space: pre-line;">{{ $complaint->admin_notes ?: 'No notes added yet.' }}</div>
+                        <div class="fw-semibold" style="white-space: pre-line;">
+                            {{ $complaint->admin_notes ?: 'No notes added yet.' }}</div>
                     </div>
                 </div>
 

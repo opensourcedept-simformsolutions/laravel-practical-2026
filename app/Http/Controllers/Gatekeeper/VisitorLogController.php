@@ -89,7 +89,7 @@ class VisitorLogController extends Controller
                 return DataTables::of($query)
                     ->addIndexColumn()
                     ->addColumn('flat_details', function ($log) {
-                        return "{$log->flat_wing} - Floor {$log->flat_floor} - {$log->flat_number}";
+                        return "{$log->flat_wing}-{$log->flat_number}";
                     })
                     ->addColumn('action', function ($log) {
                         if ($log->status === 'pending') {
@@ -183,7 +183,6 @@ class VisitorLogController extends Controller
                     })
                     ->rawColumns(['status', 'action'])
                     ->make(true);
-                
             }
 
             return view('visitor-passes.pending');

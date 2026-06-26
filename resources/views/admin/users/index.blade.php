@@ -115,11 +115,8 @@
             });
 
             table = $('#usersTable').DataTable({
-
                 processing: true,
-
                 serverSide: true,
-
                 responsive: true,
 
                 ajax: {
@@ -147,17 +144,14 @@
                         pageLength: true
                     }
                 },
-
                 columns: columns
-
-
             });
+
             $('#roleFilter').change(function() {
                 table.ajax.reload();
             });
 
             @if (auth()->user()->isSuperAdmin())
-
                 $('#societyFilter').change(function() {
                     table.ajax.reload();
                 });
