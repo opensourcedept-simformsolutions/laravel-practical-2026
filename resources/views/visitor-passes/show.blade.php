@@ -34,8 +34,6 @@
                 </div>
             </div>
 
-            <hr>
-
             {{-- QR CODE --}}
             <div class="text-center mb-4">
                 <h6 class="mb-3 fw-semibold">Visitor Pass QR</h6>
@@ -49,13 +47,8 @@
                 </div>
 
                 <div class="mt-3">
-                    <a href="https://wa.me/?text={{ urlencode(route('passes.show', $visitorLog->id)) }}"
-                        target="_blank" class="btn btn-success btn-sm me-2">
-                        <i class="bi bi-whatsapp"></i> Share WhatsApp
-                    </a>
-
-                    <button onclick="copyLink()" class="btn btn-primary btn-sm">
-                        <i class="bi bi-link-45deg"></i> Copy Link
+                    <button onclick="downloadQR()" class="btn btn-success btn-sm">
+                        <i class="bi bi-download"></i> Download QR Code
                     </button>
                 </div>
             </div>
@@ -123,4 +116,44 @@
             });
         }
     </script>
+@endpush
+
+@push('scripts')
+<script>
+    function downloadQR() {
+        const svg = document.querySelector('.text-center svg');
+
+        if (!svg) {
+            Toast.fire({
+                icon: 'error',
+                title: 'QR Code not found'
+            });
+            return;
+        }
+
+        const serializer = new XMLSerializer();
+        const source = serializer.serializeToString(svg);
+
+        const blob = new Blob([source], {
+            type: 'image/svg+xml;charset=utf-8'
+        });
+
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'visitor-pass-{{ $visitorLog->id }}.svg';
+
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        URL.revokeObjectURL(url);
+
+        Toast.fire({
+            icon: 'success',
+            title: 'QR Code downloaded successfully'
+        });
+    }
+</script>
 @endpush
