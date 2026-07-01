@@ -170,6 +170,7 @@ class VisitorPassController extends Controller
             if (! auth()->user()->isResident()) {
 
                 $flats = Flat::where('society_id', auth()->user()->society_id)
+                    ->whereHas('residents')
                     ->orderBy('wing')
                     ->orderBy('floor')
                     ->orderBy('flat_number')

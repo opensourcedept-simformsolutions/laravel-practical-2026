@@ -92,74 +92,74 @@ class VisitorLogController extends Controller
                         return "{$log->flat_wing}-{$log->flat_number}";
                     })
                     ->addColumn('action', function ($log) {
-                        if ($log->status === 'pending') {
-                            $buttons = '';
-                            if (auth()->user()->can('markEntry', $log)) {
-                                $buttons .= '
-                                    <button
-                                        type="button"
-                                        class="btn btn-success btn-sm entry-btn"
-                                        data-id="'.$log->id.'"
-                                        title="Mark Entry">
-                                        <i class="bi bi-box-arrow-in-right"></i>
+                        $buttons = '';
+
+                        // Mark Entry
+                        if (auth()->user()->can('markEntry', $log) && $log->status !== 'entered') {
+                            $buttons .= '
+                                <button
+                                    type="button"
+                                    class="btn btn-success btn-sm entry-btn"
+                                    data-id="'.$log->id.'"
+                                    title="Mark Entry">
+                                    <i class="bi bi-box-arrow-in-right"></i>
+                                </button>
+                            ';
+                        }
+
+                        // Edit
+                        if (auth()->user()->can('update', $log)) {
+                            $buttons .= '
+                                <a href="'.route('passes.edit', $log).'"
+                                class="btn btn-primary btn-sm"
+                                title="Edit">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                            ';
+                        }
+
+                        // Delete
+                        if (auth()->user()->can('delete', $log)) {
+                            $buttons .= '
+                                <form action="'.route('passes.destroy', $log).'"
+                                    method="POST"
+                                    class="d-inline"
+                                    onsubmit="return confirm(\'Delete this pass?\');">
+
+                                    '.csrf_field().'
+                                    '.method_field('DELETE').'
+
+                                    <button type="submit"
+                                            class="btn btn-danger btn-sm"
+                                            title="Delete">
+                                        <i class="bi bi-trash"></i>
                                     </button>
-                                ';
-                            }
-                            if (auth()->user()->can('update', $log)) {
-                                $buttons .= '
-                                    <a href="'.route('passes.edit', $log).'"
-                                    class="btn btn-primary btn-sm"
-                                    title="Edit">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
-                                ';
-                            }
-                            if (auth()->user()->can('delete', $log)) {
-                                $buttons .= '
-                                    <form action="'.route('passes.destroy', $log).'"
-                                        method="POST"
-                                        class="d-inline-flex m-0"
-                                        onsubmit="return confirm(\'Delete this pass?\');">
-
-                                        '.csrf_field().'
-                                        '.method_field('DELETE').'
-
-                                        <button type="submit"
-                                                class="btn btn-danger btn-sm"
-                                                title="Delete">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                ';
-                            }
-                            return '
-                                <div class="d-flex justify-content-center align-items-center gap-2">
-                                    '.$buttons.'
-                                </div>
+                                </form>
                             ';
                         }
-                        if ($log->status === 'entered') {
-                            return '
-                                <div class="d-flex justify-content-center align-items-center">
-                                    <form action="'.route('gatekeeper.visitor-logs.mark-exit', $log).'"
-                                        method="POST"
-                                        class="m-0">
 
-                                        '.csrf_field().'
-                                        '.method_field('PATCH').'
+                        // Mark Exit
+                        if (auth()->user()->can('markExit', $log) && $log->status !== 'pending') {
+                            $buttons .= '
+                                <form action="'.route('gatekeeper.visitor-logs.mark-exit', $log).'"
+                                    method="POST"
+                                    class="d-inline">
 
-                                        <button type="submit"
-                                                class="btn btn-danger btn-sm"
-                                                title="Mark Exit">
-                                            <i class="bi bi-box-arrow-right"></i>
-                                        </button>
-                                    </form>
-                                </div>
+                                    '.csrf_field().'
+                                    '.method_field('PATCH').'
+
+                                    <button type="submit"
+                                            class="btn btn-warning btn-sm"
+                                            title="Mark Exit">
+                                        <i class="bi bi-box-arrow-right"></i>
+                                    </button>
+                                </form>
                             ';
                         }
+
                         return '
-                            <div class="d-flex justify-content-center align-items-center">
-                                <span class="badge bg-secondary">Exited</span>
+                            <div class="d-flex justify-content-center align-items-center flex-wrap gap-2">
+                                '.$buttons.'
                             </div>
                         ';
                     })
