@@ -94,7 +94,6 @@ class VisitorLogController extends Controller
                     ->addColumn('action', function ($log) {
                         $buttons = '';
 
-                        // Mark Entry
                         if (auth()->user()->can('markEntry', $log) && $log->status !== 'entered') {
                             $buttons .= '
                                 <button
@@ -107,7 +106,6 @@ class VisitorLogController extends Controller
                             ';
                         }
 
-                        // Edit
                         if (auth()->user()->can('update', $log)) {
                             $buttons .= '
                                 <a href="'.route('passes.edit', $log).'"
@@ -118,7 +116,6 @@ class VisitorLogController extends Controller
                             ';
                         }
 
-                        // Delete
                         if (auth()->user()->can('delete', $log)) {
                             $buttons .= '
                                 <form action="'.route('passes.destroy', $log).'"
@@ -138,7 +135,6 @@ class VisitorLogController extends Controller
                             ';
                         }
 
-                        // Mark Exit
                         if (auth()->user()->can('markExit', $log) && $log->status !== 'pending') {
                             $buttons .= '
                                 <form action="'.route('gatekeeper.visitor-logs.mark-exit', $log).'"

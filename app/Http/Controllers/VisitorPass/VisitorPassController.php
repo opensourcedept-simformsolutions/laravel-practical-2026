@@ -165,19 +165,7 @@ class VisitorPassController extends Controller
         $this->authorize('create', VisitorLog::class);
 
         try {
-            $flats = collect();
-
-            if (! auth()->user()->isResident()) {
-
-                $flats = Flat::where('society_id', auth()->user()->society_id)
-                    ->whereHas('residents')
-                    ->orderBy('wing')
-                    ->orderBy('floor')
-                    ->orderBy('flat_number')
-                    ->get();
-            }
-
-            return view('visitor-passes.create', compact('flats'));
+            return view('visitor-passes.create', ! auth()->user()->isResident() ? ['flats' => $this->getFlatOptions()] : []);
         } catch (Exception $e) {
             Log::error('Visitor pass create page error: '.$e->getMessage(), ['exception' => $e]);
 
@@ -283,21 +271,7 @@ class VisitorPassController extends Controller
         $this->authorize('update', $visitorLog);
 
         try {
-            $flats = [];
-
-            if (! auth()->user()->isResident()) {
-                $flats = Flat::where(
-                    'society_id',
-                    auth()->user()->society_id
-                )
-                    ->orderBy('flat_number')
-                    ->get();
-            }
-
-            return view('visitor-passes.edit', compact(
-                'visitorLog',
-                'flats'
-            ));
+            return view('visitor-passes.edit', ['visitorLog' => $visitorLog, 'flats' => auth()->user()->isResident() ? collect() : $this->getFlatOptions()]);
         } catch (Exception $e) {
             Log::error('Visitor pass edit page error: '.$e->getMessage(), ['exception' => $e]);
 
@@ -587,5 +561,20 @@ class VisitorPassController extends Controller
                 'status' => 'error',
             ]);
         }
+    }
+
+    private function getFlatOptions()
+    {
+        return Flat::where('society_id', auth()->user()->society_id)
+            ->whereHas('residents')
+            ->orderBy('wing')
+            ->orderBy('flat_number')
+            ->select('id', 'flat_number', 'wing')
+            ->get()
+            ->mapWithKeys(function ($flat) {
+                return [
+                    $flat->id => $flat->wing.'-'.$flat->flat_number,
+                ];
+            });
     }
 }
