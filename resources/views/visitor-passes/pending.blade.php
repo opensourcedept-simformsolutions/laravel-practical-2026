@@ -14,7 +14,7 @@
                     <i class="bi bi-box-arrow-right me-1"></i>
                     Exited Visitors
                 </a>
-                @if(!auth()->user()->isAdmin())
+                @if(!(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin()))
                     <a href="{{ route('passes.create') }}" class="btn btn-primary btn-sm">
                         <i class="bi bi-plus-square me-1"></i>
                         Create Pass
