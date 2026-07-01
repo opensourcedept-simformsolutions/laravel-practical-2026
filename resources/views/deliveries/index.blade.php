@@ -7,14 +7,13 @@
             <h5 class="mb-0 fw-bold text-dark">Delivery List</h5>
 
             <div class="d-flex align-items-center gap-2">
-                @if (auth()->user()->isSuperAdmin())
+                @can('is-admin')
                     <select id="status-filter" class="form-select form-select-sm w-auto">
                         <option value="active">Active Deliveries</option>
                         <option value="deleted">Deleted Deliveries</option>
                         <option value="all">All Deliveries</option>
                     </select>
-                @endif
-
+                @endcan
                 @canany(['is-gatekeeper', 'is-admin'])
                     <a href="{{ route('deliveries.create') }}" class="btn btn-primary">
                         <i class="bi bi-plus-square me-1"></i>

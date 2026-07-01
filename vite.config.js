@@ -9,9 +9,5 @@ export default defineConfig({
         }),
     ],
 
-    server: {
-        cors: {
-            origin: ["http://societyms.local"],
-        },
-    },
+
 });
