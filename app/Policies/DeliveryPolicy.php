@@ -64,7 +64,15 @@ class DeliveryPolicy
      */
     public function delete(User $user, Delivery $delivery): bool
     {
-        return false;
+        return $this->sameSociety($user, $delivery) && $user->isAdmin();
+    }
+
+    /**
+     * Determine whether the user can restore a soft deleted delivery.
+     */
+    public function restore(User $user, Delivery $delivery): bool
+    {
+        return $this->sameSociety($user, $delivery) && $user->isAdmin();
     }
 
     /**

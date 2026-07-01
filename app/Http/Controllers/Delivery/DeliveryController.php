@@ -63,6 +63,14 @@ class DeliveryController extends Controller
 
             $user = auth()->user();
 
+            if ($user->isSuperAdmin() || $user->isAdmin()) {
+                match ($request->get('filter', 'active')) {
+                    'deleted' => $query->onlyTrashed(),
+                    'all' => $query->withTrashed(),
+                    default => null,
+                };
+            }
+
             if (! $user->isSuperAdmin()) {
                 if ($user->isResident()) {
                     $query->where('deliveries.flat_id', $user->resident->flat_id);
@@ -507,6 +515,29 @@ class DeliveryController extends Controller
                 ->withInput()
                 ->with(['status' => 'error', 'message' => 'Failed to delete delivery.']);
         }
+    }
+
+    /**
+     * Restores soft deleted delivery record.
+     *
+     * @return RedirectResponse
+     */
+    public function restore(int $id)
+    {
+        $delivery = Delivery::withTrashed()->findOrFail($id);
+
+        $this->authorize('restore', $delivery);
+
+        $delivery->restore();
+
+        ActivityLogger::log('restore', $delivery, 'Delivery restored.');
+
+        $this->notificationService->notify($delivery, 'Delivery restored');
+
+        return back()->with([
+            'status' => 'success',
+            'message' => 'Delivery restored successfully.',
+        ]);
     }
 
     /**

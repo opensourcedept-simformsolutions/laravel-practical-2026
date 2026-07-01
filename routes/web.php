@@ -125,10 +125,11 @@ Route::middleware('auth')->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/create', 'create')->name('create');
             Route::post('/', 'store')->name('store');
-            Route::get('{delivery}', 'show')->name('show');
+            Route::get('{delivery}', 'show')->withTrashed()->name('show');
             Route::get('{delivery}/edit', 'edit')->name('edit');
             Route::put('{delivery}', 'update')->name('update');
             Route::delete('{delivery}', 'destroy')->name('destroy');
+            Route::patch('{delivery}/restore', 'restore')->name('restore');
         });
 
     Route::prefix('reports')
