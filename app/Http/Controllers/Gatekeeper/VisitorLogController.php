@@ -137,7 +137,7 @@ class VisitorLogController extends Controller
                             $buttons .= '
                                 <button
                                     type="button"
-                                    class="btn btn-warning btn-sm"
+                                    class="btn btn-warning btn-sm btn-action"
                                     data-url="'.route('gatekeeper.visitor-logs.mark-exit', $log).'"
                                     data-method="PATCH"
                                     data-title="Mark Exit?"
