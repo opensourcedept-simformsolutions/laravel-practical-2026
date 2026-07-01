@@ -10,7 +10,7 @@
             <h5 class="mb-0 fw-bold text-dark">Create User</h5>
         </div>
 
-        <form action="{{ route('admin.users.store') }}" method="POST">
+        <form id="userForm" action="{{ route('admin.users.store') }}" method="POST">
             @csrf
 
             <div class="card-body p-4">
@@ -101,4 +101,6 @@
 
     </div>
 
+
 @endsection
+
