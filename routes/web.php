@@ -129,7 +129,7 @@ Route::middleware('auth')->group(function () {
             Route::get('{delivery}/edit', 'edit')->name('edit');
             Route::put('{delivery}', 'update')->name('update');
             Route::delete('{delivery}', 'destroy')->name('destroy');
-            Route::patch('{delivery}/restore', 'restore')->name('restore');
+            Route::patch('{delivery}/restore', 'restore')->withTrashed()->name('restore');
         });
 
     Route::prefix('reports')

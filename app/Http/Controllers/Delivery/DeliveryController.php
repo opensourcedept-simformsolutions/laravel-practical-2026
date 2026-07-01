@@ -511,9 +511,10 @@ class DeliveryController extends Controller
         } catch (Exception $e) {
             $this->notificationService->failed('delete delivery', $e);
 
-            return back()
-                ->withInput()
-                ->with(['status' => 'error', 'message' => 'Failed to delete delivery.']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Failed to delete delivery.'
+            ]);
         }
     }
 
@@ -522,22 +523,29 @@ class DeliveryController extends Controller
      *
      * @return RedirectResponse
      */
-    public function restore(int $id)
+    public function restore(Delivery $delivery)
     {
-        $delivery = Delivery::withTrashed()->findOrFail($id);
-
         $this->authorize('restore', $delivery);
 
-        $delivery->restore();
+        try {
+            $delivery->restore();
 
-        ActivityLogger::log('restore', $delivery, 'Delivery restored.');
+            ActivityLogger::log('restore', $delivery, 'Delivery restored.');
 
-        $this->notificationService->notify($delivery, 'Delivery restored');
+            $this->notificationService->notify($delivery, 'Delivery restored');
 
-        return back()->with([
-            'status' => 'success',
-            'message' => 'Delivery restored successfully.',
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Delivery restored successfully.',
+            ]);
+        } catch (Exception $e) {
+            $this->notificationService->failed('restore delivery', $e);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to restore delivery.',
+            ]);
+        }
     }
 
     /**
