@@ -112,7 +112,7 @@
             });
         });
         $('#status-filter').on('change', function () {
-        table.ajax.reload();
-    });
+            rd()
+        });
     </script>
 @endpush
