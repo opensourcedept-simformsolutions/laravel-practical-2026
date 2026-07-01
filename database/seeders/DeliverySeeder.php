@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Delivery;
 use App\Models\Resident;
 use Illuminate\Database\Seeder;
-use Carbon\Carbon;
 
 class DeliverySeeder extends Seeder
 {

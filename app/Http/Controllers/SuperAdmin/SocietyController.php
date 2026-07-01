@@ -3,16 +3,15 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Flat;
-use App\Models\Society;
-use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\DataTables;
 use App\Http\Requests\Society\StoreSocietyRequest;
 use App\Http\Requests\Society\UpdateSocietyRequest;
+use App\Models\Flat;
+use App\Models\Society;
 use App\Services\ActivityLogger;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Session;
+use Yajra\DataTables\Facades\DataTables;
 
 class SocietyController extends Controller
 {
@@ -51,16 +50,16 @@ class SocietyController extends Controller
                     $actions = '<div class="d-flex justify-content-center gap-2">';
 
                     $actions .= '
-                        <a href="' . route('societies.show', $society->id) . '"
+                        <a href="'.route('societies.show', $society->id).'"
                             class="btn btn-info text-white" title="View Society">
                             <i class="bi bi-eye"></i>
                         </a>
                     ';
 
-                    if (!$society->trashed()) {
+                    if (! $society->trashed()) {
 
                         $actions .= '
-                            <a href="' . route('societies.edit', $society->id) . '"
+                            <a href="'.route('societies.edit', $society->id).'"
                                 class="btn btn-primary" title="Edit Society">
                                 <i class="bi bi-pencil-square"></i>
                             </a>
@@ -69,7 +68,7 @@ class SocietyController extends Controller
                         $actions .= '
                             <button
                                 class="btn btn-danger btn-action"
-                                data-url="' . route('societies.destroy', $society->id) . '"
+                                data-url="'.route('societies.destroy', $society->id).'"
                                 data-method="DELETE"
                                 data-title="Delete Society?"
                                 data-text="This action can be restored later."
@@ -84,7 +83,7 @@ class SocietyController extends Controller
                         $actions .= '
                             <button
                                 class="btn btn-success btn-action"
-                                data-url="' . route('societies.restore', $society->id) . '"
+                                data-url="'.route('societies.restore', $society->id).'"
                                 data-method="PATCH"
                                 data-title="Restore Society?"
                                 data-text="Society will become active again."
@@ -137,7 +136,7 @@ class SocietyController extends Controller
                 ->route('societies.index')
                 ->with([
                     'status' => 'success',
-                    'message' => 'Society created successfully.'
+                    'message' => 'Society created successfully.',
                 ]);
         } catch (Exception $e) {
             Log::error($e->getMessage());
@@ -146,7 +145,7 @@ class SocietyController extends Controller
                 ->withInput()
                 ->with([
                     'status' => 'error',
-                    'message' => 'Something went wrong.'
+                    'message' => 'Something went wrong.',
                 ]);
         }
     }
@@ -167,7 +166,7 @@ class SocietyController extends Controller
 
             return back()->with([
                 'status' => 'error',
-                'message' => 'Something went wrong.'
+                'message' => 'Something went wrong.',
             ]);
         }
     }
@@ -195,7 +194,7 @@ class SocietyController extends Controller
                 ->route('societies.index')
                 ->with([
                     'status' => 'success',
-                    'message' => 'Society updated successfully.'
+                    'message' => 'Society updated successfully.',
                 ]);
         } catch (Exception $e) {
 
@@ -205,7 +204,7 @@ class SocietyController extends Controller
                 ->withInput()
                 ->with([
                     'status' => 'error',
-                    'message' => 'Something went wrong.'
+                    'message' => 'Something went wrong.',
                 ]);
         }
     }
@@ -221,7 +220,7 @@ class SocietyController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Society deleted successfully.'
+                'message' => 'Society deleted successfully.',
             ]);
         } catch (Exception $e) {
 
@@ -229,7 +228,7 @@ class SocietyController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Something went wrong.'
+                'message' => 'Something went wrong.',
             ], 500);
         }
     }
@@ -246,7 +245,7 @@ class SocietyController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Society restored successfully.'
+                'message' => 'Society restored successfully.',
             ]);
         } catch (Exception $e) {
 
@@ -254,7 +253,7 @@ class SocietyController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Something went wrong.'
+                'message' => 'Something went wrong.',
             ], 500);
         }
     }
@@ -275,7 +274,8 @@ class SocietyController extends Controller
                 'data' => $flats,
             ]);
         } catch (Exception $e) {
-            Log::error('Error loading flats: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Error loading flats: '.$e->getMessage(), ['exception' => $e]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to load flats.',

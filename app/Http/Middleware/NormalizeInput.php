@@ -33,6 +33,7 @@ class NormalizeInput
 
             if (is_array($value)) {
                 $data[$key] = $this->normalize($value);
+
                 continue;
             }
 

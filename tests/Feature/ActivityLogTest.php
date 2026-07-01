@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\ActivityLog;
 use App\Models\Flat;
 use App\Models\Role;
 use App\Models\Society;
 use App\Models\User;
-use App\Models\ActivityLog;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -73,7 +73,7 @@ class ActivityLogTest extends TestCase
     {
         $adminRole = Role::where('name', 'admin')->first();
         $residentRole = Role::where('name', 'resident')->first();
-        
+
         $societyA = Society::factory()->create();
         $societyB = Society::factory()->create();
 

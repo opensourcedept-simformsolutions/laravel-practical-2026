@@ -31,7 +31,7 @@ class StoreUserRequest extends FormRequest
                 'string',
                 'min:3',
                 'max:100',
-                'regex:/^[A-Za-z\s\.\'-]+$/'
+                'regex:/^[A-Za-z\s\.\'-]+$/',
             ],
 
             'email' => [
@@ -46,7 +46,7 @@ class StoreUserRequest extends FormRequest
                 'min:7',
                 'max:20',
                 'unique:users,phone',
-                'regex:/^[0-9+\-\s()]+$/'
+                'regex:/^[0-9+\-\s()]+$/',
             ],
 
             'password' => [

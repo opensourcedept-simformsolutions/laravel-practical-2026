@@ -92,74 +92,67 @@ class VisitorLogController extends Controller
                         return "{$log->flat_wing}-{$log->flat_number}";
                     })
                     ->addColumn('action', function ($log) {
-                        if ($log->status === 'pending') {
-                            $buttons = '';
-                            if (auth()->user()->can('markEntry', $log)) {
-                                $buttons .= '
-                                    <button
-                                        type="button"
-                                        class="btn btn-success btn-sm entry-btn"
-                                        data-id="'.$log->id.'"
-                                        title="Mark Entry">
-                                        <i class="bi bi-box-arrow-in-right"></i>
-                                    </button>
-                                ';
-                            }
-                            if (auth()->user()->can('update', $log)) {
-                                $buttons .= '
-                                    <a href="'.route('passes.edit', $log).'"
-                                    class="btn btn-primary btn-sm"
-                                    title="Edit">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
-                                ';
-                            }
-                            if (auth()->user()->can('delete', $log)) {
-                                $buttons .= '
-                                    <form action="'.route('passes.destroy', $log).'"
-                                        method="POST"
-                                        class="d-inline-flex m-0"
-                                        onsubmit="return confirm(\'Delete this pass?\');">
+                        $buttons = '';
 
-                                        '.csrf_field().'
-                                        '.method_field('DELETE').'
-
-                                        <button type="submit"
-                                                class="btn btn-danger btn-sm"
-                                                title="Delete">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                ';
-                            }
-                            return '
-                                <div class="d-flex justify-content-center align-items-center gap-2">
-                                    '.$buttons.'
-                                </div>
+                        if (auth()->user()->can('markEntry', $log) && $log->status !== 'entered') {
+                            $buttons .= '
+                                <button
+                                    type="button"
+                                    class="btn btn-success btn-sm entry-btn"
+                                    data-id="'.$log->id.'"
+                                    title="Mark Entry">
+                                    <i class="bi bi-box-arrow-in-right"></i>
+                                </button>
                             ';
                         }
-                        if ($log->status === 'entered') {
-                            return '
-                                <div class="d-flex justify-content-center align-items-center">
-                                    <form action="'.route('gatekeeper.visitor-logs.mark-exit', $log).'"
-                                        method="POST"
-                                        class="m-0">
 
-                                        '.csrf_field().'
-                                        '.method_field('PATCH').'
-
-                                        <button type="submit"
-                                                class="btn btn-danger btn-sm"
-                                                title="Mark Exit">
-                                            <i class="bi bi-box-arrow-right"></i>
-                                        </button>
-                                    </form>
-                                </div>
+                        if (auth()->user()->can('update', $log)) {
+                            $buttons .= '
+                                <a href="'.route('passes.edit', $log).'"
+                                class="btn btn-primary btn-sm"
+                                title="Edit">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
                             ';
                         }
+
+                        if (auth()->user()->can('delete', $log)) {
+                            $buttons .= '
+                                <button
+                                    type="button"
+                                    class="btn btn-danger btn-sm btn-action"
+                                    data-url="'.route('passes.destroy', $log).'"
+                                    data-method="DELETE"
+                                    data-title="Delete Visitor Pass?"
+                                    data-text="This action cannot be undone."
+                                    data-confirm="Delete"
+                                    data-success="Visitor pass deleted successfully."
+                                    title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            ';
+                        }
+
+                        if (auth()->user()->can('markExit', $log) && $log->status !== 'pending') {
+                            $buttons .= '
+                                <button
+                                    type="button"
+                                    class="btn btn-warning btn-sm btn-action"
+                                    data-url="'.route('gatekeeper.visitor-logs.mark-exit', $log).'"
+                                    data-method="PATCH"
+                                    data-title="Mark Exit?"
+                                    data-text="Confirm that the visitor has exited."
+                                    data-confirm="Mark Exit"
+                                    data-success="Visitor marked as exited."
+                                    title="Mark Exit">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                </button>
+                            ';
+                        }
+
                         return '
-                            <div class="d-flex justify-content-center align-items-center">
-                                <span class="badge bg-secondary">Exited</span>
+                            <div class="d-flex justify-content-center align-items-center flex-wrap gap-2">
+                                '.$buttons.'
                             </div>
                         ';
                     })
@@ -267,10 +260,10 @@ class VisitorLogController extends Controller
         try {
 
             if ($visitorLog->status !== 'entered') {
-                return redirect()->back()->with([
+                return response()->json([
+                    'success' => false,
                     'message' => 'Only Entered Visitors Can Exit!',
-                    'status' => 'error',
-                ]);
+                ], 422);
             }
 
             $visitorLog->exit_time = now();
@@ -291,9 +284,9 @@ class VisitorLogController extends Controller
                 'visitor_log_id' => $visitorLog->id,
             ]);
 
-            return redirect()->back()->with([
+            return response()->json([
+                'success' => true,
                 'message' => 'Visitor Exit Marked Successfully!',
-                'status' => 'success',
             ]);
         } catch (Exception $e) {
 
@@ -302,10 +295,10 @@ class VisitorLogController extends Controller
                 'exception' => $e,
             ]);
 
-            return redirect()->back()->with([
+            return response()->json([
+                'success' => false,
                 'message' => 'Something Went Wrong While Mark Exit',
-                'status' => 'error',
-            ]);
+            ], 500);
         }
     }
 

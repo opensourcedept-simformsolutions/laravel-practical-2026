@@ -25,9 +25,9 @@ class SendVisitorExitMail
             'visitor_log_id' => $visitorLog->id,
         ]);
 
-        $cacheKey = 'visitor-exit-mail:' . $visitorLog->id;
+        $cacheKey = 'visitor-exit-mail:'.$visitorLog->id;
 
-        if (!Cache::add($cacheKey, true, 300)) {
+        if (! Cache::add($cacheKey, true, 300)) {
 
             Log::warning('Duplicate exit mail skipped', [
                 'visitor_log_id' => $visitorLog->id,
@@ -44,7 +44,7 @@ class SendVisitorExitMail
         $emails = $visitorLog
             ->flat
             ->residents
-            ->map(fn($resident) => $resident->user?->email)
+            ->map(fn ($resident) => $resident->user?->email)
             ->filter()
             ->unique()
             ->values()

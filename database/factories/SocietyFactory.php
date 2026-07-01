@@ -12,7 +12,7 @@ class SocietyFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->company() . ' Society',
+            'name' => $this->faker->company().' Society',
             'address' => $this->faker->streetAddress(),
             'city' => $this->faker->city(),
             'state' => $this->faker->state(),

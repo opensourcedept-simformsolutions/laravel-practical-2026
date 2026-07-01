@@ -155,17 +155,19 @@ class ComplaintController extends Controller
 
                         if (auth()->user()->can('delete', $complaint)) {
                             $buttons .= '
-                            <form action="'.route('complaints.destroy', $complaint).'"
-                                  method="POST"
-                                  class="d-inline"
-                                  onsubmit="return confirm(\'Are you sure you want to delete this complaint?\');">
-                                '.csrf_field().'
-                                '.method_field('DELETE').'
-                                <button type="submit" class="btn btn-danger btn-sm" title="Delete">
+                                <button
+                                    type="button"
+                                    class="btn btn-danger btn-sm btn-action"
+                                    data-url="'.route('complaints.destroy', $complaint).'"
+                                    data-method="DELETE"
+                                    data-title="Delete Complaint?"
+                                    data-text="This action cannot be undone."
+                                    data-confirm="Delete"
+                                    data-success="Complaint deleted successfully."
+                                    title="Delete">
                                     <i class="bi bi-trash"></i>
                                 </button>
-                            </form>
-                        ';
+                            ';
                         }
 
                         return '
@@ -301,27 +303,32 @@ class ComplaintController extends Controller
 
         try {
 
-            ActivityLogger::log('delete', $complaint, 'Complaint deleted.');
             $complaint->delete();
 
-            return redirect()
-                ->route('complaints.index')
-                ->with([
-                    'message' => 'Complaint deleted successfully.',
-                    'status' => 'success',
-                ]);
+            ActivityLogger::log(
+                'delete',
+                $complaint,
+                'Complaint deleted.'
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Complaint deleted successfully.',
+            ]);
 
         } catch (Exception $e) {
 
             Log::error('Complaint Delete Error', [
                 'complaint_id' => $complaint->id,
+                'user_id' => auth()->id(),
                 'error' => $e->getMessage(),
+                'exception' => $e,
             ]);
 
-            return back()->with([
+            return response()->json([
+                'success' => false,
                 'message' => 'Unable to delete complaint.',
-                'status' => 'error',
-            ]);
+            ], 500);
         }
     }
 

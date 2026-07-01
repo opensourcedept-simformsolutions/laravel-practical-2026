@@ -13,7 +13,7 @@ class VisitorFactory extends Factory
     {
         return [
             'name' => $this->faker->name(),
-            'phone' => '9' . $this->faker->numerify('#########'),
+            'phone' => '9'.$this->faker->numerify('#########'),
             'vehicle_number' => strtoupper($this->faker->bothify('??-##-??-####')),
         ];
     }

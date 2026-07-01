@@ -2,14 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Models\Delivery;
 use App\Models\Flat;
-use App\Models\Role;
 use App\Models\Resident;
+use App\Models\Role;
 use App\Models\Society;
 use App\Models\User;
 use App\Models\Visitor;
 use App\Models\VisitorLog;
-use App\Models\Delivery;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
