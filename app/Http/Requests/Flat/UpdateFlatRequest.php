@@ -46,6 +46,7 @@ class UpdateFlatRequest extends FormRequest
                         $societyId = auth()->user()->isSuperAdmin()
                             ? (request('society_id') ?? $this->route('flat')?->society_id)
                             : auth()->user()->society_id;
+
                         return $query->where('society_id', $societyId)
                             ->where('wing', request('wing'))
                             ->where('floor', request('floor'));

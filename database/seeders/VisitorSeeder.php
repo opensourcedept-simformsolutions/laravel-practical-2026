@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 
 class VisitorSeeder extends Seeder
 {
-     public function run(): void
+    public function run(): void
     {
         foreach (range(1, 20) as $i) {
 

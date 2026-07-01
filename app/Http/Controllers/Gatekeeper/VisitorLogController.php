@@ -118,38 +118,35 @@ class VisitorLogController extends Controller
 
                         if (auth()->user()->can('delete', $log)) {
                             $buttons .= '
-                                <form action="'.route('passes.destroy', $log).'"
-                                    method="POST"
-                                    class="d-inline"
-                                    onsubmit="return confirm(\'Delete this pass?\');">
-
-                                    '.csrf_field().'
-                                    '.method_field('DELETE').'
-
-                                    <button type="submit"
-                                            class="btn btn-danger btn-sm"
-                                            title="Delete">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
+                                <button
+                                    type="button"
+                                    class="btn btn-danger btn-sm btn-action"
+                                    data-url="'.route('passes.destroy', $log).'"
+                                    data-method="DELETE"
+                                    data-title="Delete Visitor Pass?"
+                                    data-text="This action cannot be undone."
+                                    data-confirm="Delete"
+                                    data-success="Visitor pass deleted successfully."
+                                    title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
                             ';
                         }
 
                         if (auth()->user()->can('markExit', $log) && $log->status !== 'pending') {
                             $buttons .= '
-                                <form action="'.route('gatekeeper.visitor-logs.mark-exit', $log).'"
-                                    method="POST"
-                                    class="d-inline">
-
-                                    '.csrf_field().'
-                                    '.method_field('PATCH').'
-
-                                    <button type="submit"
-                                            class="btn btn-warning btn-sm"
-                                            title="Mark Exit">
-                                        <i class="bi bi-box-arrow-right"></i>
-                                    </button>
-                                </form>
+                                <button
+                                    type="button"
+                                    class="btn btn-warning btn-sm"
+                                    data-url="'.route('gatekeeper.visitor-logs.mark-exit', $log).'"
+                                    data-method="PATCH"
+                                    data-title="Mark Exit?"
+                                    data-text="Confirm that the visitor has exited."
+                                    data-confirm="Mark Exit"
+                                    data-success="Visitor marked as exited."
+                                    title="Mark Exit">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                </button>
                             ';
                         }
 
@@ -263,10 +260,10 @@ class VisitorLogController extends Controller
         try {
 
             if ($visitorLog->status !== 'entered') {
-                return redirect()->back()->with([
+                return response()->json([
+                    'success' => false,
                     'message' => 'Only Entered Visitors Can Exit!',
-                    'status' => 'error',
-                ]);
+                ], 422);
             }
 
             $visitorLog->exit_time = now();
@@ -287,9 +284,9 @@ class VisitorLogController extends Controller
                 'visitor_log_id' => $visitorLog->id,
             ]);
 
-            return redirect()->back()->with([
+            return response()->json([
+                'success' => true,
                 'message' => 'Visitor Exit Marked Successfully!',
-                'status' => 'success',
             ]);
         } catch (Exception $e) {
 
@@ -298,10 +295,10 @@ class VisitorLogController extends Controller
                 'exception' => $e,
             ]);
 
-            return redirect()->back()->with([
+            return response()->json([
+                'success' => false,
                 'message' => 'Something Went Wrong While Mark Exit',
-                'status' => 'error',
-            ]);
+            ], 500);
         }
     }
 

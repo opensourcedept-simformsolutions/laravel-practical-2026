@@ -4,113 +4,113 @@
 
 @section('content')
 
-    <div class="card shadow-sm border-0 rounded-3">
+<div class="card shadow-sm border-0 rounded-3">
 
-        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold text-dark">Visitor Pass List</h5>
+    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold text-dark">Visitor Pass List</h5>
 
-            <div class="d-flex gap-2">
-                <a href="{{ route('gatekeeper.visitor-logs.exited') }}" class="btn btn-info btn-sm">
-                    <i class="bi bi-box-arrow-right me-1"></i>
-                    Exited Visitors
-                </a>
-                @if(!(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin()))
-                    <a href="{{ route('passes.create') }}" class="btn btn-primary btn-sm">
-                        <i class="bi bi-plus-square me-1"></i>
-                        Create Pass
-                    </a>
-                @endif
-            </div>
-        </div>
-
-        <div class="card-body">
-
-            <div class="table-responsive">
-                <table id="visitorLogsTable" class="table table-hover table-striped align-middle w-100">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            @if (auth()->user()->isSuperAdmin())
-                                <th>Society Name</th>
-                            @endif
-                            <th>Visitor</th>
-                            <th>Phone</th>
-                            <th>Flat</th>
-                            <th>Purpose</th>
-                            <th>Status</th>
-                            <th class="text-center">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-
+        <div class="d-flex gap-2">
+            <a href="{{ route('gatekeeper.visitor-logs.exited') }}" class="btn btn-info btn-sm">
+                <i class="bi bi-box-arrow-right me-1"></i>
+                Exited Visitors
+            </a>
+            @if(!(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin()))
+            <a href="{{ route('passes.create') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-square me-1"></i>
+                Create Pass
+            </a>
+            @endif
         </div>
     </div>
 
-    <div class="modal fade" id="entryModal" tabindex="-1">
+    <div class="card-body">
 
-        <div class="modal-dialog modal-lg">
+        <div class="table-responsive">
+            <table id="visitorLogsTable" class="table table-hover table-striped align-middle w-100">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        @if (auth()->user()->isSuperAdmin())
+                        <th>Society Name</th>
+                        @endif
+                        <th>Visitor</th>
+                        <th>Phone</th>
+                        <th>Flat</th>
+                        <th>Purpose</th>
+                        <th>Status</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
 
-            <div class="modal-content">
+    </div>
+</div>
 
-                <form id="entryForm" method="POST" enctype="multipart/form-data">
+<div class="modal fade" id="entryModal" tabindex="-1">
 
-                    @csrf
-                    @method('PATCH')
+    <div class="modal-dialog modal-lg">
 
-                    <div class="modal-header">
-                        <h5 class="modal-title">
-                            Capture Visitor Photo
-                        </h5>
+        <div class="modal-content">
 
-                        <button type="button" class="btn-close" data-bs-dismiss="modal">
+            <form id="entryForm" method="POST" enctype="multipart/form-data">
+
+                @csrf
+                @method('PATCH')
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Capture Visitor Photo
+                    </h5>
+
+                    <button type="button" class="btn-close" data-bs-dismiss="modal">
+                    </button>
+                </div>
+
+                <div class="modal-body text-center">
+
+                    <video id="video" autoplay playsinline width="100%" class="border rounded"></video>
+
+                    <canvas id="canvas" style="display:none;"></canvas>
+
+                    <img id="preview" class="img-thumbnail mt-3 d-none" width="250">
+
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-primary" id="captureBtn">
+                            Capture Photo
                         </button>
                     </div>
 
-                    <div class="modal-body text-center">
+                </div>
 
-                        <video id="video" autoplay playsinline width="100%" class="border rounded"></video>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning d-none" id="recaptureBtn">
+                        Recapture Photo
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        Mark Entry
+                    </button>
+                </div>
 
-                        <canvas id="canvas" style="display:none;"></canvas>
-
-                        <img id="preview" class="img-thumbnail mt-3 d-none" width="250">
-
-                        <div class="mt-3">
-                            <button type="button" class="btn btn-primary" id="captureBtn">
-                                Capture Photo
-                            </button>
-                        </div>
-
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-warning d-none" id="recaptureBtn">
-                            Recapture Photo
-                        </button>
-                        <button type="submit" class="btn btn-success">
-                            Mark Entry
-                        </button>
-                    </div>
-
-                </form>
-
-            </div>
+            </form>
 
         </div>
 
     </div>
+
+</div>
 
 @endsection
 
 @push('scripts')
-    <script>
-        $(function() {
+<script>
+    $(function() {
 
             let stream = null;
             let capturedFile = null;
 
-            $('#visitorLogsTable').DataTable({
+            table = $('#visitorLogsTable').DataTable({
                 processing: true,
                 serverSide: true,
                 ajax: "{{ route('gatekeeper.visitor-logs.pending') }}",
@@ -230,7 +230,10 @@
                     });
                     document.getElementById('video').srcObject = stream;
                 } catch (e) {
-                    alert('Unable to access camera');
+                    Toast.fire({
+                        icon: 'error',
+                        title: 'Unable to access camera'
+                    });
                 }
             });
 
@@ -282,7 +285,7 @@
                     success: function(response) {
                         bootstrap.Modal.getInstance(document.getElementById('entryModal'))
                         .hide();
-                        $('#visitorLogsTable').DataTable().ajax.reload(null, false);
+                        rd();
                         Toast.fire({
                             icon: 'success',
                             title: response.message
@@ -299,5 +302,5 @@
             });
 
         });
-    </script>
+</script>
 @endpush

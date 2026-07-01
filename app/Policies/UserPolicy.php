@@ -27,7 +27,7 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        return  in_array($user->role->name,['admin','super_admin']) ;
+        return in_array($user->role->name, ['admin', 'super_admin']);
 
     }
 

@@ -539,27 +539,38 @@ class VisitorPassController extends Controller
         $this->authorize('delete', $visitorLog);
 
         try {
+
             if ($visitorLog->status !== 'pending') {
-                return redirect()->back()->with([
+                return response()->json([
+                    'success' => false,
                     'message' => 'Only pending passes can be deleted.',
-                    'status' => 'error',
-                ]);
+                ], 422);
             }
 
-            ActivityLogger::log('delete', $visitorLog, "Visitor Pass for {$visitorLog->visitor->name} was deleted.");
+            ActivityLogger::log(
+                'delete',
+                $visitorLog,
+                "Visitor Pass for {$visitorLog->visitor->name} was deleted."
+            );
+
             $visitorLog->delete();
 
-            return redirect()->back()->with([
+            return response()->json([
+                'success' => true,
                 'message' => 'Visitor pass deleted successfully.',
-                'status' => 'success',
             ]);
-        } catch (Exception $e) {
-            Log::error('Visitor pass delete error: '.$e->getMessage(), ['exception' => $e]);
 
-            return redirect()->back()->with([
-                'message' => 'Something went wrong.',
-                'status' => 'error',
+        } catch (Exception $e) {
+
+            Log::error('Visitor pass delete error: '.$e->getMessage(), [
+                'exception' => $e,
+                'visitor_log_id' => $visitorLog->id,
             ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong while deleting the visitor pass.',
+            ], 500);
         }
     }
 

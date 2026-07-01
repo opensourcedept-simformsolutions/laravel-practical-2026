@@ -3,32 +3,27 @@
 namespace App\Services;
 
 use App\Models\ActivityLog;
+use App\Models\Society;
 use Illuminate\Database\Eloquent\Model;
 
 class ActivityLogger
 {
     /**
      * Log an activity to the database.
-     *
-     * @param string $action
-     * @param Model|null $subject
-     * @param string|null $description
-     * @param array $properties
-     * @return ActivityLog
      */
     public static function log(string $action, ?Model $subject = null, ?string $description = null, array $properties = []): ActivityLog
     {
         $user = auth()->user();
         $userId = $user ? $user->id : null;
-        
+
         // Determine society_id
         $societyId = null;
-        if ($user && !$user->isSuperAdmin()) {
+        if ($user && ! $user->isSuperAdmin()) {
             $societyId = $user->society_id;
         } elseif ($subject) {
             if (isset($subject->society_id)) {
                 $societyId = $subject->society_id;
-            } elseif ($subject instanceof \App\Models\Society) {
+            } elseif ($subject instanceof Society) {
                 $societyId = $subject->id;
             } elseif (method_exists($subject, 'flat') && $subject->flat && isset($subject->flat->society_id)) {
                 $societyId = $subject->flat->society_id;

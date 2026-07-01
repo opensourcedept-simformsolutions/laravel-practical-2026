@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Society;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
 
 class ActivityLogController extends Controller
@@ -38,7 +39,7 @@ class ActivityLogController extends Controller
                 ->leftJoin('societies', 'activity_logs.society_id', '=', 'societies.id');
 
             // Scope based on roles
-            if (!$user->isSuperAdmin()) {
+            if (! $user->isSuperAdmin()) {
                 $query->where('activity_logs.society_id', $user->society_id);
             } else {
                 if ($request->filled('society_id')) {
@@ -62,11 +63,12 @@ class ActivityLogController extends Controller
             return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('operator', function ($row) {
-                    if (!$row->user_id) {
+                    if (! $row->user_id) {
                         return 'System / Guest';
                     }
                     $roleName = $row->user->role?->name ? ucfirst($row->user->role->name) : 'User';
-                    return e($row->operator_name) . ' <span class="badge bg-secondary">' . e($roleName) . '</span>';
+
+                    return e($row->operator_name).' <span class="badge bg-secondary">'.e($roleName).'</span>';
                 })
                 ->addColumn('society_name', function ($row) {
                     return $row->society_name ?? 'Global / Super';
@@ -81,7 +83,8 @@ class ActivityLogController extends Controller
                         'impersonate_start', 'impersonate_stop' => 'bg-primary',
                         default => 'bg-secondary',
                     };
-                    return '<span class="badge ' . $badgeClass . '">' . e(ucfirst(str_replace('_', ' ', $row->action))) . '</span>';
+
+                    return '<span class="badge '.$badgeClass.'">'.e(ucfirst(str_replace('_', ' ', $row->action))).'</span>';
                 })
                 ->editColumn('created_at', function ($row) {
                     return $row->created_at->format('d M Y, h:i A');
@@ -90,11 +93,12 @@ class ActivityLogController extends Controller
                     if (empty($row->properties)) {
                         return '-';
                     }
+
                     return '
                         <button type="button" 
                                 class="btn btn-sm btn-info text-white view-properties-btn" 
-                                data-properties="' . e(json_encode($row->properties)) . '" 
-                                data-id="' . $row->id . '">
+                                data-properties="'.e(json_encode($row->properties)).'" 
+                                data-id="'.$row->id.'">
                             <i class="bi bi-info-circle"></i> Details
                         </button>
                     ';
@@ -102,13 +106,14 @@ class ActivityLogController extends Controller
                 ->rawColumns(['operator', 'action', 'actions'])
                 ->make(true);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('ActivityLog DataTable error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('ActivityLog DataTable error: '.$e->getMessage(), ['exception' => $e]);
+
             return response()->json([
                 'draw' => 0,
                 'recordsTotal' => 0,
                 'recordsFiltered' => 0,
                 'data' => [],
-                'error' => 'Failed to load activity logs.'
+                'error' => 'Failed to load activity logs.',
             ], 500);
         }
     }

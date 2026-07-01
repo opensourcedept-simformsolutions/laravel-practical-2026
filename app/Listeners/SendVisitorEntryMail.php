@@ -25,9 +25,9 @@ class SendVisitorEntryMail
             'visitor_log_id' => $visitorLog->id,
         ]);
 
-        $cacheKey = 'visitor-entry-mail:' . $visitorLog->id;
+        $cacheKey = 'visitor-entry-mail:'.$visitorLog->id;
 
-        if (!Cache::add($cacheKey, true, 300)) {
+        if (! Cache::add($cacheKey, true, 300)) {
 
             Log::warning('Duplicate entry mail skipped', [
                 'visitor_log_id' => $visitorLog->id,
@@ -44,7 +44,7 @@ class SendVisitorEntryMail
         $emails = $visitorLog
             ->flat
             ->residents
-            ->map(fn($resident) => $resident->user?->email)
+            ->map(fn ($resident) => $resident->user?->email)
             ->filter()
             ->unique()
             ->values()

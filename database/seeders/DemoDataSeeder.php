@@ -63,7 +63,7 @@ class DemoDataSeeder extends Seeder
                 'address' => "SG Highway Area $s",
                 'city' => 'Ahmedabad',
                 'state' => 'Gujarat',
-                'pincode' => '38001' . $s,
+                'pincode' => '38001'.$s,
             ]);
         }
 
@@ -74,7 +74,7 @@ class DemoDataSeeder extends Seeder
             $admin = User::create([
                 'name' => "Admin {$society->id}",
                 'email' => "admin{$society->id}@example.com",
-                'phone' => '90000000' . $society->id,
+                'phone' => '90000000'.$society->id,
                 'password' => Hash::make('1'),
                 'role_id' => $roles['admin']->id,
                 'society_id' => $society->id,
@@ -85,7 +85,7 @@ class DemoDataSeeder extends Seeder
             $gatekeeper = User::create([
                 'name' => "Gatekeeper {$society->id}",
                 'email' => "gate{$society->id}@example.com",
-                'phone' => '90000000' . ($society->id + 10),
+                'phone' => '90000000'.($society->id + 10),
                 'password' => Hash::make('1'),
                 'role_id' => $roles['gatekeeper']->id,
                 'society_id' => $society->id,
@@ -112,7 +112,7 @@ class DemoDataSeeder extends Seeder
                 $residentUsers[] = User::create([
                     'name' => "Resident {$society->id}-$i",
                     'email' => "resident{$society->id}_$i@example.com",
-                    'phone' => '900' . $society->id . str_pad($i, 3, '0', STR_PAD_LEFT),
+                    'phone' => '900'.$society->id.str_pad($i, 3, '0', STR_PAD_LEFT),
                     'password' => Hash::make('1'),
                     'role_id' => $roles['resident']->id,
                     'society_id' => $society->id,
@@ -137,8 +137,8 @@ class DemoDataSeeder extends Seeder
             for ($i = 1; $i <= 40; $i++) {
                 $visitors[] = Visitor::create([
                     'name' => "Visitor {$society->id}-$i",
-                    'phone' => '98765' . $society->id . str_pad($i, 3, '0', STR_PAD_LEFT),
-                    'vehicle_number' => $i % 2 == 0 ? "GJ01{$society->id}" . (1000 + $i) : null,
+                    'phone' => '98765'.$society->id.str_pad($i, 3, '0', STR_PAD_LEFT),
+                    'vehicle_number' => $i % 2 == 0 ? "GJ01{$society->id}".(1000 + $i) : null,
                 ]);
             }
             $this->command->info("✔ Visitors created for Society {$society->id}");
@@ -201,7 +201,7 @@ class DemoDataSeeder extends Seeder
                     'status' => $isDelivered ? 'delivered' : 'received',
                     'received_at' => $receivedAt,
                     'delivered_at' => $isDelivered
-                        ? (clone $receivedAt)->modify('+' . rand(1, 24) . ' hours')
+                        ? (clone $receivedAt)->modify('+'.rand(1, 24).' hours')
                         : null,
                 ]);
             }
@@ -232,7 +232,7 @@ class DemoDataSeeder extends Seeder
                             : null),
                     'created_at' => $createdAt,
                     'updated_at' => $status !== 'open'
-                        ? (clone $createdAt)->modify('+' . rand(1, 72) . ' hours')
+                        ? (clone $createdAt)->modify('+'.rand(1, 72).' hours')
                         : $createdAt,
                 ]);
             }

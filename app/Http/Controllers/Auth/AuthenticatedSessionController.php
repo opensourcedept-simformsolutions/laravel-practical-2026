@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -25,12 +26,12 @@ class AuthenticatedSessionController extends Controller
             $request->session()->regenerate();
 
             return redirect()->route('dashboard');
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             throw $e;
         } catch (Exception $e) {
-            Log::error('Login error: ' . $e->getMessage(), [
+            Log::error('Login error: '.$e->getMessage(), [
                 'email' => $request->input('email'),
-                'exception' => $e
+                'exception' => $e,
             ]);
 
             return redirect()->back()
@@ -50,9 +51,9 @@ class AuthenticatedSessionController extends Controller
 
             return redirect('/login');
         } catch (Exception $e) {
-            Log::error('Logout error: ' . $e->getMessage(), [
+            Log::error('Logout error: '.$e->getMessage(), [
                 'user_id' => auth()->id(),
-                'exception' => $e
+                'exception' => $e,
             ]);
 
             return redirect('/login');

@@ -60,7 +60,7 @@ class UserController extends Controller
 
                 $query->whereHas(
                     'role',
-                    fn($q) => $q->where(
+                    fn ($q) => $q->where(
                         'name',
                         $request->role
                     )
@@ -81,11 +81,11 @@ class UserController extends Controller
                 ->addIndexColumn()
                 ->addColumn(
                     'role',
-                    fn($row) => ucfirst($row->role_name)
+                    fn ($row) => ucfirst($row->role_name)
                 )
                 ->addColumn(
                     'society',
-                    fn($row) => $row->society_name ?? '-'
+                    fn ($row) => $row->society_name ?? '-'
                 )
                 ->addColumn('actions', function ($row) {
 
@@ -95,24 +95,24 @@ class UserController extends Controller
 
                     return '
                         <div class="text-center">
-                            <a href="' . $editUrl . '" class="btn btn-primary btn-sm" title="Edit User">
+                            <a href="'.$editUrl.'" class="btn btn-primary btn-sm" title="Edit User">
                                 <i class="bi bi-pencil-square"></i>
                             </a>
 
-                            <form action="' . $impersonateUrl . '" method="POST" class="d-inline">
-                                ' . csrf_field() . '
+                            <form action="'.$impersonateUrl.'" method="POST" class="d-inline">
+                                '.csrf_field().'
                                 <button type="submit"
                                     class="btn btn-dark btn-sm" title="Impersonate User">
                                     <i class="bi bi-person-check"></i>
                                 </button>
                             </form>
 
-                            <form action="' . $deleteUrl . '"
+                            <form action="'.$deleteUrl.'"
                                 method="POST"
                                 class="d-inline">
 
-                                ' . csrf_field() . '
-                                ' . method_field('DELETE') . '
+                                '.csrf_field().'
+                                '.method_field('DELETE').'
 
                                 <button
                                     class="btn btn-danger btn-sm"
@@ -165,7 +165,8 @@ class UserController extends Controller
                 )
             );
         } catch (Exception $e) {
-            Log::error('User create page error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('User create page error: '.$e->getMessage(), ['exception' => $e]);
+
             return redirect()->back()->with(['message' => 'Something went wrong.', 'status' => 'error']);
         }
     }
@@ -183,14 +184,14 @@ class UserController extends Controller
 
             $user = User::create($validated);
 
-            ActivityLogger::log('create', $user, "User {$user->name} (" . ($user->role?->name ?? 'unknown') . ") was created.");
+            ActivityLogger::log('create', $user, "User {$user->name} (".($user->role?->name ?? 'unknown').') was created.');
 
             Session::flash('message', 'User created successfully.');
             Session::flash('status', 'success');
 
             return redirect()->route('admin.users.index');
         } catch (Exception $e) {
-            Log::error('User store error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('User store error: '.$e->getMessage(), ['exception' => $e]);
 
             Session::flash('message', 'Something went wrong.');
             Session::flash('status', 'error');
@@ -215,7 +216,8 @@ class UserController extends Controller
                 compact('user', 'roles', 'societies')
             );
         } catch (Exception $e) {
-            Log::error('User edit page error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('User edit page error: '.$e->getMessage(), ['exception' => $e]);
+
             return redirect()->back()->with(['message' => 'Something went wrong.', 'status' => 'error']);
         }
     }
@@ -234,7 +236,7 @@ class UserController extends Controller
             if (auth()->user()->isAdmin()) {
                 unset($validated['society_id']);
             }
-            
+
             $user->update($validated);
 
             ActivityLogger::log('update', $user, "User {$user->name} was updated.");
@@ -244,7 +246,7 @@ class UserController extends Controller
 
             return redirect()->route('admin.users.index');
         } catch (Exception $e) {
-            Log::error('User update error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('User update error: '.$e->getMessage(), ['exception' => $e]);
 
             Session::flash('message', 'Something went wrong.');
             Session::flash('status', 'error');
@@ -266,7 +268,7 @@ class UserController extends Controller
 
             return redirect()->route('admin.users.index');
         } catch (Exception $e) {
-            Log::error('User delete error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('User delete error: '.$e->getMessage(), ['exception' => $e]);
 
             Session::flash('message', 'Something went wrong.');
             Session::flash('status', 'error');

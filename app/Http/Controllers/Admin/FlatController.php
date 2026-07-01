@@ -27,7 +27,7 @@ class FlatController extends Controller
                     $query = Flat::query()
                         ->select([
                             'flats.*',
-                            'societies.name as society_name'
+                            'societies.name as society_name',
                         ])
                         ->leftJoin('societies', 'flats.society_id', '=', 'societies.id');
                     if ($request->filled('society_id')) {
@@ -50,11 +50,11 @@ class FlatController extends Controller
 
                         return '
                         <div class="text-center">
-                        <a href="' . $editUrl . '" class="btn btn-sm btn-primary" title="Edit Flat"><i class="bi bi-pencil-square"></i></a>
+                        <a href="'.$editUrl.'" class="btn btn-sm btn-primary" title="Edit Flat"><i class="bi bi-pencil-square"></i></a>
 
-                        <form action="' . $deleteUrl . '" method="POST" style="display:inline-block;">
-                            ' . csrf_field() . '
-                            ' . method_field('DELETE') . '
+                        <form action="'.$deleteUrl.'" method="POST" style="display:inline-block;">
+                            '.csrf_field().'
+                            '.method_field('DELETE').'
                             <button type="submit" class="btn btn-sm btn-danger"
                                 onclick="return confirm(\'Are you sure?\')" title="Delete Flat">
                                   <i class="bi bi-trash"></i>
@@ -73,18 +73,18 @@ class FlatController extends Controller
 
             return view('flats.index', compact('societies'));
         } catch (Exception $e) {
-            Log::error('Flat listing error: ' . $e->getMessage(), ['exception' => $e]);
-            
+            Log::error('Flat listing error: '.$e->getMessage(), ['exception' => $e]);
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to load flats.'
+                    'message' => 'Failed to load flats.',
                 ], 500);
             }
 
             return redirect()->back()->with([
                 'message' => 'Something went wrong.',
-                'status' => 'error'
+                'status' => 'error',
             ]);
         }
     }
@@ -100,11 +100,11 @@ class FlatController extends Controller
 
             return view('flats.create', compact('societies'));
         } catch (Exception $e) {
-            Log::error('Flat create page error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Flat create page error: '.$e->getMessage(), ['exception' => $e]);
 
             return redirect()->back()->with([
                 'message' => 'Something went wrong.',
-                'status' => 'error'
+                'status' => 'error',
             ]);
         }
     }
@@ -133,7 +133,7 @@ class FlatController extends Controller
 
             return redirect()->route('flats.index');
         } catch (Exception $e) {
-            Log::error('Flat store error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Flat store error: '.$e->getMessage(), ['exception' => $e]);
 
             Session::flash('message', 'Something went wrong.');
             Session::flash('status', 'error');
@@ -153,11 +153,11 @@ class FlatController extends Controller
 
             return view('flats.edit', compact('flat', 'societies'));
         } catch (Exception $e) {
-            Log::error('Flat edit page error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Flat edit page error: '.$e->getMessage(), ['exception' => $e]);
 
             return redirect()->back()->with([
                 'message' => 'Something went wrong.',
-                'status' => 'error'
+                'status' => 'error',
             ]);
         }
     }
@@ -175,7 +175,7 @@ class FlatController extends Controller
             return redirect()->route('flats.index')
                 ->with('success', 'Flat updated successfully');
         } catch (Exception $e) {
-            Log::error('Flat update error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Flat update error: '.$e->getMessage(), ['exception' => $e]);
 
             Session::flash('message', 'Something went wrong.');
             Session::flash('status', 'error');
@@ -198,7 +198,7 @@ class FlatController extends Controller
             return redirect()->route('flats.index')
                 ->with('success', 'Flat deleted successfully');
         } catch (Exception $e) {
-            Log::error('Flat delete error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Flat delete error: '.$e->getMessage(), ['exception' => $e]);
 
             Session::flash('message', 'Something went wrong.');
             Session::flash('status', 'error');

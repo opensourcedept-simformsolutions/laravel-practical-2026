@@ -16,9 +16,9 @@ class DeliveryNotificationService
     /**
      * Log a delivery event.
      *
-     * @param Delivery $delivery The delivery associated with the event.
-     * @param string $event The event description.
-     * @param array<string, mixed> $context Additional event context.
+     * @param  Delivery  $delivery  The delivery associated with the event.
+     * @param  string  $event  The event description.
+     * @param  array<string, mixed>  $context  Additional event context.
      */
     public function notify(Delivery $delivery, string $event, array $context = []): void
     {
@@ -38,9 +38,9 @@ class DeliveryNotificationService
     /**
      * Log a failed delivery operation.
      *
-     * @param string $action The action being performed.
-     * @param \Throwable $exception The exception that occurred.
-     * @param array<string, mixed> $context Additional failure context.
+     * @param  string  $action  The action being performed.
+     * @param  \Throwable  $exception  The exception that occurred.
+     * @param  array<string, mixed>  $context  Additional failure context.
      */
     public function failed(string $action, \Throwable $exception, array $context = []): void
     {

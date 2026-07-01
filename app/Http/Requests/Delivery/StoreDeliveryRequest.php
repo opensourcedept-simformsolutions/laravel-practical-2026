@@ -33,11 +33,11 @@ class StoreDeliveryRequest extends FormRequest
             'resident_id' => [
                 'required',
                 Rule::exists('residents', 'id')->where(function ($query) {
-                    if (!auth()->user()->isSuperAdmin()) {
+                    if (! auth()->user()->isSuperAdmin()) {
                         $query->whereIn('flat_id', function ($q) {
                             $q->select('id')
-                              ->from('flats')
-                              ->where('society_id', auth()->user()->society_id);
+                                ->from('flats')
+                                ->where('society_id', auth()->user()->society_id);
                         });
                     }
                 }),
