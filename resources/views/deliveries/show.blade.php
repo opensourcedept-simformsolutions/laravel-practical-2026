@@ -8,8 +8,19 @@
 
         <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
             <h5 class="mb-0 fw-bold text-dark">Delivery #{{ $delivery->id }} Details</h5>
-            <span class="badge {{ $delivery->status === 'delivered' ? 'bg-success' : 'bg-primary' }}">
-                {{ ucfirst($delivery->status) }}
+            <span class="badge
+                @if ($delivery->trashed())
+                    bg-danger
+                @elseif ($delivery->status === 'delivered')
+                    bg-success
+                @else
+                    bg-primary
+                @endif">
+                @if ($delivery->trashed())
+                    Deleted
+                @else
+                    {{ ucfirst($delivery->status) }}
+                @endif
             </span>
         </div>
 
@@ -71,12 +82,12 @@
             <a href="{{ route('deliveries.index') }}" class="btn btn-light">
                 Back
             </a>
-            @if ($delivery->status !== 'delivered')
-                @canany(['is-admin', 'is-gatekeeper'])
+            @if (! $delivery->trashed())
+                @can('update', $delivery)
                     <a href="{{ route('deliveries.edit', $delivery) }}" class="btn btn-warning">
                         Edit Delivery
                     </a>
-                @endcanany
+                @endcan
             @endif
         </div>
     </div>

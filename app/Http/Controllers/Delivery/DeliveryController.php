@@ -63,6 +63,14 @@ class DeliveryController extends Controller
 
             $user = auth()->user();
 
+            if ($user->isSuperAdmin() || $user->isAdmin()) {
+                match ($request->get('filter', 'active')) {
+                    'deleted' => $query->onlyTrashed(),
+                    'all' => $query->withTrashed(),
+                    default => null,
+                };
+            }
+
             if (! $user->isSuperAdmin()) {
                 if ($user->isResident()) {
                     $query->where('deliveries.flat_id', $user->resident->flat_id);
@@ -503,9 +511,40 @@ class DeliveryController extends Controller
         } catch (Exception $e) {
             $this->notificationService->failed('delete delivery', $e);
 
-            return back()
-                ->withInput()
-                ->with(['status' => 'error', 'message' => 'Failed to delete delivery.']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Failed to delete delivery.'
+            ]);
+        }
+    }
+
+    /**
+     * Restores soft deleted delivery record.
+     *
+     * @return RedirectResponse
+     */
+    public function restore(Delivery $delivery)
+    {
+        $this->authorize('restore', $delivery);
+
+        try {
+            $delivery->restore();
+
+            ActivityLogger::log('restore', $delivery, 'Delivery restored.');
+
+            $this->notificationService->notify($delivery, 'Delivery restored');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Delivery restored successfully.',
+            ]);
+        } catch (Exception $e) {
+            $this->notificationService->failed('restore delivery', $e);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to restore delivery.',
+            ]);
         }
     }
 
