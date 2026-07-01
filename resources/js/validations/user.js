@@ -84,7 +84,7 @@ $(function () {
             },
         },
 
-        errorElement: "div",
+        errorElement: "span",
 
         errorClass: "invalid-feedback",
 

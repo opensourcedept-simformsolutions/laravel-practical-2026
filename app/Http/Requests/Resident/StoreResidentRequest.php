@@ -27,7 +27,7 @@ class StoreResidentRequest extends FormRequest
                 'required',
                 'email',
                 'max:255',
-                Rule::unique('users', 'email')->withoutTrashed(),
+                'unique:users,email'
             ],
 
             'phone' => [

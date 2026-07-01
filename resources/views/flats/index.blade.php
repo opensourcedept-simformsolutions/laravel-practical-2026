@@ -44,7 +44,9 @@
                     <thead class="table-light">
                         <tr>
                             <th>ID</th>
+                            @if(auth()->user()->isSuperAdmin())
                             <th>Name</th>
+                            @endif
                             <th>Wing</th>
                             <th>Floor</th>
                             <th>Flat Number</th>
@@ -114,6 +116,7 @@
                 ]
             });
         });
+
         $(document).on('change', '#society_filter', function() {
             rd();
         });

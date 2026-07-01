@@ -43,7 +43,7 @@ class DeliveryController extends Controller
      *
      * @return JsonResponse
      */
-    public function data()
+    public function data(Request $request)
     {
         try {
             $query = Delivery::query()

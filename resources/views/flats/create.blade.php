@@ -10,7 +10,7 @@
             <h5 class="mb-0 fw-bold text-dark">Create Flat</h5>
         </div>
 
-        <form method="POST" action="{{ route('flats.store') }}">
+        <form method="POST" id="flatForm" action="{{ route('flats.store') }}">
             @csrf
 
             <div class="card-body p-4">
@@ -36,7 +36,8 @@
 
                     <div class="col-md-6">
                         <label class="form-label">Wing</label>
-                        <input type="text" name="wing" class="form-control @error('wing') is-invalid @enderror" value="{{ old('wing') }}">
+                        <input type="text" name="wing" class="form-control @error('wing') is-invalid @enderror"
+                            value="{{ old('wing') }}">
                         @error('wing')
                             <div class="text-danger pt-1 fs-7">{{ $message }}</div>
                         @enderror
@@ -44,7 +45,8 @@
 
                     <div class="col-md-6">
                         <label class="form-label">Floor</label>
-                        <input type="number" name="floor" class="form-control @error('floor') is-invalid @enderror" value="{{ old('floor') }}">
+                        <input type="number" name="floor" class="form-control @error('floor') is-invalid @enderror"
+                            value="{{ old('floor') }}">
                         @error('floor')
                             <div class="text-danger pt-1 fs-7">{{ $message }}</div>
                         @enderror
@@ -52,7 +54,9 @@
 
                     <div class="col-md-6">
                         <label class="form-label">Flat Number</label>
-                        <input type="text" name="flat_number" class="form-control @error('flat_number') is-invalid @enderror" value="{{ old('flat_number') }}">
+                        <input type="text" name="flat_number"
+                            class="form-control @error('flat_number') is-invalid @enderror"
+                            value="{{ old('flat_number') }}">
                         @error('flat_number')
                             <div class="text-danger pt-1 fs-7">{{ $message }}</div>
                         @enderror
@@ -76,3 +80,82 @@
     </div>
 
 @endsection
+
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            console.log("j");
+
+            $("#flatForm").validate({
+                rules: {
+
+                    wing: {
+                        required: true,
+                        maxlength: 20,
+                        pattern: /^[A-Za-z0-9]+$/
+                    },
+
+                    floor: {
+                        required: true,
+                        digits: true,
+                        min: 0,
+                        max: 50
+                    },
+
+                    flat_number: {
+                        required: true,
+                        digits: true,
+                        min: 1,
+                        max: 9999
+                    },
+
+                    society_id: {
+                        required: {{ auth()->user()->isSuperAdmin() ? 'true' : 'false' }}
+                    }
+                },
+                messages: {
+
+                    wing: {
+                        required: "Wing is required.",
+                        maxlength: "Wing may not exceed 20 characters.",
+                        pattern: "Wing must be alphanumeric only."
+                    },
+
+                    floor: {
+                        required: "Floor is required.",
+                        digits: "Floor must be a number.",
+                        min: "Floor must be at least 0.",
+                        max: "Floor must be less than or equal to 50."
+                    },
+
+                    flat_number: {
+                        required: "Flat number is required.",
+                        digits: "Flat number must be numeric.",
+                        min: "Flat number must be at least 1.",
+                        max: "Flat number must be less than or equal to 9999."
+                    },
+
+                    society_id: {
+                        required: "Society is required."
+                    }
+                },
+
+                errorElement: "div",
+                errorClass: "invalid-feedback",
+
+                highlight: function(element) {
+                    $(element).addClass("is-invalid");
+                },
+
+                unhighlight: function(element) {
+                    $(element).removeClass("is-invalid");
+                },
+
+                errorPlacement: function(error, element) {
+                    error.insertAfter(element);
+                }
+            });
+
+        });
+    </script>
+@endpush

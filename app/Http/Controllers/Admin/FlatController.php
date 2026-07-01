@@ -51,15 +51,18 @@ class FlatController extends Controller
                         return '
                         <div class="text-center">
                         <a href="'.$editUrl.'" class="btn btn-sm btn-primary" title="Edit Flat"><i class="bi bi-pencil-square"></i></a>
-
-                        <form action="'.$deleteUrl.'" method="POST" style="display:inline-block;">
-                            '.csrf_field().'
-                            '.method_field('DELETE').'
-                            <button type="submit" class="btn btn-sm btn-danger"
-                                onclick="return confirm(\'Are you sure?\')" title="Delete Flat">
-                                  <i class="bi bi-trash"></i>
+                        
+                            <button
+                                class="btn btn-danger btn-action"
+                                data-url="'.$deleteUrl.'"
+                                data-method="DELETE"
+                                data-title="Delete Flat Details?"
+                                data-text="This action cannot be undone."
+                                data-confirm="Yes, Delete"
+                                data-success="Flat deleted successfully"
+                                title="Delete Flat">
+                                <i class="bi bi-trash"></i>
                             </button>
-                        </form>
                         </div>
                     ';
                     })
@@ -81,11 +84,6 @@ class FlatController extends Controller
                     'message' => 'Failed to load flats.',
                 ], 500);
             }
-
-            return redirect()->back()->with([
-                'message' => 'Something went wrong.',
-                'status' => 'error',
-            ]);
         }
     }
 
@@ -192,18 +190,17 @@ class FlatController extends Controller
             ActivityLogger::log('delete', $flat, "Flat {$flat->wing}-{$flat->flat_number} was deleted.");
             $flat->delete();
 
-            Session::flash('message', 'Flat Deleted successfully.');
-            Session::flash('status', 'success');
-
-            return redirect()->route('flats.index')
-                ->with('success', 'Flat deleted successfully');
+            return response()->json([
+                'message' => 'Flat deleted successfully.',
+                'success' => true,
+            ]);
         } catch (Exception $e) {
             Log::error('Flat delete error: '.$e->getMessage(), ['exception' => $e]);
 
-            Session::flash('message', 'Something went wrong.');
-            Session::flash('status', 'error');
-
-            return redirect()->back();
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+            ], 500);
         }
     }
 }

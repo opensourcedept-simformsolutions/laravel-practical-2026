@@ -83,7 +83,7 @@ class UserController extends Controller
                     'role',
                     fn ($row) => ucfirst($row->role_name)
                 )
-                ->addColumn(
+                ->addColumn(    
                     'society',
                     fn ($row) => $row->society_name ?? '-'
                 )

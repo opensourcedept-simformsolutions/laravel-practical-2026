@@ -1,26 +1,32 @@
 @extends('layouts.app')
-
+ 
 @section('title', 'Deliveries')
 @section('content')
     <div class="card shadow-sm border-0 rounded-3">
-        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold text-dark">Delivery List</h5>
-
-            <div class="d-flex align-items-center gap-2">
-                @if (auth()->user()->isSuperAdmin())
-                    <select id="status-filter" class="form-select form-select-sm w-auto">
-                        <option value="active">Active Deliveries</option>
-                        <option value="deleted">Deleted Deliveries</option>
-                        <option value="all">All Deliveries</option>
-                    </select>
-                @endif
-
-                @canany(['is-gatekeeper', 'is-admin'])
-                    <a href="{{ route('deliveries.create') }}" class="btn btn-primary">
-                        <i class="bi bi-plus-square me-1"></i>
-                        Create Delivery
-                    </a>
-                @endcanany
+        <div class="card-header bg-white border-bottom py-3">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="mb-0 fw-bold text-dark">Delivery List</h5>
+                </div>
+ 
+                <div class="col-auto">
+                    <div class="d-flex align-items-center gap-2">
+                        @can('is-admin')
+                            <select id="status-filter" class="form-select form-select-sm w-auto">
+                                <option value="active">Active Deliveries</option>
+                                <option value="deleted">Deleted Deliveries</option>
+                                <option value="all">All Deliveries</option>
+                            </select>
+                        @endcan
+ 
+                        @canany(['is-gatekeeper', 'is-admin'])
+                            <a href="{{ route('deliveries.create') }}" class="btn btn-primary">
+                                <i class="bi bi-plus-square me-1"></i>
+                                Create Delivery
+                            </a>
+                        @endcanany
+                    </div>
+                </div>
             </div>
         </div>
         <div class="card-body">
@@ -47,7 +53,7 @@
         </div>
     </div>
 @endsection
-
+ 
 @push('scripts')
     <script>
         $(function() {
@@ -55,14 +61,14 @@
                 processing: true,
                 serverSide: true,
                 responsive: true,
-
+ 
                 ajax: {
                     url: '{{ route('deliveries.data') }}',
-                    data: function (d) {
+                    data: function(d) {
                         d.filter = $('#status-filter').val();
                     }
                 },
-
+ 
                 columns: [{
                         data: 'DT_RowIndex',
                         name: 'DT_RowIndex',
@@ -111,8 +117,11 @@
                 ]
             });
         });
-        $('#status-filter').on('change', function () {
+
+        $('#status-filter').on('change', function() {
             rd()
         });
     </script>
 @endpush
+ 
+ 
