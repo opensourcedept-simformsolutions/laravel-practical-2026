@@ -47,12 +47,12 @@ class ResidentController extends Controller
 
                 return DataTables::of($query)
 
-                    ->addColumn('name', fn($row) => $row->user_name ?? '-')
-                    ->addColumn('email', fn($row) => $row->user_email ?? '-')
-                    ->addColumn('phone', fn($row) => $row->user_phone ?? '-')
+                    ->addColumn('name', fn ($row) => $row->user_name ?? '-')
+                    ->addColumn('email', fn ($row) => $row->user_email ?? '-')
+                    ->addColumn('phone', fn ($row) => $row->user_phone ?? '-')
 
-                    ->addColumn('flat', fn($row) => $row->flat_number ?? '-')
-                    ->addColumn('wing', fn($row) => $row->flat_wing ?? '-')
+                    ->addColumn('flat', fn ($row) => $row->flat_number ?? '-')
+                    ->addColumn('wing', fn ($row) => $row->flat_wing ?? '-')
 
                     ->addColumn('type', function ($row) {
                         return $row->resident_type === 'owner'
@@ -67,11 +67,11 @@ class ResidentController extends Controller
 
                         return '
                         <div class="text-center">
-                        <a href="' . $editUrl . '" class="btn btn-primary btn-sm" title="Edit Resident"><i class="bi bi-pencil-square"></i></a>
+                        <a href="'.$editUrl.'" class="btn btn-primary btn-sm" title="Edit Resident"><i class="bi bi-pencil-square"></i></a>
 
-                        <form action="' . $deleteUrl . '" method="POST" class="d-inline">
-                            ' . csrf_field() . '
-                            ' . method_field('DELETE') . '
+                        <form action="'.$deleteUrl.'" method="POST" class="d-inline">
+                            '.csrf_field().'
+                            '.method_field('DELETE').'
                             <button type="submit" class="btn btn-danger btn-sm"
                                 onclick="return confirm(\'Delete this resident?\')" title="Delete Resident">
                                   <i class="bi bi-trash"></i>
@@ -87,18 +87,18 @@ class ResidentController extends Controller
 
             return view('residents.index');
         } catch (Throwable $e) {
-            Log::error('Resident listing error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Resident listing error: '.$e->getMessage(), ['exception' => $e]);
 
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to load residents.'
+                    'message' => 'Failed to load residents.',
                 ], 500);
             }
 
             return redirect()->back()->with([
                 'message' => 'Something went wrong.',
-                'status' => 'error'
+                'status' => 'error',
             ]);
         }
     }
@@ -120,10 +120,11 @@ class ResidentController extends Controller
 
             return view('residents.create', compact('societies', 'flats'));
         } catch (Throwable $e) {
-            Log::error('Resident create page error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Resident create page error: '.$e->getMessage(), ['exception' => $e]);
+
             return redirect()->back()->with([
                 'message' => 'Something went wrong.',
-                'status' => 'error'
+                'status' => 'error',
             ]);
         }
     }
@@ -194,7 +195,7 @@ class ResidentController extends Controller
 
             Log::error($e->getMessage());
 
-            Session::flash('message', 'Unable to create resident.' . $e->getMessage());
+            Session::flash('message', 'Unable to create resident.'.$e->getMessage());
             Session::flash('status', 'error');
 
             return back()->withInput();
@@ -219,10 +220,11 @@ class ResidentController extends Controller
 
             return view('residents.edit', compact('resident', 'flats', 'societies'));
         } catch (Throwable $e) {
-            Log::error('Resident edit page error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Resident edit page error: '.$e->getMessage(), ['exception' => $e]);
+
             return redirect()->back()->with([
                 'message' => 'Something went wrong.',
-                'status' => 'error'
+                'status' => 'error',
             ]);
         }
     }

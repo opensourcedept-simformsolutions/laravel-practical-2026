@@ -9,8 +9,8 @@ use App\Http\Requests\Delivery\UpdateDeliveryRequest;
 use App\Models\Delivery;
 use App\Models\Flat;
 use App\Models\Resident;
-use App\Services\DeliveryNotificationService;
 use App\Services\ActivityLogger;
+use App\Services\DeliveryNotificationService;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -90,16 +90,17 @@ class DeliveryController extends Controller
                 })
                 ->editColumn('package_details', function ($delivery) {
                     $short = Str::limit($delivery->package_details, 50);
-                    return '<span title="' . e($delivery->package_details) . '">' . e($short) . '</span>';
+
+                    return '<span title="'.e($delivery->package_details).'">'.e($short).'</span>';
                 })
                 ->editColumn('status', function ($delivery) {
                     $class = $delivery->status === 'delivered'
                         ? 'text-bg-success'
                         : 'text-bg-primary';
 
-                    return '<span class="badge rounded-pill ' . $class . '">'
-                        . ucfirst($delivery->status)
-                        . '</span>';
+                    return '<span class="badge rounded-pill '.$class.'">'
+                        .ucfirst($delivery->status)
+                        .'</span>';
                 })
                 ->editColumn('received_at', function ($delivery) {
                     return $delivery->received_at?->format('d M Y');
@@ -154,7 +155,8 @@ class DeliveryController extends Controller
                 })
                 ->editColumn('package_details', function ($delivery) {
                     $short = Str::limit($delivery->package_details, 50);
-                    return '<span title="' . e($delivery->package_details) . '">' . e($short) . '</span>';
+
+                    return '<span title="'.e($delivery->package_details).'">'.e($short).'</span>';
                 })
                 ->editColumn('status', function ($delivery) {
                     return ucfirst($delivery->status);
@@ -218,7 +220,7 @@ class DeliveryController extends Controller
                         $delivery->id,
                         $delivery->society_id,
                         $delivery->society_name,
-                        $delivery->flat_wing . '-' . $delivery->flat_number,
+                        $delivery->flat_wing.'-'.$delivery->flat_number,
                         $delivery->resident_name ?? '-',
                         $delivery->package_details,
                         $delivery->vendor,
@@ -337,7 +339,7 @@ class DeliveryController extends Controller
                 'delivered_at' => null,
             ]);
 
-            ActivityLogger::log('create', $delivery, "Delivery from {$delivery->vendor} for flat " . ($delivery->flat?->wing ?? '-') . "-" . ($delivery->flat?->flat_number ?? '-') . " logged.");
+            ActivityLogger::log('create', $delivery, "Delivery from {$delivery->vendor} for flat ".($delivery->flat?->wing ?? '-').'-'.($delivery->flat?->flat_number ?? '-').' logged.');
 
             $this->notificationService->notify($delivery, 'Delivery received');
 
@@ -453,7 +455,7 @@ class DeliveryController extends Controller
 
             $delivery->save();
 
-            ActivityLogger::log('update', $delivery, "Delivery details updated.");
+            ActivityLogger::log('update', $delivery, 'Delivery details updated.');
 
             $newValues = $delivery->only([
                 'flat_id',
@@ -483,20 +485,21 @@ class DeliveryController extends Controller
     /**
      * Delete a delivery record.
      *
-     * @return RedirectResponse
+     * @return JsonResponse
      */
     public function destroy(Delivery $delivery)
     {
         $this->authorize('delete', $delivery);
 
         try {
-            ActivityLogger::log('delete', $delivery, "Delivery record deleted.");
+            ActivityLogger::log('delete', $delivery, 'Delivery record deleted.');
             $delivery->delete();
             $this->notificationService->notify($delivery, 'Delivery deleted');
 
-            return redirect()
-                ->route('deliveries.index')
-                ->with(['status' => 'success', 'message' => 'Delivery deleted successfully.']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Delivery deleted successfully.',
+            ]);
         } catch (Exception $e) {
             $this->notificationService->failed('delete delivery', $e);
 
@@ -527,8 +530,8 @@ class DeliveryController extends Controller
             ->get()
             ->mapWithKeys(function ($resident) {
                 return [
-                    $resident->id => $resident->flat->wing . '-' . $resident->flat->flat_number
-                        . ' - ' . $resident->user->name,
+                    $resident->id => $resident->flat->wing.'-'.$resident->flat->flat_number
+                        .' - '.$resident->user->name,
                 ];
             });
     }

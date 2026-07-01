@@ -1,17 +1,17 @@
 <?php
 
-use App\Http\Controllers\Complaint\ComplaintController;
-use App\Http\Controllers\Common\DashboardController;
-use App\Http\Controllers\Delivery\DeliveryController;
+use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\FlatController;
 use App\Http\Controllers\Admin\ImpersonationController;
-use App\Http\Controllers\Common\ProfileController;
-use App\Http\Controllers\VisitorPass\VisitorPassController;
 use App\Http\Controllers\Admin\ResidentController;
-use App\Http\Controllers\SuperAdmin\SocietyController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Common\DashboardController;
+use App\Http\Controllers\Common\ProfileController;
+use App\Http\Controllers\Complaint\ComplaintController;
+use App\Http\Controllers\Delivery\DeliveryController;
 use App\Http\Controllers\Gatekeeper\VisitorLogController;
-use App\Http\Controllers\Admin\ActivityLogController;
+use App\Http\Controllers\SuperAdmin\SocietyController;
+use App\Http\Controllers\VisitorPass\VisitorPassController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -181,4 +181,4 @@ Route::middleware('auth')->group(function () {
         });
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

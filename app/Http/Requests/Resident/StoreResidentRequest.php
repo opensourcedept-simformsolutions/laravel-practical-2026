@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Resident;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -12,6 +11,7 @@ class StoreResidentRequest extends FormRequest
     {
         return true;
     }
+
     public function rules(): array
     {
         return [

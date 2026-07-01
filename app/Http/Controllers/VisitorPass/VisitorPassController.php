@@ -165,18 +165,7 @@ class VisitorPassController extends Controller
         $this->authorize('create', VisitorLog::class);
 
         try {
-            $flats = collect();
-
-            if (! auth()->user()->isResident()) {
-
-                $flats = Flat::where('society_id', auth()->user()->society_id)
-                    ->orderBy('wing')
-                    ->orderBy('floor')
-                    ->orderBy('flat_number')
-                    ->get();
-            }
-
-            return view('visitor-passes.create', compact('flats'));
+            return view('visitor-passes.create', ! auth()->user()->isResident() ? ['flats' => $this->getFlatOptions()] : []);
         } catch (Exception $e) {
             Log::error('Visitor pass create page error: '.$e->getMessage(), ['exception' => $e]);
 
@@ -282,21 +271,7 @@ class VisitorPassController extends Controller
         $this->authorize('update', $visitorLog);
 
         try {
-            $flats = [];
-
-            if (! auth()->user()->isResident()) {
-                $flats = Flat::where(
-                    'society_id',
-                    auth()->user()->society_id
-                )
-                    ->orderBy('flat_number')
-                    ->get();
-            }
-
-            return view('visitor-passes.edit', compact(
-                'visitorLog',
-                'flats'
-            ));
+            return view('visitor-passes.edit', ['visitorLog' => $visitorLog, 'flats' => auth()->user()->isResident() ? collect() : $this->getFlatOptions()]);
         } catch (Exception $e) {
             Log::error('Visitor pass edit page error: '.$e->getMessage(), ['exception' => $e]);
 
@@ -564,27 +539,53 @@ class VisitorPassController extends Controller
         $this->authorize('delete', $visitorLog);
 
         try {
+
             if ($visitorLog->status !== 'pending') {
-                return redirect()->back()->with([
+                return response()->json([
+                    'success' => false,
                     'message' => 'Only pending passes can be deleted.',
-                    'status' => 'error',
-                ]);
+                ], 422);
             }
 
-            ActivityLogger::log('delete', $visitorLog, "Visitor Pass for {$visitorLog->visitor->name} was deleted.");
+            ActivityLogger::log(
+                'delete',
+                $visitorLog,
+                "Visitor Pass for {$visitorLog->visitor->name} was deleted."
+            );
+
             $visitorLog->delete();
 
-            return redirect()->back()->with([
+            return response()->json([
+                'success' => true,
                 'message' => 'Visitor pass deleted successfully.',
-                'status' => 'success',
             ]);
-        } catch (Exception $e) {
-            Log::error('Visitor pass delete error: '.$e->getMessage(), ['exception' => $e]);
 
-            return redirect()->back()->with([
-                'message' => 'Something went wrong.',
-                'status' => 'error',
+        } catch (Exception $e) {
+
+            Log::error('Visitor pass delete error: '.$e->getMessage(), [
+                'exception' => $e,
+                'visitor_log_id' => $visitorLog->id,
             ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong while deleting the visitor pass.',
+            ], 500);
         }
+    }
+
+    private function getFlatOptions()
+    {
+        return Flat::where('society_id', auth()->user()->society_id)
+            ->whereHas('residents')
+            ->orderBy('wing')
+            ->orderBy('flat_number')
+            ->select('id', 'flat_number', 'wing')
+            ->get()
+            ->mapWithKeys(function ($flat) {
+                return [
+                    $flat->id => $flat->wing.'-'.$flat->flat_number,
+                ];
+            });
     }
 }

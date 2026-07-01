@@ -25,16 +25,24 @@
 
                         <div class="col-md-6">
                             <label class="form-label">Status</label>
+                            @php
+                            $currentStatus = old('status', $complaint->status);
+                            @endphp
+
                             <select name="status" class="form-select @error('status') is-invalid @enderror">
-                                <option value="open" @selected(old('status', $complaint->status) === 'open')>
-                                    Open
-                                </option>
-                                <option value="in_progress" @selected(old('status', $complaint->status) === 'in_progress')>
-                                    In Progress
-                                </option>
-                                <option value="resolved" @selected(old('status', $complaint->status) === 'resolved')>
-                                    Resolved
-                                </option>
+
+                                @if($currentStatus === 'open')
+                                <option value="open" selected>Open</option>
+                                <option value="in_progress">In Progress</option>
+
+                                @elseif($currentStatus === 'in_progress')
+                                <option value="in_progress" selected>In Progress</option>
+                                <option value="resolved">Resolved</option>
+
+                                @elseif($currentStatus === 'resolved')
+                                <option value="resolved" selected>Resolved</option>
+                                @endif
+
                             </select>
                             @error('status')
                                 <div class="text-danger pt-1 fs-7">{{ $message }}</div>

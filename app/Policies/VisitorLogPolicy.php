@@ -22,7 +22,7 @@ class VisitorLogPolicy
             return true;
         }
 
-        if ( $user->isResident() && $user->resident && $visitorLog->flat_id === $user->resident->flat_id ) {
+        if ($user->isResident() && $user->resident && $visitorLog->flat_id === $user->resident->flat_id) {
             return true;
         }
 
@@ -40,31 +40,34 @@ class VisitorLogPolicy
 
     public function update(User $user, VisitorLog $visitorLog): bool
     {
-        if (($user->isAdmin() || $user->isGatekeeper()) && $visitorLog->created_by === $user->id && $visitorLog->status === 'pending' ) {
+        if (($user->isAdmin() || $user->isGatekeeper()) && $visitorLog->created_by === $user->id && $visitorLog->status === 'pending') {
             return true;
         }
         if ($user->isResident() && $user->resident && $visitorLog->flat_id === $user->resident->flat_id && $visitorLog->status === 'pending') {
             return true;
         }
+
         return false;
     }
 
     public function cancel(User $user, VisitorLog $visitorLog): bool
     {
-        if ( $user->isAdmin() && $visitorLog->flat->society_id === $user->society_id) {
+        if ($user->isAdmin() && $visitorLog->flat->society_id === $user->society_id) {
             return true;
         }
+
         return $user->isResident()
             && $user->resident
             && $visitorLog->flat_id === $user->resident->flat_id;
     }
+
     public function delete(User $user, VisitorLog $visitorLog): bool
     {
         if (($user->isAdmin() || $user->isGatekeeper()) && $visitorLog->created_by === $user->id && $visitorLog->status === 'pending') {
             return true;
         }
 
-        if ($user->isResident() && $user->resident && $visitorLog->flat_id === $user->resident->flat_id && $visitorLog->status === 'pending' ) {
+        if ($user->isResident() && $user->resident && $visitorLog->flat_id === $user->resident->flat_id && $visitorLog->status === 'pending') {
             return true;
         }
 
@@ -83,14 +86,14 @@ class VisitorLogPolicy
 
     public function markEntry(User $user, VisitorLog $visitorLog): bool
     {
-        return ( $user->isAdmin() || $user->isGatekeeper())
+        return ($user->isAdmin() || $user->isGatekeeper())
         && $visitorLog->status === 'pending'
         && $visitorLog->flat->society_id === $user->society_id;
     }
 
     public function markExit(User $user, VisitorLog $visitorLog): bool
     {
-        return ( $user->isAdmin() || $user->isGatekeeper() )
+        return ($user->isAdmin() || $user->isGatekeeper())
         && $visitorLog->status === 'entered'
         && $visitorLog->flat->society_id === $user->society_id;
     }

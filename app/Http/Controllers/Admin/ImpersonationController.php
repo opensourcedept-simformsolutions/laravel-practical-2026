@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use App\Services\ActivityLogger;
 
 class ImpersonationController extends Controller
 {
@@ -32,7 +32,7 @@ class ImpersonationController extends Controller
 
             return redirect('/')
                 ->with([
-                    'message' => 'You are now logged in as ' . $user->name,
+                    'message' => 'You are now logged in as '.$user->name,
                     'status' => 'success',
                 ]);
         } catch (Exception $e) {
@@ -69,7 +69,7 @@ class ImpersonationController extends Controller
             ]);
 
             Auth::login($admin);
-            ActivityLogger::log('impersonate_stop', null, "Stopped impersonating.");
+            ActivityLogger::log('impersonate_stop', null, 'Stopped impersonating.');
 
             return redirect($redirectUrl ?: route('dashboard'))
                 ->with([

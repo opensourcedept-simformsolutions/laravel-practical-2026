@@ -18,7 +18,7 @@ class UserFactory extends Factory
         return [
             'name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
-            'phone' => '9' . $this->faker->numerify('#########'), // 10 digits starting with 9
+            'phone' => '9'.$this->faker->numerify('#########'), // 10 digits starting with 9
             'email_verified_at' => now(),
             'password' => Hash::make('password'),
             'remember_token' => Str::random(10),

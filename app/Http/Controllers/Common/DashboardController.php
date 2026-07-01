@@ -67,7 +67,7 @@ class DashboardController extends Controller
                     'status',
                     'received'
                 )->count(),
-            ]
+            ],
         ]);
 
     }

@@ -7,14 +7,12 @@ use App\Models\User;
 use App\Models\Visitor;
 use App\Models\VisitorLog;
 use Illuminate\Database\Seeder;
-use Carbon\Carbon;
 
 class VisitorLogSeeder extends Seeder
 {
     public function run(): void
     {
-        $gatekeepers = User::whereHas('role', fn ($q) =>
-            $q->where('name', 'gatekeeper')
+        $gatekeepers = User::whereHas('role', fn ($q) => $q->where('name', 'gatekeeper')
         )->get();
 
         foreach (range(1, 40) as $i) {

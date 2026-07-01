@@ -33,8 +33,8 @@ class UpdateComplaintRequest extends FormRequest
         }
 
         return [
-            'category' => ['required' , Rule::enum(ComplaintCategory::class)],
-            'description' => ['required', 'string' ,'min:10', 'max:1000'],
+            'category' => ['required', Rule::enum(ComplaintCategory::class)],
+            'description' => ['required', 'string', 'min:10', 'max:1000'],
         ];
     }
 }
