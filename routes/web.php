@@ -51,6 +51,7 @@ Route::middleware('auth')->group(function () {
 
             Route::resource('flats', FlatController::class);
             Route::resource('residents', ResidentController::class);
+            Route::patch('/{residents}/restore', [ResidentController::class,'restore'])->withTrashed()->name('residents.restore');
         });
 
     Route::middleware(['role:admin,gatekeeper'])

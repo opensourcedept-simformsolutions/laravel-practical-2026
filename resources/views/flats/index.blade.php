@@ -102,11 +102,11 @@
                         orderable: false,
                         searchable: false
                     }
-                ]
+                ]   
             });
         });
 
-        $(document).on('change', '#society_filter', function() {
+        $(document).on('change', '#status-filter, #society_filter', function() {
             rd();
         });
     </script>

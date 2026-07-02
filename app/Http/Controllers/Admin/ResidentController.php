@@ -29,6 +29,8 @@ class ResidentController extends Controller
         try {
             if ($request->ajax()) {
 
+                $user = auth()->user();
+
                 $query = Resident::query()
                     ->select([
                         'residents.*',
@@ -43,6 +45,13 @@ class ResidentController extends Controller
 
                 if (! auth()->user()->isSuperAdmin()) {
                     $query->where('flats.society_id', auth()->user()->society_id);
+                }
+                if ($user->isSuperAdmin() || $user->isAdmin()) {
+                    match ($request->get('filter', 'active')) {
+                        'deleted' => $query->onlyTrashed(),
+                        'all' => $query->withTrashed(),
+                        default => null,
+                    };
                 }
 
                 return DataTables::of($query)
@@ -64,8 +73,10 @@ class ResidentController extends Controller
 
                         $editUrl = route('residents.edit', $row->id);
                         $deleteUrl = route('residents.destroy', $row->id);
+                        $restore = route('residents.restore', $row->id);
 
-                        return '
+                        if (! $row->trashed()) {
+                            return '
                         <div class="text-center">
                         <a href="'.$editUrl.'" class="btn btn-primary btn-sm" title="Edit Resident"><i class="bi bi-pencil-square"></i></a>
 
@@ -81,11 +92,32 @@ class ResidentController extends Controller
                                 <i class="bi bi-trash"></i>
                             </button>
                     ';
+                        } else {
+                            return '
+                            <div class="text-center">
+                            <button
+                            class="btn btn-info btn-action"
+                            data-url="'.$restore.'"
+                            data-method="PATCH"
+                            data-title="Restore Delivery?"
+                            data-text="This delivery will be restored."
+                            data-confirm="Yes, Restore"
+                            title="Restore Delivery">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                         </button> </div>
+                         ';
+                        }
                     })
 
                     ->rawColumns(['type', 'actions'])
                     ->make(true);
             }
+
+            $societies = auth()->user()->isSuperAdmin()
+                ? Society::orderBy('name')->get()
+                : collect();
+
+            return view('residents.index', compact('societies'));
 
             return view('residents.index');
         } catch (Throwable $e) {
@@ -309,6 +341,30 @@ class ResidentController extends Controller
                 'success' => false,
                 'message' => 'Something went wrong.',
             ], 500);
+        }
+    }
+
+    public function restore(Resident $resident)
+    {
+        $this->authorize('restore', $resident);
+
+        try {
+
+            $resident->restore();
+
+            ActivityLogger::log('restore', $resident, 'resident restored.');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Resident restored successfully.',
+            ]);
+
+        } catch (Exception $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to restore resident.',
+            ]);
         }
     }
 }
