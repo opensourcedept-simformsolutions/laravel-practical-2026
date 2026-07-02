@@ -115,6 +115,9 @@
                         orderable: false,
                         searchable: false
                     }
+                ],
+                order: [
+                    [{{ auth()->user()->isSuperAdmin() ? 7 : 6 }}, 'desc']
                 ]
             });
         });
