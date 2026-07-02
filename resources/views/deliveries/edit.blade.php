@@ -10,7 +10,7 @@
             <h5 class="mb-0 fw-bold text-dark">Edit Delivery</h5>
         </div>
 
-        <form action="{{ route('deliveries.update', $delivery) }}" method="POST">
+        <form id="deliveryForm" action="{{ route('deliveries.update', $delivery) }}" method="POST">
             @csrf
             @method('PUT')
 

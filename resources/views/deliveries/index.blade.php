@@ -8,7 +8,7 @@
                 <div class="col">
                     <h5 class="mb-0 fw-bold text-dark">Delivery List</h5>
                 </div>
- 
+
                 <div class="col-auto">
                     <div class="d-flex align-items-center gap-2">
                         @can('is-admin')
@@ -18,7 +18,7 @@
                                 <option value="all">All Deliveries</option>
                             </select>
                         @endcan
- 
+
                         @canany(['is-gatekeeper', 'is-admin'])
                             <a href="{{ route('deliveries.create') }}" class="btn btn-primary">
                                 <i class="bi bi-plus-square me-1"></i>
@@ -114,10 +114,12 @@
                         orderable: false,
                         searchable: false
                     }
+                ],
+                order: [
+                    [{{ auth()->user()->isSuperAdmin() ? 7 : 6 }}, 'desc']
                 ]
             });
         });
-
         $('#status-filter').on('change', function() {
             rd()
         });
