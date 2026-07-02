@@ -9,5 +9,9 @@ export default defineConfig({
         }),
     ],
 
-
+    server: {
+        cors: {
+            origin: "*",
+        },
+    },
 });

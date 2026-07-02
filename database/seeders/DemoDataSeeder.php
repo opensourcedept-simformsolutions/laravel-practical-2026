@@ -95,13 +95,23 @@ class DemoDataSeeder extends Seeder
             // Flats
             $flats = [];
 
-            for ($i = 1; $i <= 40; $i++) {
-                $flats[] = Flat::create([
-                    'society_id' => $society->id,
-                    'wing' => 'A',
-                    'floor' => ceil($i / 10),
-                    'flat_number' => 100 + $i,
-                ]);
+            $wings = ['A', 'B', 'C', 'D'];
+
+            foreach ($wings as $wing) {
+                for ($floor = 1; $floor <= 4; $floor++) {
+
+                    for ($flat = 1; $flat <= 4; $flat++) {
+
+                        $flatNumber = ($floor * 100) + $flat;
+
+                        $flats[] = Flat::create([
+                            'society_id' => $society->id,
+                            'wing' => $wing,
+                            'floor' => $floor,
+                            'flat_number' => $flatNumber,
+                        ]);
+                    }
+                }
             }
             $this->command->info("✔ Flats created for Society {$society->id}");
 

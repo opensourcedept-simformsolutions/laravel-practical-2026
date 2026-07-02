@@ -114,13 +114,14 @@
                         orderable: false,
                         searchable: false
                     }
+                ],
+                order: [
+                    [{{ auth()->user()->isSuperAdmin() ? 7 : 6 }}, 'desc']
                 ]
             });
         });
-
         $('#status-filter').on('change', function() {
             rd()
         });
     </script>
 @endpush
-

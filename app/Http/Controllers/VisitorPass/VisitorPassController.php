@@ -9,6 +9,7 @@ use App\Models\Flat;
 use App\Models\Visitor;
 use App\Models\VisitorLog;
 use App\Services\ActivityLogger;
+use App\Traits\AppliesDataTableFilters;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,8 @@ use Yajra\DataTables\Facades\DataTables;
 
 class VisitorPassController extends Controller
 {
+    use AppliesDataTableFilters;
+
     public function index()
     {
         $this->authorize('viewAny', VisitorLog::class);
@@ -439,6 +442,25 @@ class VisitorPassController extends Controller
 
         try {
             $query = $this->getReportQuery($request);
+            $query = $this->applyDataTableFilters(
+                $query,
+                $request,
+                [
+                    'visitors.name',
+                    'visitors.phone',
+                    'societies.name',
+                    'visitor_logs.purpose',
+                    'visitor_logs.status',
+                    'gatekeepers.name',
+                ],
+                [
+                    'flat' => function ($query, $direction) {
+                        $query->orderBy('flats.wing', $direction)
+                            ->orderBy('flats.floor', $direction)
+                            ->orderBy('flats.flat_number', $direction);
+                    },
+                ]
+            );
 
             return response()->streamDownload(function () use ($query) {
                 $handle = fopen('php://output', 'w');

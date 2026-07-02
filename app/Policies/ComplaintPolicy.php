@@ -70,4 +70,9 @@ class ComplaintPolicy
         return $complaint->user_id === $user->id
             && in_array($complaint->status, [ComplaintStatus::OPEN->value, ComplaintStatus::RESOLVED->value]);
     }
+
+    public function restore(User $user, Complaint $complaint): bool
+    {
+        return $user->isSuperAdmin() || $user->isAdmin();
+    }
 }

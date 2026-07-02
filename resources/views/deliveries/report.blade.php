@@ -201,16 +201,17 @@
                 table.draw();
             });
 
-            $('#export-btn').click(function() {
-                let params = $.param({
-                    status: $('#status-filter').val(),
-                    flat_id: $('#flat-filter').val(),
-                    vendor: $('#vendor-filter').val(),
-                    from_date: fromDate,
-                    to_date: toDate
-                });
+            $('#export-btn').click(function () {
+                let params = table.ajax.params();
 
-                window.location = "{{ route('reports.deliveries.export') }}?" + params;
+                params.status = $('#status-filter').val();
+                params.flat_id = $('#flat-filter').val();
+                params.vendor = $('#vendor-filter').val();
+                params.from_date = fromDate;
+                params.to_date = toDate;
+
+                window.location =
+                    "{{ route('reports.deliveries.export') }}?" + $.param(params);
             });
 
             $('#reset-filters').click(function() {

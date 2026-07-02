@@ -51,12 +51,15 @@ class DeliveryPolicy
      */
     public function update(User $user, Delivery $delivery): bool
     {
-        if ($delivery->status === 'delivered') {
+        if (! $this->sameSociety($user, $delivery)) {
             return false;
         }
 
-        return $this->sameSociety($user, $delivery)
-            && ($user->isAdmin() || $user->isGatekeeper());
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $user->isGatekeeper() && $delivery->status !== 'delivered';
     }
 
     /**

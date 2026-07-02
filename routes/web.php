@@ -57,11 +57,16 @@ Route::middleware('auth')->group(function () {
         ->controller(VisitorLogController::class)
         ->name('gatekeeper.')
         ->group(function () {
-            Route::get('/pending-pass', 'pending')->name('visitor-logs.pending');
+            Route::get('/pending-pass', 'pending')
+                ->withTrashed()
+                ->name('visitor-logs.pending');
             Route::patch('/visitor-logs/{visitorLog}/mark-entry', 'markEntry')
                 ->name('visitor-logs.mark-entry');
             Route::patch('/visitor-logs/{visitorLog}/mark-exit', 'markExit')
                 ->name('visitor-logs.mark-exit');
+            Route::patch('/visitor-logs/{visitorLog}/restore', 'restore')
+                ->withTrashed()
+                ->name('visitor-logs.restore');
             Route::get('/visitor-logs/exited', 'exited')
                 ->name('visitor-logs.exited');
         });
@@ -74,7 +79,8 @@ Route::middleware('auth')->group(function () {
             Route::get('/create', 'create')->name('create');
             Route::post('/', 'store')->name('store');
             Route::get('/', 'index')->name('index');
-            Route::get('/{complaint}', 'show')->name('show');
+            Route::patch('/{complaint}/restore', 'restore')->withTrashed()->name('restore');
+            Route::get('/{complaint}', 'show')->withTrashed()->name('show');
             Route::get('/{complaint}/edit', 'edit')->name('edit');
             Route::patch('/{complaint}', 'update')->name('update');
             Route::delete('/{complaint}', 'destroy')->name('destroy');
