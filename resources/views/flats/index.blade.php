@@ -74,15 +74,6 @@
                         d.society_id = $('#society_filter').val();
                     }
                 },
-                layout: {
-                    topStart: {
-                        buttons: ['csv', 'excel']
-                    },
-                    topEnd: {
-                        search: true,
-                        pageLength: true
-                    }
-                },
                 columns: [{
                         data: 'DT_RowIndex',
                         name: 'DT_RowIndex',

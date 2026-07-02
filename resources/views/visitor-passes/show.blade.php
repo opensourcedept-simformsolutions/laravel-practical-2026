@@ -34,18 +34,24 @@
             <div class="text-center mb-4">
                 <h6 class="mb-3 fw-semibold">Visitor Pass QR</h6>
 
-                <div class="d-inline-block p-3 bg-white border rounded shadow-xs">
-                    {!! QrCode::size(220)->generate($visitorLog->qr_code_data) !!}
-                </div>
+                <button type="button" class="btn btn-primary btn-sm" onclick="generateQR()">
+                    <i class="bi bi-qr-code"></i> Generate QR
+                </button>
 
-                <div class="mt-2 text-muted small">
-                    Pass ID: #{{ $visitorLog->id }}
-                </div>
+                <div id="qrContainer" class="mt-3 d-none">
+                    <div class="d-inline-block p-3 bg-white border rounded shadow-sm">
+                        {!! QrCode::size(220)->generate($visitorLog->qr_code_data) !!}
+                    </div>
 
-                <div class="mt-3">
-                    <button onclick="downloadQR()" class="btn btn-success btn-sm">
-                        <i class="bi bi-download"></i> Download QR Code
-                    </button>
+                    <div class="mt-2 text-muted small">
+                        Pass ID: #{{ $visitorLog->id }}
+                    </div>
+
+                    <div class="mt-3">
+                        <button onclick="downloadQR()" class="btn btn-success btn-sm">
+                            <i class="bi bi-download"></i> Download QR Code
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -67,14 +73,16 @@
                 <div class="col-md-6">
                     <div class="p-3 bg-light rounded border border-light">
                         <div class="text-muted small">Entry Time</div>
-                        <div class="fw-semibold">{{ $visitorLog->entry_time ? format_date($visitorLog->entry_time) : '-' }}</div>
+                        <div class="fw-semibold">{{ $visitorLog->entry_time ? format_date($visitorLog->entry_time) : '-' }}
+                        </div>
                     </div>
                 </div>
 
                 <div class="col-md-6">
                     <div class="p-3 bg-light rounded border border-light">
                         <div class="text-muted small">Exit Time</div>
-                        <div class="fw-semibold">{{ $visitorLog->exit_time ? format_date($visitorLog->exit_time) : '-' }}</div>
+                        <div class="fw-semibold">{{ $visitorLog->exit_time ? format_date($visitorLog->exit_time) : '-' }}
+                        </div>
                     </div>
                 </div>
 
@@ -114,41 +122,52 @@
 @endpush
 
 @push('scripts')
-<script>
-    function downloadQR() {
-        const svg = document.querySelector('.text-center svg');
+    <script>
+        function generateQR() {
+            const qrContainer = document.getElementById('qrContainer');
 
-        if (!svg) {
+            qrContainer.classList.remove('d-none');
+
             Toast.fire({
-                icon: 'error',
-                title: 'QR Code not found'
+                icon: 'success',
+                title: 'QR Code generated successfully'
             });
-            return;
         }
 
-        const serializer = new XMLSerializer();
-        const source = serializer.serializeToString(svg);
+        function downloadQR() {
+            const svg = document.querySelector('#qrContainer svg');
 
-        const blob = new Blob([source], {
-            type: 'image/svg+xml;charset=utf-8'
-        });
+            if (!svg) {
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Please generate the QR Code first.'
+                });
+                return;
+            }
 
-        const url = URL.createObjectURL(blob);
+            const serializer = new XMLSerializer();
+            const source = serializer.serializeToString(svg);
 
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'visitor-pass-{{ $visitorLog->id }}.svg';
+            const blob = new Blob([source], {
+                type: 'image/svg+xml;charset=utf-8'
+            });
 
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+            const url = URL.createObjectURL(blob);
 
-        URL.revokeObjectURL(url);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'visitor-pass-{{ $visitorLog->id }}.svg';
 
-        Toast.fire({
-            icon: 'success',
-            title: 'QR Code downloaded successfully'
-        });
-    }
-</script>
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            URL.revokeObjectURL(url);
+
+            Toast.fire({
+                icon: 'success',
+                title: 'QR Code downloaded successfully'
+            });
+        }
+    </script>
 @endpush
