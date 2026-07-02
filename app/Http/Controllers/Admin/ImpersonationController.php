@@ -13,9 +13,15 @@ class ImpersonationController extends Controller
 {
     public function start(User $user)
     {
-        // if (! auth()->user()->isSuperAdmin()) {
-        //     abort(403);
-        // }
+        $this->authorize('is-admin');
+
+        if (session()->has('impersonator_id')) {
+            return redirect()->back()
+                ->with([
+                    'success' => false,
+                    'message' => 'Nested impersonation is not allowed.',
+                ]);
+        }
 
         if ($user->id === auth()->id()) {
             return back();

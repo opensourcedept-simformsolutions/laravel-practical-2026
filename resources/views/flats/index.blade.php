@@ -5,13 +5,31 @@
 @section('content')
 
     <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-header bg-white border-bottom py-3">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="mb-0 fw-bold text-dark">Flat List</h5>
+                </div>
 
-        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold text-dark">Flat List</h5>
+                <div class="col-auto">
+                    <div class="d-flex align-items-center gap-2">
+                        @can('is-admin')
+                            <select id="status-filter" class="form-select form-select-sm w-auto">
+                                <option value="active">Active Flats</option>
+                                <option value="deleted">Deleted Flats</option>
+                                <option value="all">All Flats</option>
+                            </select>
+                        @endcan
 
-            <a href="{{ route('flats.create') }}" type="button" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-square me-1"></i> Add Flat
-            </a>
+                        @canany(['is-gatekeeper', 'is-admin'])
+                            <a href="{{ route('flats.create') }}" class="btn btn-primary">
+                                <i class="bi bi-plus-square me-1"></i>
+                                Create Flat
+                            </a>
+                        @endcanany
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="card-body">
@@ -63,48 +81,74 @@
 
 @push('scripts')
     <script>
-        $(document).ready(function() {
-            table = $('#flatsTable').DataTable({
-                processing: true,
-                serverSide: true,
-                responsive: true,
-                ajax: {
-                    url: "{{ route('flats.index') }}",
-                    data: function(d) {
-                        d.society_id = $('#society_filter').val();
-                    }
+        table = $('#flatsTable').DataTable({
+            processing: true,
+            serverSide: true,
+            responsive: true,
+            ajax: {
+                url: "{{ route('flats.index') }}",
+                data: function(d) {
+                    d.society_id = $('#society_filter').val();
+                    d.filter = $('#status-filter').val();
+                }
+            },
+            layout: {
+                topStart: {
+                    buttons: [{
+                        text: 'CSV',
+                        action: function (e, dt) {
+
+                            let search = dt.search();
+                            let society = $('#society_filter').val();
+
+                            let url = "{{ route('flats.export') }}";
+
+                            url += '?search=' + encodeURIComponent(search);
+
+                            if (society) {
+                                url += '&society_id=' + society;
+                            }
+
+                            window.location = url;
+                        }
+                    }]
                 },
-                columns: [{
-                        data: 'DT_RowIndex',
-                        name: 'DT_RowIndex',
-                        orderable: false,
-                        searchable: false
-                    }, {
-                        data: 'society',
-                        name: 'societies.name',
-                        visible: @json(auth()->user()->isSuperAdmin())
-                    },
-                    {
-                        data: 'wing',
-                        name: 'wing',
-                        searchable: true
-                    },
-                    {
-                        data: 'floor',
-                        name: 'floor'
-                    },
-                    {
-                        data: 'flat_number',
-                        name: 'flat_number'
-                    },
-                    {
-                        data: 'actions',
-                        orderable: false,
-                        searchable: false
-                    }
-                ]   
-            });
+                topEnd: {
+                    search: true,
+                    pageLength: true
+                }
+            },
+            columns: [{
+                    data: 'DT_RowIndex',
+                    name: 'DT_RowIndex',
+                    orderable: false,
+                    searchable: false
+                }, {
+                    data: 'society',
+                    name: 'societies.name',
+                    visible: @json(auth()->user()->isSuperAdmin())
+                },
+                {
+                    data: 'wing',
+                    name: 'wing',
+                    searchable: true
+                },
+                {
+                    data: 'floor',
+                    name: 'floor'
+                },
+                {
+                    data: 'flat_number',
+                    name: 'flat_number'
+                },
+                {
+                    data: 'actions',
+                    orderable: false,
+                    searchable: false
+                }
+            ]
         });
+
 
         $(document).on('change', '#status-filter, #society_filter', function() {
             rd();

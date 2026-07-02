@@ -3,23 +3,40 @@
 @section('title', 'Visitor Passes')
 
 @section('content')
-
 <div class="card shadow-sm border-0 rounded-3">
+    <div class="card-header bg-white border-bottom py-3">
+        <div class="row align-items-center">
 
-    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-        <h5 class="mb-0 fw-bold text-dark">Visitor Pass List</h5>
+            <div class="col">
+                <h5 class="mb-0 fw-bold text-dark">Visitor Pass List</h5>
+            </div>
 
-        <div class="d-flex gap-2">
-            <a href="{{ route('gatekeeper.visitor-logs.exited') }}" class="btn btn-info btn-sm">
-                <i class="bi bi-box-arrow-right me-1"></i>
-                Exited Visitors
-            </a>
-            @if(!(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin()))
-            <a href="{{ route('passes.create') }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-square me-1"></i>
-                Create Pass
-            </a>
-            @endif
+            <div class="col-auto">
+                <div class="d-flex align-items-center gap-2">
+
+                    @can('is-admin')
+                    <select id="status-filter" class="form-select form-select-sm w-auto">
+                        <option value="active" selected>Active Visitor Passes</option>
+                        <option value="deleted">Deleted Visitor Passes</option>
+                        <option value="all">All Visitor Passes</option>
+                    </select>
+                    @endcan
+
+                    <a href="{{ route('gatekeeper.visitor-logs.exited') }}" class="btn btn-info">
+                        <i class="bi bi-box-arrow-right me-1"></i>
+                        Exited Visitors
+                    </a>
+
+                    @if(!(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin()))
+                    <a href="{{ route('passes.create') }}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-square me-1"></i>
+                        Create Pass
+                    </a>
+                    @endif
+
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -109,11 +126,17 @@
 
             let stream = null;
             let capturedFile = null;
+            let currentFilter = 'active';
 
             table = $('#visitorLogsTable').DataTable({
                 processing: true,
                 serverSide: true,
-                ajax: "{{ route('gatekeeper.visitor-logs.pending') }}",
+                ajax: {
+                    url: "{{ route('gatekeeper.visitor-logs.pending') }}",
+                    data: function (d) {
+                    d.filter = currentFilter;
+                    }
+                },
 
                 columns: [{
                         data: 'DT_RowIndex',
@@ -152,6 +175,10 @@
                         orderable: false
                     }
                 ]
+            });
+            $('#status-filter').on('change', function () {
+                currentFilter = $(this).val();
+                rd()
             });
 
             $(document).on('click', '.entry-btn', async function() {

@@ -10,7 +10,7 @@
             <h5 class="mb-0 fw-bold text-dark">Add Delivery</h5>
         </div>
 
-        <form action="{{ route('deliveries.store') }}" method="POST">
+        <form id="deliveryForm" action="{{ route('deliveries.store') }}" method="POST">
             @csrf
 
             <div class="card-body p-4">

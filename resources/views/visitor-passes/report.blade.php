@@ -208,16 +208,15 @@
             });
 
             $('#export-btn').on('click', function() {
+                let params = table.ajax.params();
 
-                let params = $.param({
-                    status: $('#status-filter').val(),
-                    flat_id: $('#flat-filter').val(),
-                    from_date: fromDate,
-                    to_date: toDate
-                });
+                params.status = $('#status-filter').val();
+                params.flat_id = $('#flat-filter').val();
+                params.from_date = fromDate;
+                params.to_date = toDate;
 
                 window.location =
-                    "{{ route('reports.passes.export') }}?" + params;
+                    "{{ route('reports.passes.export') }}?" + $.param(params);
             });
 
         });

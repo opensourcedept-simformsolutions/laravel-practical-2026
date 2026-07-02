@@ -6,8 +6,11 @@
 
     <div class="card shadow-sm border-0 rounded-3">
 
-        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold text-dark">Resident List</h5>
+        <div class="card-header bg-white border-bottom py-3">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="mb-0 fw-bold text-dark">Resident List</h5>
+                </div>
 
                 <div class="col-auto">
                     <div class="d-flex align-items-center gap-2">
@@ -32,6 +35,18 @@
 
         <div class="card-body">
 
+            @if (auth()->user()->isSuperAdmin())
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Society</label>
+                    <select id="society_filter" class="form-select form-select-sm">
+                        <option value="">All Societies</option>
+                        @foreach ($societies as $society)
+                            <option value="{{ $society->id }}">{{ $society->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
+
             <div class="table-responsive">
                 <table id="residentsTable" class="table table-hover table-striped align-middle w-100">
 
@@ -47,7 +62,9 @@
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
+
                     <tbody></tbody>
+
                 </table>
             </div>
 

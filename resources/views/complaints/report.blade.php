@@ -218,17 +218,16 @@
                 table.draw();
             });
 
-            $('#export-btn').click(function() {
+            $('#export-btn').click(function () {
+                let params = table.ajax.params();
 
-                let params = $.param({
-                    category: $('#category-filter').val(),
-                    status: $('#status-filter').val(),
-                    from_date: fromDate,
-                    to_date: toDate
-                });
+                params.category = $('#category-filter').val();
+                params.status = $('#status-filter').val();
+                params.from_date = fromDate;
+                params.to_date = toDate;
 
                 window.location =
-                    "{{ route('reports.complaints.export') }}?" + params;
+                    "{{ route('reports.complaints.export') }}?" + $.param(params);
             });
 
         });
