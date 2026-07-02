@@ -81,61 +81,77 @@
 
 @push('scripts')
     <script>
-        $(document).ready(function() {
-            table = $('#flatsTable').DataTable({
-                processing: true,
-                serverSide: true,
-                responsive: true,
-                ajax: {
-                    url: "{{ route('flats.index') }}",
-                    data: function(d) {
-                        d.society_id = $('#society_filter').val();
-                        d.filter = $('#status-filter').val();
-                    }
+        table = $('#flatsTable').DataTable({
+            processing: true,
+            serverSide: true,
+            responsive: true,
+            ajax: {
+                url: "{{ route('flats.index') }}",
+                data: function(d) {
+                    d.society_id = $('#society_filter').val();
+                    d.filter = $('#status-filter').val();
+                }
+            },
+            layout: {
+                topStart: {
+                    buttons: [{
+                        text: 'CSV',
+                        action: function (e, dt) {
+
+                            let search = dt.search();
+                            let society = $('#society_filter').val();
+
+                            let url = "{{ route('flats.export') }}";
+
+                            url += '?search=' + encodeURIComponent(search);
+
+                            if (society) {
+                                url += '&society_id=' + society;
+                            }
+
+                            window.location = url;
+                        }
+                    }]
                 },
-                layout: {
-                    topStart: {
-                        buttons: ['csv', 'excel']
-                    },
-                    topEnd: {
-                        search: true,
-                        pageLength: true
-                    }
+                topEnd: {
+                    search: true,
+                    pageLength: true
+                }
+            },
+            columns: [{
+                    data: 'DT_RowIndex',
+                    name: 'DT_RowIndex',
+                    orderable: false,
+                    searchable: false
+                }, {
+                    data: 'society',
+                    name: 'societies.name',
+                    visible: @json(auth()->user()->isSuperAdmin())
                 },
-                columns: [{
-                        data: 'DT_RowIndex',
-                        name: 'DT_RowIndex',
-                        orderable: false,
-                        searchable: false
-                    }, {
-                        data: 'society',
-                        name: 'societies.name',
-                        visible: @json(auth()->user()->isSuperAdmin())
-                    },
-                    {
-                        data: 'wing',
-                        name: 'wing',
-                        searchable: true
-                    },
-                    {
-                        data: 'floor',
-                        name: 'floor'
-                    },
-                    {
-                        data: 'flat_number',
-                        name: 'flat_number'
-                    },
-                    {
-                        data: 'actions',
-                        orderable: false,
-                        searchable: false
-                    }
-                ]
-            });
+                {
+                    data: 'wing',
+                    name: 'wing',
+                    searchable: true
+                },
+                {
+                    data: 'floor',
+                    name: 'floor'
+                },
+                {
+                    data: 'flat_number',
+                    name: 'flat_number'
+                },
+                {
+                    data: 'actions',
+                    orderable: false,
+                    searchable: false
+                }
+            ]
         });
 
+
         $(document).on('change', '#status-filter, #society_filter', function() {
-            table.ajax.reload();
+            rd();
         });
     </script>
 @endpush

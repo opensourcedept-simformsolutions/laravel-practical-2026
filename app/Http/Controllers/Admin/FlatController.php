@@ -105,7 +105,6 @@ class FlatController extends Controller
                 : collect();
 
             return view('flats.index', compact('societies'));
-
         } catch (Exception $e) {
 
             Log::error('Flat listing error: '.$e->getMessage(), [
@@ -260,6 +259,79 @@ class FlatController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to restore flat.',
+            });
+        }
+    }
+              
+    public function export(Request $request)
+    {
+        $this->authorize('viewAny', Flat::class);
+
+        try {
+
+            $user = auth()->user();
+
+            $query = Flat::query()
+                ->select([
+                    'flats.*',
+                    'societies.name as society_name',
+                ])
+                ->leftJoin('societies', 'societies.id', '=', 'flats.society_id');
+
+            if (! $user->isSuperAdmin()) {
+
+                $query->where('flats.society_id', $user->society_id);
+            } elseif ($request->filled('society_id')) {
+
+                $query->where('flats.society_id', $request->society_id);
+            }
+
+            if ($request->filled('search')) {
+
+                $search = $request->search;
+
+                $query->where(function ($q) use ($search) {
+                    $q->where('societies.name', 'like', "%{$search}%")
+                        ->orWhere('flats.wing', 'like', "%{$search}%")
+                        ->orWhere('flats.floor', 'like', "%{$search}%")
+                        ->orWhere('flats.flat_number', 'like', "%{$search}%");
+                });
+            }
+
+            return response()->streamDownload(function () use ($query, $user) {
+
+                $handle = fopen('php://output', 'w');
+
+                fputcsv($handle, [
+                    'ID',
+                    'Society',
+                    'Wing',
+                    'Floor',
+                    'Flat Number',
+                ]);
+
+                foreach ($query->cursor() as $flat) {
+
+                    fputcsv($handle, [
+                        $flat->id,
+                        $user->isSuperAdmin() ? $flat->society_name : '',
+                        $flat->wing,
+                        $flat->floor,
+                        $flat->flat_number,
+                    ]);
+                }
+
+                fclose($handle);
+            }, 'flats.csv', [
+                'Content-Type' => 'text/csv',
+            ]);
+        } catch (\Throwable $e) {
+
+            Log::error($e);
+
+            return back()->with([
+                'status' => 'error',
+                'message' => 'Failed to export flat details.',
             ]);
         }
     }

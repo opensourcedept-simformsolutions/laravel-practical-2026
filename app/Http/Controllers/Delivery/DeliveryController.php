@@ -11,6 +11,7 @@ use App\Models\Flat;
 use App\Models\Resident;
 use App\Services\ActivityLogger;
 use App\Services\DeliveryNotificationService;
+use App\Traits\AppliesDataTableFilters;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -28,6 +29,8 @@ use Yajra\DataTables\Facades\DataTables;
  */
 class DeliveryController extends Controller
 {
+    use AppliesDataTableFilters;
+
     /**
      * Create a new controller instance.
      */
@@ -206,6 +209,24 @@ class DeliveryController extends Controller
     {
         try {
             $query = $this->getReportQuery($request);
+            $query = $this->applyDataTableFilters(
+                $query,
+                $request,
+                [
+                    'deliveries.vendor',
+                    'users.name',
+                    'societies.name',
+                    'deliveries.package_details',
+                    'deliveries.status',
+                ],
+                [
+                    'flat' => function ($query, $direction) {
+                        $query->orderBy('flats.wing', $direction)
+                            ->orderBy('flats.floor', $direction)
+                            ->orderBy('flats.flat_number', $direction);
+                    },
+                ]
+            );
 
             return response()->streamDownload(function () use ($query) {
                 $handle = fopen('php://output', 'w');
