@@ -81,7 +81,7 @@ class VisitorLogPolicy
 
     public function restore(User $user): bool
     {
-        return $user->isSuperAdmin();
+        return $user->isSuperAdmin() || $user->isAdmin();
     }
 
     public function markEntry(User $user, VisitorLog $visitorLog): bool

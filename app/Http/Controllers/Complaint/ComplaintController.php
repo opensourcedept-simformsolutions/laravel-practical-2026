@@ -68,15 +68,33 @@ class ComplaintController extends Controller
     public function index(Request $request)
     {
         $this->authorize('viewAny', Complaint::class);
-
         try {
             if ($request->ajax()) {
-                $query = Complaint::query()
-                    ->select([
-                        'complaints.*',
-                        'users.name as resident_name',
-                        'societies.name as society_name',
-                    ])
+                $query = Complaint::query();
+
+                if (auth()->user()->isSuperAdmin() || auth()->user()->isAdmin()) {
+
+                    switch ($request->get('filter', 'active')) {
+
+                        case 'deleted':
+                            $query->onlyTrashed();
+                            break;
+
+                        case 'all':
+                            $query->withTrashed();
+                            break;
+
+                        case 'active':
+                        default:
+                            break;
+                    }
+                }
+
+                $query->select([
+                    'complaints.*',
+                    'users.name as resident_name',
+                    'societies.name as society_name',
+                ])
                     ->leftJoin('users', 'users.id', '=', 'complaints.user_id')
                     ->leftJoin('societies', 'societies.id', '=', 'users.society_id');
 
@@ -137,24 +155,51 @@ class ComplaintController extends Controller
                     })
 
                     ->addColumn('action', function ($complaint) {
-                        $buttons = '
-                        <a href="'.route('complaints.show', $complaint).'"
-                           class="btn btn-info btn-sm" title="view">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                    ';
+                        $buttons = '';
+                        if ($complaint->trashed()) {
+                            $buttons = '
+                                <a href="'.route('complaints.show', $complaint).'"
+                                class="btn btn-info btn-sm" title="view">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            ';
+                            if (auth()->user()->isSuperAdmin() || auth()->user()->isAdmin()) {
+                                $buttons .= '
+                                    <button
+                                        type="button"
+                                        class="btn btn-info btn-sm btn-action"
+                                        data-url="'.route('complaints.restore', $complaint->id).'"
+                                        data-method="PATCH"
+                                        data-title="Restore Complaint?"
+                                        data-text="This complaint will be restored."
+                                        data-confirm="Restore"
+                                        data-success="Complaint restored successfully."
+                                        data-color="#198754"
+                                        title="Restore">
 
-                        if (auth()->user()->can('update', $complaint)) {
-                            $buttons .= '
-                            <a href="'.route('complaints.edit', $complaint).'"
-                               class="btn btn-primary btn-sm" title="Edit">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-                        ';
-                        }
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                    </button>
+                                ';
+                            }
+                        } else {
+                            $buttons = '
+                                <a href="'.route('complaints.show', $complaint).'"
+                                class="btn btn-info btn-sm" title="view">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            ';
 
-                        if (auth()->user()->can('delete', $complaint)) {
-                            $buttons .= '
+                            if (auth()->user()->can('update', $complaint)) {
+                                $buttons .= '
+                                    <a href="'.route('complaints.edit', $complaint).'"
+                                    class="btn btn-primary btn-sm" title="Edit">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                ';
+                            }
+
+                            if (auth()->user()->can('delete', $complaint)) {
+                                $buttons .= '
                                 <button
                                     type="button"
                                     class="btn btn-danger btn-sm btn-action"
@@ -168,6 +213,7 @@ class ComplaintController extends Controller
                                     <i class="bi bi-trash"></i>
                                 </button>
                             ';
+                            }
                         }
 
                         return '
@@ -446,5 +492,33 @@ class ComplaintController extends Controller
         }
 
         return $query;
+    }
+
+    public function restore(Complaint $complaint)
+    {
+        $this->authorize('restore', $complaint);
+        try {
+            $complaint->restore();
+            ActivityLogger::log('restore', $complaint, 'Complaint restored.');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Complaint restored successfully.',
+            ]);
+
+        } catch (Exception $e) {
+
+            Log::error('Complaint Restore Error', [
+                'complaint_id' => $complaint->id,
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'exception' => $e,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to restore complaint.',
+            ], 500);
+        }
     }
 }

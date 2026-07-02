@@ -67,17 +67,30 @@ class VisitorLogController extends Controller
         try {
             if ($request->ajax()) {
                 $user = auth()->user();
-                $query = VisitorLog::query()
-                    ->whereIn('visitor_logs.status', ['pending', 'entered'])
-                    ->select([
-                        'visitor_logs.*',
-                        'visitors.name as visitor_name',
-                        'visitors.phone as visitor_phone',
-                        'societies.name as society_name',
-                        'flats.wing as flat_wing',
-                        'flats.floor as flat_floor',
-                        'flats.flat_number',
-                    ])
+                $query = VisitorLog::query();
+                if ($user->isSuperAdmin() || $user->isAdmin()) {
+                    switch ($request->get('filter', 'active')) {
+                        case 'deleted':
+                            $query->onlyTrashed();
+                            break;
+                        case 'all':
+                            $query->withTrashed();
+                            break;
+                        case 'active':
+                        default:
+                            break;
+                    }
+                }
+                $query->whereIn('visitor_logs.status', ['pending', 'entered']);
+                $query->select([
+                    'visitor_logs.*',
+                    'visitors.name as visitor_name',
+                    'visitors.phone as visitor_phone',
+                    'societies.name as society_name',
+                    'flats.wing as flat_wing',
+                    'flats.floor as flat_floor',
+                    'flats.flat_number',
+                ])
                     ->leftJoin('visitors', 'visitor_logs.visitor_id', '=', 'visitors.id')
                     ->leftJoin('flats', 'visitor_logs.flat_id', '=', 'flats.id')
                     ->leftJoin('societies', 'flats.society_id', '=', 'societies.id');
@@ -94,8 +107,26 @@ class VisitorLogController extends Controller
                     ->addColumn('action', function ($log) {
                         $buttons = '';
 
-                        if (auth()->user()->can('markEntry', $log) && $log->status !== 'entered') {
-                            $buttons .= '
+                        if ($log->trashed()) {
+                            if (auth()->user()->isSuperAdmin() || auth()->user()->isAdmin()) {
+                                $buttons .= '
+                                    <button
+                                        type="button"
+                                        class="btn btn-warning btn-sm btn-action"
+                                        data-url="'.route('gatekeeper.visitor-logs.restore', $log->id).'"
+                                        data-method="PATCH"
+                                        data-title="Restore Visitor Pass?"
+                                        data-text="This visitor pass will be restored."
+                                        data-confirm="Restore"
+                                        data-color="#198754"
+                                        title="Restore">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                    </button>
+                                ';
+                            }
+                        } else {
+                            if (auth()->user()->can('markEntry', $log) && $log->status !== 'entered') {
+                                $buttons .= '
                                 <button
                                     type="button"
                                     class="btn btn-success btn-sm entry-btn"
@@ -104,37 +135,10 @@ class VisitorLogController extends Controller
                                     <i class="bi bi-box-arrow-in-right"></i>
                                 </button>
                             ';
-                        }
+                            }
 
-                        if (auth()->user()->can('update', $log)) {
-                            $buttons .= '
-                                <a href="'.route('passes.edit', $log).'"
-                                class="btn btn-primary btn-sm"
-                                title="Edit">
-                                    <i class="bi bi-pencil-square"></i>
-                                </a>
-                            ';
-                        }
-
-                        if (auth()->user()->can('delete', $log)) {
-                            $buttons .= '
-                                <button
-                                    type="button"
-                                    class="btn btn-danger btn-sm btn-action"
-                                    data-url="'.route('passes.destroy', $log).'"
-                                    data-method="DELETE"
-                                    data-title="Delete Visitor Pass?"
-                                    data-text="This action cannot be undone."
-                                    data-confirm="Delete"
-                                    data-success="Visitor pass deleted successfully."
-                                    title="Delete">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            ';
-                        }
-
-                        if (auth()->user()->can('markExit', $log) && $log->status !== 'pending') {
-                            $buttons .= '
+                            if (auth()->user()->can('markExit', $log) && $log->status !== 'pending') {
+                                $buttons .= '
                                 <button
                                     type="button"
                                     class="btn btn-warning btn-sm btn-action"
@@ -148,6 +152,34 @@ class VisitorLogController extends Controller
                                     <i class="bi bi-box-arrow-right"></i>
                                 </button>
                             ';
+                            }
+
+                            if (auth()->user()->can('update', $log)) {
+                                $buttons .= '
+                                <a href="'.route('passes.edit', $log).'"
+                                class="btn btn-primary btn-sm"
+                                title="Edit">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                            ';
+                            }
+
+                            if (auth()->user()->can('delete', $log)) {
+                                $buttons .= '
+                                <button
+                                    type="button"
+                                    class="btn btn-danger btn-sm btn-action"
+                                    data-url="'.route('passes.destroy', $log).'"
+                                    data-method="DELETE"
+                                    data-title="Delete Visitor Pass?"
+                                    data-text="This action cannot be undone."
+                                    data-confirm="Delete"
+                                    data-success="Visitor pass deleted successfully."
+                                    title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            ';
+                            }
                         }
 
                         return '
@@ -160,10 +192,13 @@ class VisitorLogController extends Controller
                     ->editColumn('society', fn ($log) => $log->society_name ?? '-')
                     ->editColumn('phone', fn ($log) => $log->visitor_phone ?? '-')
                     ->editColumn('status', function ($log) {
+                        if ($log->trashed()) {
+                            return '<span class="badge bg-none text-danger">Deleted</span>';
+                        }
+
                         return match ($log->status) {
-                            'pending' => '<span class="badge bg-warning">Pending</span>',
-                            'entered' => '<span class="badge bg-success">Entered</span>',
-                            'exited' => '<span class="badge bg-secondary">Exited</span>',
+                            'pending' => '<span class="badge bg-none text-secondary">Pending</span>',
+                            'entered' => '<span class="badge bg-none text-success">Entered</span>',
                             default => ucfirst($log->status),
                         };
                     })
@@ -387,6 +422,28 @@ class VisitorLogController extends Controller
                 'message' => 'Something went wrong. Please try again.',
                 'status' => 'error',
             ]);
+        }
+    }
+
+    public function restore(VisitorLog $visitorLog)
+    {
+        $this->authorize('restore', $visitorLog);
+        try {
+            $visitorLog->restore();
+            ActivityLogger::log('restore', $visitorLog, 'Visitor pass restored.');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Visitor pass restored successfully.',
+            ]);
+        } catch (Exception $e) {
+
+            Log::error('Visitor Pass Restore Error', ['visitor_log_id' => $visitorLog->id, 'user_id' => auth()->id(), 'error' => $e->getMessage(), 'exception' => $e]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to restore visitor pass.',
+            ], 500);
         }
     }
 }

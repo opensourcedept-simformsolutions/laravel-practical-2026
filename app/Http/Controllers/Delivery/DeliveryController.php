@@ -512,7 +512,7 @@ class DeliveryController extends Controller
             $this->notificationService->failed('delete delivery', $e);
 
             return response()->json([
-                'success' => true,
+                'success' => false,
                 'message' => 'Failed to delete delivery.',
             ]);
         }
