@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\VisitorPass;
 
+use App\Enums\PendingPassStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\VisitorPass\StoreVisitorPassRequest;
 use App\Http\Requests\VisitorPass\UpdateVisitorPassRequest;
@@ -216,7 +217,7 @@ class VisitorPassController extends Controller
                 $visitorLog->flat_id = $flatId;
                 $visitorLog->created_by = $user->id;
                 $visitorLog->purpose = $validated['purpose'];
-                $visitorLog->status = 'pending';
+                $visitorLog->status = PendingPassStatus::PENDING;
                 $visitorLog->visit_date = $validated['visit_date'];
 
                 $visitorLog->save();

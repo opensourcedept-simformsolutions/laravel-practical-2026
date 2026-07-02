@@ -223,7 +223,7 @@ class ComplaintController extends Controller
                         ';
                     })
                     ->rawColumns(['action', 'status', 'description'])
-                    ->make(true);
+                    ->toJson();
 
             }
 
