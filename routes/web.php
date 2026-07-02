@@ -50,7 +50,9 @@ Route::middleware('auth')->group(function () {
                 });
 
             Route::resource('flats', FlatController::class);
+            Route::patch('/{flat}/restore', [FlatController::class,'restore'])->withTrashed()->name('flats.restore');
             Route::resource('residents', ResidentController::class);
+            Route::patch('/{resident}/restore', [ResidentController::class,'restore'])->withTrashed()->name('resident.restore');
         });
 
     Route::middleware(['role:admin,gatekeeper'])
