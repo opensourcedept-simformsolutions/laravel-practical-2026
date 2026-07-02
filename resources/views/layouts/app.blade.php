@@ -4,8 +4,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>@yield('title', 'Dashboard')</title>
+  <title> @yield('title', 'Dashboard') </title>
 
+  <link rel="icon" type="image/svg+xml" href="{{ asset('images/favicon.svg') }}">
   <!-- Bootstrap 5 -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">

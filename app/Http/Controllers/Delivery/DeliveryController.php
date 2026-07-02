@@ -43,7 +43,7 @@ class DeliveryController extends Controller
      *
      * @return JsonResponse
      */
-    public function data()
+    public function data(Request $request)
     {
         try {
             $query = Delivery::query()
@@ -513,7 +513,7 @@ class DeliveryController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Failed to delete delivery.'
+                'message' => 'Failed to delete delivery.',
             ]);
         }
     }

@@ -44,11 +44,13 @@
     <script>
         $(function() {
 
-            $('#residentsTable').DataTable({
+            table = $('#residentsTable').DataTable({
                 processing: true,
                 serverSide: true,
-                responsive:true,
-                ajax: "{{ route('residents.index') }}",
+                responsive: true,
+                ajax: {
+                    url: "{{ route('residents.index') }}",
+                },
                 layout: {
                     topStart: {
                         buttons: [
