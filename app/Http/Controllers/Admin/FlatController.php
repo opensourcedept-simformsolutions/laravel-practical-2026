@@ -23,57 +23,73 @@ class FlatController extends Controller
         try {
             if ($request->ajax()) {
 
-                if (auth()->user()->isSuperAdmin()) {
-                    $query = Flat::query()
-                        ->select([
-                            'flats.*',
-                            'societies.name as society_name',
-                        ])
-                        ->leftJoin('societies', 'flats.society_id', '=', 'societies.id');
-                    if ($request->filled('society_id')) {
-                        $query->where('flats.society_id', $request->society_id);
-                    }
-                } else {
-                    $query = Flat::query()
-                        ->where('society_id', auth()->user()->society_id);
+                $query = Flat::query()
+                    ->select([
+                        'flats.*',
+                        'societies.name as society_name',
+                    ])
+                    ->leftJoin('societies', 'flats.society_id', '=', 'societies.id');
+
+                if (! auth()->user()->isSuperAdmin()) {
+                    $query->where('flats.society_id', auth()->user()->society_id);
+                }
+
+                if (auth()->user()->isSuperAdmin() && $request->filled('society_id')) {
+                    $query->where('flats.society_id', $request->society_id);
                 }
 
                 return DataTables::of($query)
                     ->addIndexColumn()
+
                     ->addColumn('society', function ($row) {
                         return $row->society_name ?? '-';
                     })
+
+                    ->editColumn('wing', fn ($row) => $row->wing ?? '-')
+                    ->editColumn('floor', fn ($row) => $row->floor ?? '-')
+                    ->editColumn('flat_number', fn ($row) => $row->flat_number ?? '-')
+
                     ->addColumn('actions', function ($row) {
 
                         $editUrl = route('flats.edit', $row->id);
                         $deleteUrl = route('flats.destroy', $row->id);
 
                         return '
-                        <div class="text-center">
-                        <a href="'.$editUrl.'" class="btn btn-sm btn-primary" title="Edit Flat"><i class="bi bi-pencil-square"></i></a>
+                    <div class="text-center">
+                        <a href="'.$editUrl.'" class="btn btn-sm btn-primary">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
 
-                        <form action="'.$deleteUrl.'" method="POST" style="display:inline-block;">
-                            '.csrf_field().'
-                            '.method_field('DELETE').'
-                            <button type="submit" class="btn btn-sm btn-danger"
-                                onclick="return confirm(\'Are you sure?\')" title="Delete Flat">
-                                  <i class="bi bi-trash"></i>
-                            </button>
-                        </form>
-                        </div>
-                    ';
+                        <button
+                            class="btn btn-danger btn-action"
+                            data-url="'.$deleteUrl.'"
+                            data-method="DELETE"
+                            data-title="Delete Flat?"
+                            data-text="This action cannot be undone."
+                            data-confirm="Yes, Delete"
+                            data-success="Flat deleted successfully">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                ';
                     })
+
                     ->rawColumns(['actions'])
                     ->make(true);
             }
 
+            // Web view load
             $societies = auth()->user()->isSuperAdmin()
                 ? Society::orderBy('name')->get()
                 : collect();
 
             return view('flats.index', compact('societies'));
+
         } catch (Exception $e) {
-            Log::error('Flat listing error: '.$e->getMessage(), ['exception' => $e]);
+
+            Log::error('Flat listing error: '.$e->getMessage(), [
+                'exception' => $e,
+            ]);
 
             if ($request->ajax()) {
                 return response()->json([
@@ -192,18 +208,17 @@ class FlatController extends Controller
             ActivityLogger::log('delete', $flat, "Flat {$flat->wing}-{$flat->flat_number} was deleted.");
             $flat->delete();
 
-            Session::flash('message', 'Flat Deleted successfully.');
-            Session::flash('status', 'success');
-
-            return redirect()->route('flats.index')
-                ->with('success', 'Flat deleted successfully');
+            return response()->json([
+                'message' => 'Flat deleted successfully.',
+                'success' => true,
+            ]);
         } catch (Exception $e) {
             Log::error('Flat delete error: '.$e->getMessage(), ['exception' => $e]);
 
-            Session::flash('message', 'Something went wrong.');
-            Session::flash('status', 'error');
-
-            return redirect()->back();
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+            ], 500);
         }
     }
 }

@@ -64,7 +64,6 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-
             table = $('#flatsTable').DataTable({
                 processing: true,
                 serverSide: true,
@@ -89,14 +88,15 @@
                         name: 'DT_RowIndex',
                         orderable: false,
                         searchable: false
-                    },{
+                    }, {
                         data: 'society',
                         name: 'societies.name',
-                        visible: "{{ auth()->user()->isSuperAdmin() ? 'true' : 'false' }}"
+                        visible: @json(auth()->user()->isSuperAdmin())
                     },
                     {
                         data: 'wing',
-                        name: 'wing'
+                        name: 'wing',
+                        searchable: true
                     },
                     {
                         data: 'floor',
@@ -114,6 +114,7 @@
                 ]
             });
         });
+
         $(document).on('change', '#society_filter', function() {
             rd();
         });

@@ -1,5 +1,5 @@
 @extends('layouts.app')
-
+ 
 @section('title', 'Deliveries')
 @section('content')
     <div class="card shadow-sm border-0 rounded-3">
@@ -53,7 +53,7 @@
         </div>
     </div>
 @endsection
-
+ 
 @push('scripts')
     <script>
         $(function() {
@@ -61,14 +61,14 @@
                 processing: true,
                 serverSide: true,
                 responsive: true,
-
+ 
                 ajax: {
                     url: '{{ route('deliveries.data') }}',
                     data: function(d) {
                         d.filter = $('#status-filter').val();
                     }
                 },
-
+ 
                 columns: [{
                         data: 'DT_RowIndex',
                         name: 'DT_RowIndex',
@@ -125,3 +125,5 @@
         });
     </script>
 @endpush
+ 
+ 

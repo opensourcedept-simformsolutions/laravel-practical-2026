@@ -69,15 +69,17 @@ class ResidentController extends Controller
                         <div class="text-center">
                         <a href="'.$editUrl.'" class="btn btn-primary btn-sm" title="Edit Resident"><i class="bi bi-pencil-square"></i></a>
 
-                        <form action="'.$deleteUrl.'" method="POST" class="d-inline">
-                            '.csrf_field().'
-                            '.method_field('DELETE').'
-                            <button type="submit" class="btn btn-danger btn-sm"
-                                onclick="return confirm(\'Delete this resident?\')" title="Delete Resident">
-                                  <i class="bi bi-trash"></i>
+                         <button
+                                class="btn btn-danger btn-action"
+                                data-url="'.$deleteUrl.'"
+                                data-method="DELETE"
+                                data-title="Delete Resident Details?"
+                                data-text="This action cannot be undone."
+                                data-confirm="Yes, Delete"
+                                data-success="Resident deleted successfully"
+                                title="Delete Flat">
+                                <i class="bi bi-trash"></i>
                             </button>
-                        </form>
-                        </div>
                     ';
                     })
 
@@ -295,20 +297,18 @@ class ResidentController extends Controller
                 }
             });
 
-            return redirect()
-                ->route('residents.index')
-                ->with([
-                    'message' => 'Resident deleted successfully.',
-                    'status' => 'success',
-                ]);
+            return response()->json([
+                'message' => 'Resident deleted successfully.',
+                'success' => true,
+            ]);
         } catch (Throwable $e) {
 
             Log::error($e->getMessage());
 
-            return back()->with([
-                'message' => 'Unable to delete resident.',
-                'status' => 'error',
-            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+            ], 500);
         }
     }
 }
