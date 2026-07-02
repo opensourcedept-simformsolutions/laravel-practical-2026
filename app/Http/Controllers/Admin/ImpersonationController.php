@@ -13,8 +13,14 @@ class ImpersonationController extends Controller
 {
     public function start(User $user)
     {
-        if (! auth()->user()->isSuperAdmin()) {
-            abort(403);
+        $this->authorize('is-admin');
+
+        if (session()->has('impersonator_id')) {
+            return redirect()->back()
+                ->with([
+                    'success' => false,
+                    'message' => 'Nested impersonation is not allowed.',
+                ]);
         }
 
         if ($user->id === auth()->id()) {
@@ -32,14 +38,14 @@ class ImpersonationController extends Controller
 
             return redirect('/')
                 ->with([
-                    'message' => 'You are now logged in as '.$user->name,
+                    'message' => 'You are now logged in as ' . $user->name,
                     'status' => 'success',
                 ]);
         } catch (Exception $e) {
             Log::error('Impersonation Start Error', [
                 'impersonator_id' => auth()->id(),
                 'target_user_id' => $user->id,
-                'error' => $e->getMessage(),
+                'error' => $e->getMessage(), 
                 'exception' => $e,
             ]);
 
