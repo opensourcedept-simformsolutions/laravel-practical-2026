@@ -44,9 +44,7 @@
                     <thead class="table-light">
                         <tr>
                             <th>ID</th>
-                            @if(auth()->user()->isSuperAdmin())
                             <th>Name</th>
-                            @endif
                             <th>Wing</th>
                             <th>Floor</th>
                             <th>Flat Number</th>
@@ -66,7 +64,6 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-
             table = $('#flatsTable').DataTable({
                 processing: true,
                 serverSide: true,
@@ -91,14 +88,15 @@
                         name: 'DT_RowIndex',
                         orderable: false,
                         searchable: false
-                    },{
+                    }, {
                         data: 'society',
                         name: 'societies.name',
-                        visible: "{{ auth()->user()->isSuperAdmin() ? 'true' : 'false' }}"
+                        visible: @json(auth()->user()->isSuperAdmin())
                     },
                     {
                         data: 'wing',
-                        name: 'wing'
+                        name: 'wing',
+                        searchable: true
                     },
                     {
                         data: 'floor',

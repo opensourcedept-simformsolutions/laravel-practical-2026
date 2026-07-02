@@ -513,7 +513,7 @@ class DeliveryController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Failed to delete delivery.'
+                'message' => 'Failed to delete delivery.',
             ]);
         }
     }

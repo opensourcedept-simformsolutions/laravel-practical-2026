@@ -27,7 +27,7 @@ class StoreResidentRequest extends FormRequest
                 'required',
                 'email',
                 'max:255',
-                'unique:users,email'
+                'unique:users,email',
             ],
 
             'phone' => [

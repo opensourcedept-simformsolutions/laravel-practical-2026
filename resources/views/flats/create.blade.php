@@ -84,8 +84,6 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            console.log("j");
-
             $("#flatForm").validate({
                 rules: {
 
