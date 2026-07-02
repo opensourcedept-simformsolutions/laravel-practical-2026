@@ -1,7 +1,8 @@
-import './bootstrap';
-import './sidebar';
-import './validations/user';
-import Alpine from 'alpinejs';
+import "./bootstrap";
+import "./sidebar";
+import "./validations/user";
+import "./validations/complaint-validation";
+import Alpine from "alpinejs";
 
 window.Alpine = Alpine;
 
