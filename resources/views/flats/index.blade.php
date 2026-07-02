@@ -72,11 +72,28 @@
                     url: "{{ route('flats.index') }}",
                     data: function(d) {
                         d.society_id = $('#society_filter').val();
-                    }
+                }
                 },
                 layout: {
                     topStart: {
-                        buttons: ['csv', 'excel']
+                        buttons: [{
+                            text: 'CSV',
+                            action: function (e, dt) {
+
+                                let search = dt.search();
+                                let society = $('#society_filter').val();
+
+                                let url = "{{ route('flats.export') }}";
+
+                                url += '?search=' + encodeURIComponent(search);
+
+                                if (society) {
+                                    url += '&society_id=' + society;
+                                }
+
+                                window.location = url;
+                            }
+                        }]
                     },
                     topEnd: {
                         search: true,
