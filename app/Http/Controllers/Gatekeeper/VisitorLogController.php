@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Gatekeeper;
 
+use App\Enums\PendingPassStatus;
 use App\Events\VisitorEntered;
 use App\Events\VisitorExited;
 use App\Http\Controllers\Controller;
@@ -210,7 +211,7 @@ class VisitorLogController extends Controller
                             ->orderBy('flats.flat_number', $order);
                     })
                     ->rawColumns(['status', 'action'])
-                    ->make(true);
+                    ->toJson();
             }
 
             return view('visitor-passes.pending');
@@ -252,7 +253,7 @@ class VisitorLogController extends Controller
 
             $visitorLog->entry_time = now();
             $visitorLog->gatekeeper_id = auth()->id();
-            $visitorLog->status = 'entered';
+            $visitorLog->status = PendingPassStatus::ENTERED;
             $visitorLog->photo_path = $request->file('photo')->store('visitor_photos', 'public');
             $visitorLog->save();
 
@@ -302,7 +303,7 @@ class VisitorLogController extends Controller
             }
 
             $visitorLog->exit_time = now();
-            $visitorLog->status = 'exited';
+            $visitorLog->status = PendingPassStatus::EXITED;
             $visitorLog->save();
 
             ActivityLogger::log('mark_exit', $visitorLog, "Visitor {$visitorLog->visitor->name} exited flat ".($visitorLog->flat?->wing ?? '-').'-'.($visitorLog->flat?->flat_number ?? '-').'.');
