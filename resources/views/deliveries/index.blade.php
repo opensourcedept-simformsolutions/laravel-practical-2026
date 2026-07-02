@@ -1,5 +1,5 @@
 @extends('layouts.app')
-
+ 
 @section('title', 'Deliveries')
 @section('content')
     <div class="card shadow-sm border-0 rounded-3">
@@ -8,7 +8,7 @@
                 <div class="col">
                     <h5 class="mb-0 fw-bold text-dark">Delivery List</h5>
                 </div>
-
+ 
                 <div class="col-auto">
                     <div class="d-flex align-items-center gap-2">
                         @can('is-admin')
@@ -18,7 +18,7 @@
                                 <option value="all">All Deliveries</option>
                             </select>
                         @endcan
-
+ 
                         @canany(['is-gatekeeper', 'is-admin'])
                             <a href="{{ route('deliveries.create') }}" class="btn btn-primary">
                                 <i class="bi bi-plus-square me-1"></i>
@@ -53,7 +53,7 @@
         </div>
     </div>
 @endsection
-
+ 
 @push('scripts')
     <script>
         $(function() {
@@ -61,14 +61,14 @@
                 processing: true,
                 serverSide: true,
                 responsive: true,
-
+ 
                 ajax: {
                     url: '{{ route('deliveries.data') }}',
                     data: function(d) {
                         d.filter = $('#status-filter').val();
                     }
                 },
-
+ 
                 columns: [{
                         data: 'DT_RowIndex',
                         name: 'DT_RowIndex',
@@ -120,8 +120,11 @@
                 ]
             });
         });
+
         $('#status-filter').on('change', function() {
             rd()
         });
     </script>
 @endpush
+ 
+ 

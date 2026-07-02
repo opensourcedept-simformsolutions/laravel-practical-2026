@@ -23,7 +23,7 @@
                         @endcan
 
                         @canany(['is-gatekeeper', 'is-admin'])
-                            <a href="{{ route('flats.create') }}" class="btn btn-primary">
+                            <a href="{{ route('residents.create') }}" class="btn btn-primary">
                                 <i class="bi bi-plus-square me-1"></i>
                                 Create Resident
                             </a>
@@ -75,72 +75,69 @@
 
 @push('scripts')
     <script>
-        $(function() {
+        table = $('#residentsTable').DataTable({
+            processing: true,
+            serverSide: true,
+            responsive: true,
 
-            table = $('#residentsTable').DataTable({
-                processing: true,
-                serverSide: true,
-                responsive: true,
+            ajax: {
+                url: "{{ route('residents.index') }}",
+                data: function(d) {
+                    d.society_id = $('#society_filter').val();
+                    d.filter = $('#status-filter').val();
+                }
+            },
 
-                ajax: {
-                    url: "{{ route('residents.index') }}",
-                    data: function(d) {
-                        d.society_id = $('#society_filter').val();
-                    }
+            layout: {
+                topStart: {
+                    buttons: ['csv', 'excel']
                 },
+                topEnd: {
+                    search: true,
+                    pageLength: true
+                }
+            },
 
-                layout: {
-                    topStart: {
-                        buttons: ['csv', 'excel']
-                    },
-                    topEnd: {
-                        search: true,
-                        pageLength: true
-                    }
+            columns: [{
+                    data: 'id',
+                    name: 'users.id'
                 },
+                {
+                    data: 'name',
+                    name: 'users.name'
+                },
+                {
+                    data: 'email',
+                    name: 'users.email'
+                },
+                {
+                    data: 'phone',
+                    name: 'users.phone'
+                },
+                {
+                    data: 'flat',
+                    name: 'flats.flat_number'
+                },
+                {
+                    data: 'wing',
+                    name: 'flats.wing'
+                },
+                {
+                    data: 'type',
+                    name: 'resident_type',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'actions',
+                    orderable: false,
+                    searchable: false
+                }
+            ]
+        });
 
-                columns: [{
-                        data: 'id',
-                        name: 'users.id'
-                    },
-                    {
-                        data: 'name',
-                        name: 'users.name'
-                    },
-                    {
-                        data: 'email',
-                        name: 'users.email'
-                    },
-                    {
-                        data: 'phone',
-                        name: 'users.phone'
-                    },
-                    {
-                        data: 'flat',
-                        name: 'flats.flat_number'
-                    },
-                    {
-                        data: 'wing',
-                        name: 'flats.wing'
-                    },
-                    {
-                        data: 'type',
-                        name: 'resident_type',
-                        orderable: false,
-                        searchable: false
-                    },
-                    {
-                        data: 'actions',
-                        orderable: false,
-                        searchable: false
-                    }
-                ]
-            });
-
-            $(document).on('change', '#society_filter', function() {
-                table.ajax.reload();
-            });
-
+        $(document).on('change', '#status-filter, #society_filter', function() {
+            rd();
         });
     </script>
 @endpush

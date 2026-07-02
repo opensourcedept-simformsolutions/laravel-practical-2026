@@ -105,6 +105,7 @@ class FlatController extends Controller
                 : collect();
 
             return view('flats.index', compact('societies'));
+
         } catch (Exception $e) {
 
             Log::error('Flat listing error: '.$e->getMessage(), [
@@ -332,6 +333,15 @@ class FlatController extends Controller
             return back()->with([
                 'status' => 'error',
                 'message' => 'Failed to export flat details.',
+
+            return response()->json([
+                'success' => true,
+                'message' => 'flat restored successfully.',
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to restore flat.',
             ]);
         }
     }

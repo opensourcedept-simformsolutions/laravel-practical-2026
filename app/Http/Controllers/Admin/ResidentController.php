@@ -32,7 +32,7 @@ class ResidentController extends Controller
 
                 $user = auth()->user();
 
-                $query = resident::query()
+                $query = Resident::query()
                     ->select([
                         'residents.*',
                         'users.name as user_name',
@@ -50,6 +50,13 @@ class ResidentController extends Controller
 
                 if ($user->isSuperAdmin() && $request->filled('society_id')) {
                     $query->where('flats.society_id', $request->society_id);
+                }
+                if ($user->isSuperAdmin() || $user->isAdmin()) {
+                    match ($request->get('filter', 'active')) {
+                        'deleted' => $query->onlyTrashed(),
+                        'all' => $query->withTrashed(),
+                        default => null,
+                    };
                 }
 
                 return DataTables::of($query)
@@ -69,28 +76,43 @@ class ResidentController extends Controller
                     })
 
                     ->addColumn('actions', function ($row) {
-
+ 
                         $editUrl = route('residents.edit', $row->id);
                         $deleteUrl = route('residents.destroy', $row->id);
-
-                        return '
+                        $restore = route('residents.restore', $row->id);
+ 
+                        if (! $row->trashed()) {
+                            return '
                         <div class="text-center">
-                            <a href="'.$editUrl.'" class="btn btn-sm btn-primary">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-
-                            <button
+                        <a href="'.$editUrl.'" class="btn btn-primary btn-sm" title="Edit Resident"><i class="bi bi-pencil-square"></i></a>
+ 
+                         <button
                                 class="btn btn-danger btn-action"
                                 data-url="'.$deleteUrl.'"
                                 data-method="DELETE"
-                                data-title="Delete Resident?"
+                                data-title="Delete Resident Details?"
                                 data-text="This action cannot be undone."
                                 data-confirm="Yes, Delete"
-                                data-success="Resident deleted successfully">
+                                data-success="Resident deleted successfully"
+                                title="Delete Flat">
                                 <i class="bi bi-trash"></i>
                             </button>
-                        </div>
                     ';
+                        } else {
+                            return '
+                            <div class="text-center">
+                            <button
+                            class="btn btn-info btn-action"
+                            data-url="'.$restore.'"
+                            data-method="PATCH"
+                            data-title="Restore Delivery?"
+                            data-text="This delivery will be restored."
+                            data-confirm="Yes, Restore"
+                            title="Restore Delivery">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                         </button> </div>
+                         ';
+                        }
                     })
 
                     ->rawColumns(['type', 'actions'])
@@ -99,7 +121,6 @@ class ResidentController extends Controller
             $societies = auth()->user()->isSuperAdmin()
                 ? Society::orderBy('name')->get()
                 : collect();
-
 
             return view('residents.index', compact('societies'));
 
@@ -321,7 +342,7 @@ class ResidentController extends Controller
         }
     }
 
-    public function restore(resident $resident)
+    public function restore(Resident $resident)
     {
         $this->authorize('restore', $resident);
 
