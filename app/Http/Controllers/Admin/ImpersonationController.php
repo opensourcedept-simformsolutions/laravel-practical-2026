@@ -38,14 +38,14 @@ class ImpersonationController extends Controller
 
             return redirect('/')
                 ->with([
-                    'message' => 'You are now logged in as ' . $user->name,
+                    'message' => 'You are now logged in as '.$user->name,
                     'status' => 'success',
                 ]);
         } catch (Exception $e) {
             Log::error('Impersonation Start Error', [
                 'impersonator_id' => auth()->id(),
                 'target_user_id' => $user->id,
-                'error' => $e->getMessage(), 
+                'error' => $e->getMessage(),
                 'exception' => $e,
             ]);
 

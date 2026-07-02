@@ -559,7 +559,6 @@ class VisitorPassController extends Controller
                 'success' => true,
                 'message' => 'Visitor pass deleted successfully.',
             ]);
-
         } catch (Exception $e) {
 
             Log::error('Visitor pass delete error: '.$e->getMessage(), [
