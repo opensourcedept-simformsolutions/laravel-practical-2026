@@ -10,7 +10,7 @@
             <h5 class="mb-0 fw-bold text-dark">Edit User</h5>
         </div>
 
-        <form action="{{ route('admin.users.update', $user) }}" method="POST">
+        <form id="userForm" action="{{ route('admin.users.update', $user) }}" method="POST">
             @csrf
             @method('PUT')
 
@@ -30,7 +30,8 @@
                     <div class="col-md-6">
                         <label for="email" class="form-label">Email</label>
                         <input type="email" id="email" name="email"
-                            class="form-control @error('email') is-invalid @enderror" value="{{ old('email', $user->email) }}">
+                            class="form-control @error('email') is-invalid @enderror"
+                            value="{{ old('email', $user->email) }}">
                         <x-form.error name="email" />
                     </div>
 
@@ -38,7 +39,8 @@
                     <div class="col-md-6">
                         <label for="phone" class="form-label">Phone</label>
                         <input type="text" id="phone" name="phone"
-                            class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone', $user->phone) }}">
+                            class="form-control @error('phone') is-invalid @enderror"
+                            value="{{ old('phone', $user->phone) }}">
                         <x-form.error name="phone" />
                     </div>
 
@@ -58,7 +60,8 @@
                     @if (auth()->user()->isSuperAdmin())
                         <div class="col-md-6">
                             <label for="society_id" class="form-label">Society</label>
-                            <select id="society_id" name="society_id" class="form-select @error('society_id') is-invalid @enderror">
+                            <select id="society_id" name="society_id"
+                                class="form-select @error('society_id') is-invalid @enderror">
                                 @foreach ($societies as $society)
                                     <option value="{{ $society->id }}" @selected(old('society_id', $user->society_id) == $society->id)>
                                         {{ $society->name }}
@@ -73,7 +76,8 @@
                     <div class="col-md-6">
                         <label for="password" class="form-label">New Password</label>
                         <input type="password" id="password" name="password"
-                            class="form-control @error('password') is-invalid @enderror" placeholder="Leave empty to keep current password">
+                            class="form-control @error('password') is-invalid @enderror"
+                            placeholder="Leave empty to keep current password">
                         <x-form.error name="password" />
                     </div>
 
@@ -101,3 +105,4 @@
     </div>
 
 @endsection
+
