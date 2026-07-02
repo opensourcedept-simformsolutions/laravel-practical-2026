@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\PendingPassStatus;
 use App\Models\User;
 use App\Models\VisitorLog;
 
@@ -40,10 +41,10 @@ class VisitorLogPolicy
 
     public function update(User $user, VisitorLog $visitorLog): bool
     {
-        if (($user->isAdmin() || $user->isGatekeeper()) && $visitorLog->created_by === $user->id && $visitorLog->status === 'pending') {
+        if (($user->isAdmin() || $user->isGatekeeper()) && $visitorLog->created_by === $user->id && $visitorLog->status === PendingPassStatus::PENDING) {
             return true;
         }
-        if ($user->isResident() && $user->resident && $visitorLog->flat_id === $user->resident->flat_id && $visitorLog->status === 'pending') {
+        if ($user->isResident() && $user->resident && $visitorLog->flat_id === $user->resident->flat_id && $visitorLog->status === PendingPassStatus::PENDING) {
             return true;
         }
 
@@ -63,11 +64,11 @@ class VisitorLogPolicy
 
     public function delete(User $user, VisitorLog $visitorLog): bool
     {
-        if (($user->isAdmin() || $user->isGatekeeper()) && $visitorLog->created_by === $user->id && $visitorLog->status === 'pending') {
+        if (($user->isAdmin() || $user->isGatekeeper()) && $visitorLog->created_by === $user->id && $visitorLog->status === PendingPassStatus::PENDING) {
             return true;
         }
 
-        if ($user->isResident() && $user->resident && $visitorLog->flat_id === $user->resident->flat_id && $visitorLog->status === 'pending') {
+        if ($user->isResident() && $user->resident && $visitorLog->flat_id === $user->resident->flat_id && $visitorLog->status === PendingPassStatus::PENDING) {
             return true;
         }
 
@@ -87,14 +88,14 @@ class VisitorLogPolicy
     public function markEntry(User $user, VisitorLog $visitorLog): bool
     {
         return ($user->isAdmin() || $user->isGatekeeper())
-        && $visitorLog->status === 'pending'
+        && $visitorLog->status === PendingPassStatus::PENDING
         && $visitorLog->flat->society_id === $user->society_id;
     }
 
     public function markExit(User $user, VisitorLog $visitorLog): bool
     {
         return ($user->isAdmin() || $user->isGatekeeper())
-        && $visitorLog->status === 'entered'
+        && $visitorLog->status === PendingPassStatus::ENTERED
         && $visitorLog->flat->society_id === $user->society_id;
     }
 }
