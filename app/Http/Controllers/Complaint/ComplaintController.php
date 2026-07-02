@@ -15,10 +15,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
+use App\Traits\AppliesDataTableFilters;
 
 class ComplaintController extends Controller
 {
-    use AuthorizesRequests;
+    use AuthorizesRequests, AppliesDataTableFilters;
 
     public function create()
     {
@@ -423,6 +424,18 @@ class ComplaintController extends Controller
     public function export(Request $request)
     {
         $query = $this->getReportQuery($request);
+        $query = $this->applyDataTableFilters(
+            $query,
+            $request,
+            [
+                'users.name',
+                'societies.name',
+                'complaints.category',
+                'complaints.description',
+                'complaints.admin_notes',
+                'complaints.status',
+            ]
+        );
 
         return response()->streamDownload(function () use ($query) {
             $handle = fopen('php://output', 'w');

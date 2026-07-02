@@ -29,35 +29,34 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table id="deliveries-table" class='table table-hover table-striped align-middle mb-0'>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        @if (Auth()->user()->isSuperAdmin())
-                        <th>Society</th>
-                        @endif
-                        <th>Flat</th>
-                        <th>Resident</th>
-                        <th>Vendor</th>
-                        <th>Package Details</th>
-                        <th>Status</th>
-                        <th>Received At</th>
-                        <th>Delivered At</th>
-                        <th class="text-center">Actions</th>
-                    </tr>
-                </thead>
-            </table>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="deliveries-table" class='table table-hover table-striped align-middle mb-0'>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            @if (Auth()->user()->isSuperAdmin())
+                                <th>Society</th>
+                            @endif
+                            <th>Flat</th>
+                            <th>Resident</th>
+                            <th>Vendor</th>
+                            <th>Package Details</th>
+                            <th>Status</th>
+                            <th>Received At</th>
+                            <th>Delivered At</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 @endsection
 
 @push('scripts')
-<script>
-    $(function() {
+    <script>
+        $(function() {
             table = $('#deliveries-table').DataTable({
                 processing: true,
                 serverSide: true,
@@ -124,6 +123,5 @@
         $('#status-filter').on('change', function() {
             rd()
         });
-</script>
+    </script>
 @endpush
-
