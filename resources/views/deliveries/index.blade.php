@@ -1,5 +1,5 @@
 @extends('layouts.app')
- 
+
 @section('title', 'Deliveries')
 @section('content')
     <div class="card shadow-sm border-0 rounded-3">
@@ -29,46 +29,47 @@
                 </div>
             </div>
         </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table id="deliveries-table" class='table table-hover table-striped align-middle mb-0'>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            @if (Auth()->user()->isSuperAdmin())
-                                <th>Society</th>
-                            @endif
-                            <th>Flat</th>
-                            <th>Resident</th>
-                            <th>Vendor</th>
-                            <th>Package Details</th>
-                            <th>Status</th>
-                            <th>Received At</th>
-                            <th>Delivered At</th>
-                            <th class="text-center">Actions</th>
-                        </tr>
-                    </thead>
-                </table>
-            </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="deliveries-table" class='table table-hover table-striped align-middle mb-0'>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        @if (Auth()->user()->isSuperAdmin())
+                        <th>Society</th>
+                        @endif
+                        <th>Flat</th>
+                        <th>Resident</th>
+                        <th>Vendor</th>
+                        <th>Package Details</th>
+                        <th>Status</th>
+                        <th>Received At</th>
+                        <th>Delivered At</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+            </table>
         </div>
     </div>
+</div>
 @endsection
- 
+
 @push('scripts')
-    <script>
-        $(function() {
+<script>
+    $(function() {
             table = $('#deliveries-table').DataTable({
                 processing: true,
                 serverSide: true,
                 responsive: true,
- 
+
                 ajax: {
                     url: '{{ route('deliveries.data') }}',
                     data: function(d) {
                         d.filter = $('#status-filter').val();
                     }
                 },
- 
+
                 columns: [{
                         data: 'DT_RowIndex',
                         name: 'DT_RowIndex',
@@ -123,7 +124,6 @@
         $('#status-filter').on('change', function() {
             rd()
         });
-    </script>
+</script>
 @endpush
- 
- 
+
