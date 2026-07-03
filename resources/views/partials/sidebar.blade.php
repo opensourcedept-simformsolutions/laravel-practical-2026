@@ -23,6 +23,12 @@
                 <i class="bi bi-buildings"></i>
                 <span class="sidebar-link-label">Society</span>
             </x-sidebar-link>
+
+            {{-- Wings --}}
+            <x-sidebar-link :href="route('wings.index')" :active="request()->routeIs('wings.*')">
+                <i class="bi bi-grid-3x3-gap-fill"></i>
+                <span class="sidebar-link-label">Wings</span>
+            </x-sidebar-link>
         @endcan
 
         @can('is-admin')

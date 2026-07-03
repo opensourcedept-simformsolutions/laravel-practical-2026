@@ -2,6 +2,8 @@
 
 namespace App\Services\Dashboard;
 
+use Illuminate\View\View;
+
 class DashboardService
 {
     /**
@@ -14,7 +16,7 @@ class DashboardService
         private ResidentDashboardService $resident
     ) {}
 
-    public function dashboard() : \Illuminate\View\View
+    public function dashboard(): View
     {
         $user = auth()->user();
 
@@ -31,6 +33,6 @@ class DashboardService
             default => abort(403)
         };
 
-        return view('dashboard.index',$data);
+        return view('dashboard.index', $data);
     }
 }

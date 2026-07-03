@@ -130,7 +130,7 @@
                 },
                 {
                     data: 'wing',
-                    name: 'wing',
+                    name: 'wings.name',
                     searchable: true
                 },
                 {

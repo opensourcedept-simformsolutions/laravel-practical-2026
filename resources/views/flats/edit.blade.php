@@ -37,8 +37,13 @@
 
                     <div class="col-md-6">
                         <label class="form-label">Wing</label>
-                        <input type="text" name="wing" class="form-control @error('wing') is-invalid @enderror" value="{{ old('wing', $flat->wing) }}">
-                        @error('wing')
+                        <select name="wing_id" id="wing_id" class="form-select @error('wing_id') is-invalid @enderror">
+                            <option value="">Select Wing</option>
+                            @foreach ($wings as $wing)
+                                <option value="{{ $wing->id }}" @selected(old('wing_id', $flat->wing_id) == $wing->id)>{{ $wing->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('wing_id')
                             <div class="text-danger pt-1 fs-7">{{ $message }}</div>
                         @enderror
                     </div>
@@ -77,3 +82,50 @@
     </div>
 
 @endsection
+
+@push('scripts')
+    <script>
+        $(function() {
+            const wingsUrlTemplate = "{{ url('/societies') }}/SOC/wings";
+
+            function loadWingsForSociety(societyId, selectedWingId = null) {
+                const $wing = $('#wing_id');
+                $wing.empty().append($('<option>', { value: '', text: 'Select Wing' }));
+
+                if (!societyId) {
+                    return;
+                }
+
+                $.get(wingsUrlTemplate.replace('SOC', societyId))
+                    .done(function(data) {
+                        data.forEach(function(w) {
+                            const option = $('<option>', {
+                                value: w.id,
+                                text: w.name,
+                            });
+
+                            if (selectedWingId && selectedWingId.toString() === w.id.toString()) {
+                                option.prop('selected', true);
+                            }
+
+                            $wing.append(option);
+                        });
+                    })
+                    .fail(function() {
+                        alert('Failed to load wings for selected society.');
+                    });
+            }
+
+            const initialSocietyId = $('select[name="society_id"]').val();
+            const initialWingId = '{{ old('wing_id', $flat->wing_id) }}';
+            if (initialSocietyId) {
+                loadWingsForSociety(initialSocietyId, initialWingId);
+            }
+
+            $('select[name="society_id"]').on('change', function() {
+                const societyId = $(this).val();
+                loadWingsForSociety(societyId);
+            });
+        });
+    </script>
+@endpush

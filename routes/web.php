@@ -11,6 +11,7 @@ use App\Http\Controllers\Complaint\ComplaintController;
 use App\Http\Controllers\Delivery\DeliveryController;
 use App\Http\Controllers\Gatekeeper\VisitorLogController;
 use App\Http\Controllers\SuperAdmin\SocietyController;
+use App\Http\Controllers\SuperAdmin\WingController;
 use App\Http\Controllers\VisitorPass\VisitorPassController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -49,12 +50,12 @@ Route::middleware('auth')->group(function () {
                     Route::get('activity-logs/data', [ActivityLogController::class, 'data'])->name('activity-logs.data');
                 });
 
-            Route::resource('flats', FlatController::class)->except('show');  
-            Route::patch('/{flat}/restore', [FlatController::class,'restore'])->withTrashed()->name('flats.restore');
+            Route::resource('flats', FlatController::class)->except('show');
+            Route::patch('/{flat}/restore', [FlatController::class, 'restore'])->withTrashed()->name('flats.restore');
             Route::get('/flats/export', [FlatController::class, 'export'])->name('flats.export');
-            
+
             Route::resource('residents', ResidentController::class);
-            Route::patch('/{residents}/restore', [ResidentController::class,'restore'])->withTrashed()->name('residents.restore');
+            Route::patch('/{residents}/restore', [ResidentController::class, 'restore'])->withTrashed()->name('residents.restore');
         });
 
     Route::middleware(['role:admin,gatekeeper'])
@@ -123,7 +124,17 @@ Route::middleware('auth')->group(function () {
             Route::put('/{society}', 'update')->name('update');
             Route::delete('/{society}', 'destroy')->name('destroy');
             Route::patch('/{society}/restore', 'restore')->name('restore');
+            Route::get('/{society}/delete-preview', 'deletePreview')->name('delete-preview');
         });
+
+    // API: return wings for a society (used by flats form)
+    Route::get('/societies/{society}/wings', [WingController::class, 'bySociety'])
+        ->name('societies.wings');
+
+    // Wings (super-admin + society admin)
+    Route::middleware(['auth', 'role:super_admin,admin'])->group(function () {
+        Route::resource('wings', WingController::class)->except(['show']);
+    });
 
     Route::controller(DeliveryController::class)
         ->prefix('deliveries')

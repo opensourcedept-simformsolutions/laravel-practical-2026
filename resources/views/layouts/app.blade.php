@@ -96,6 +96,24 @@
         .impersonation-exit-btn:hover {
             opacity: 0.8;
         }
+
+        .modal-xl {
+          max-width: 900px;
+        }
+
+        #deleteSocietyModal .modal-body {
+          max-height: 70vh;
+          overflow-y: auto;
+        }
+
+        #deleteSocietyModal .table th {
+          width: 45%;
+          font-weight: 600;
+        }
+
+        #deleteSocietyModal .card {
+          border-radius: .75rem;
+        }
     </style>
 </head>
 

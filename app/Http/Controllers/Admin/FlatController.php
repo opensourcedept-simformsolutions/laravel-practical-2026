@@ -7,6 +7,7 @@ use App\Http\Requests\Flat\StoreFlatRequest;
 use App\Http\Requests\Flat\UpdateFlatRequest;
 use App\Models\Flat;
 use App\Models\Society;
+use App\Models\Wing;
 use App\Services\ActivityLogger;
 use Exception;
 use Illuminate\Http\Request;
@@ -27,8 +28,10 @@ class FlatController extends Controller
                     ->select([
                         'flats.*',
                         'societies.name as society_name',
+                        'wings.name as wing',
                     ])
-                    ->leftJoin('societies', 'flats.society_id', '=', 'societies.id');
+                    ->leftJoin('societies', 'flats.society_id', '=', 'societies.id')
+                    ->leftJoin('wings', 'wings.id', '=', 'flats.wing_id');
 
                 if (! $user->isSuperAdmin()) {
                     $query->where('flats.society_id', auth()->user()->society_id);
@@ -58,13 +61,13 @@ class FlatController extends Controller
                     ->editColumn('flat_number', fn ($row) => $row->flat_number ?? '-')
 
                     ->addColumn('actions', function ($row) {
- 
+
                         $editUrl = route('flats.edit', $row->id);
                         $deleteUrl = route('flats.destroy', $row->id);
                         $restore = route('flats.restore', $row->id);
- 
+
                         $html = '<div class="text-center">';
- 
+
                         if (! $row->trashed()) {
                             $html .= '
                                 <a href="'.$editUrl.'" class="btn btn-sm btn-primary">
@@ -94,7 +97,7 @@ class FlatController extends Controller
                                 <i class="bi bi-arrow-counterclockwise"></i>
                             </button>';
                         }
- 
+
                         return $html .= '</div>';
                     })
 
@@ -137,7 +140,12 @@ class FlatController extends Controller
                 ? Society::all()
                 : collect();
 
-            return view('flats.create', compact('societies'));
+            $wings = collect();
+            if (! auth()->user()->isSuperAdmin()) {
+                $wings = Wing::where('society_id', auth()->user()->society_id)->orderBy('name')->get();
+            }
+
+            return view('flats.create', compact('societies', 'wings'));
         } catch (Exception $e) {
             Log::error('Flat create page error: '.$e->getMessage(), ['exception' => $e]);
 
@@ -156,14 +164,17 @@ class FlatController extends Controller
 
             $validated = $request->validated();
 
-            $flat = Flat::create([
-                'wing' => $validated['wing'],
+            $data = [
+                'wing_id' => $validated['wing_id'],
                 'floor' => $validated['floor'],
                 'flat_number' => $validated['flat_number'],
-                'society_id' => auth()->user()->isSuperAdmin()
-                    ? $validated['society_id']
-                    : auth()->user()->society_id,
-            ]);
+            ];
+
+            $data['society_id'] = auth()->user()->isSuperAdmin()
+                ? ($validated['society_id'] ?? null)
+                : auth()->user()->society_id;
+
+            $flat = Flat::create($data);
 
             ActivityLogger::log('create', $flat, "Flat {$flat->wing}-{$flat->flat_number} was created.");
 
@@ -190,7 +201,9 @@ class FlatController extends Controller
                 ? Society::all()
                 : collect();
 
-            return view('flats.edit', compact('flat', 'societies'));
+            $wings = Wing::where('society_id', $flat->society_id)->orderBy('name')->get();
+
+            return view('flats.edit', compact('flat', 'societies', 'wings'));
         } catch (Exception $e) {
             Log::error('Flat edit page error: '.$e->getMessage(), ['exception' => $e]);
 
@@ -206,7 +219,12 @@ class FlatController extends Controller
         $this->authorize('update', $flat);
 
         try {
-            $flat->update($request->validated());
+            $data = $request->validated();
+            $data['society_id'] = auth()->user()->isSuperAdmin()
+                ? ($data['society_id'] ?? $flat->society_id)
+                : auth()->user()->society_id;
+
+            $flat->update($data);
             ActivityLogger::log('update', $flat, "Flat {$flat->wing}-{$flat->flat_number} was updated.");
             Session::flash('message', 'Flat updated successfully.');
             Session::flash('status', 'success');
@@ -262,10 +280,10 @@ class FlatController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to restore flat.',
-            });
+            ]);
         }
     }
-              
+
     public function export(Request $request)
     {
         $this->authorize('viewAny', Flat::class);
@@ -278,8 +296,10 @@ class FlatController extends Controller
                 ->select([
                     'flats.*',
                     'societies.name as society_name',
+                    'wings.name as wing',
                 ])
-                ->leftJoin('societies', 'societies.id', '=', 'flats.society_id');
+                ->leftJoin('societies', 'societies.id', '=', 'flats.society_id')
+                ->leftJoin('wings', 'wings.id', '=', 'flats.wing_id');
 
             if (! $user->isSuperAdmin()) {
 
@@ -295,7 +315,7 @@ class FlatController extends Controller
 
                 $query->where(function ($q) use ($search) {
                     $q->where('societies.name', 'like', "%{$search}%")
-                        ->orWhere('flats.wing', 'like', "%{$search}%")
+                        ->orWhere('wings.name', 'like', "%{$search}%")
                         ->orWhere('flats.floor', 'like', "%{$search}%")
                         ->orWhere('flats.flat_number', 'like', "%{$search}%");
                 });

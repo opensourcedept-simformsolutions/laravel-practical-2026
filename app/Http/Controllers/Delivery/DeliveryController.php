@@ -53,7 +53,7 @@ class DeliveryController extends Controller
                 ->select([
                     'deliveries.*',
                     'users.name as resident_name',
-                    'flats.wing as flat_wing',
+                    'wings.name as flat_wing',
                     'flats.floor as flat_floor',
                     'flats.flat_number',
                     'flats.society_id',
@@ -62,6 +62,7 @@ class DeliveryController extends Controller
                 ->leftJoin('residents', 'deliveries.resident_id', '=', 'residents.id')
                 ->leftJoin('users', 'residents.user_id', '=', 'users.id')
                 ->leftJoin('flats', 'deliveries.flat_id', '=', 'flats.id')
+                ->leftJoin('wings', 'wings.id', '=', 'flats.wing_id')
                 ->leftJoin('societies', 'flats.society_id', '=', 'societies.id');
 
             $user = auth()->user();
@@ -123,7 +124,7 @@ class DeliveryController extends Controller
                     $query->orderBy('societies.name', $order);
                 })
                 ->orderColumn('flat', function ($query, $order) {
-                    $query->orderBy('flats.wing', $order)
+                    $query->orderBy('wings.name', $order)
                         ->orderBy('flats.flat_number', $order);
                 })
                 ->rawColumns(['package_details', 'status', 'actions'])
@@ -182,7 +183,7 @@ class DeliveryController extends Controller
                     $query->orderBy('societies.name', $order);
                 })
                 ->orderColumn('flat', function ($query, $order) {
-                    $query->orderBy('flats.wing', $order)
+                    $query->orderBy('wings.name', $order)
                         ->orderBy('flats.floor', $order)
                         ->orderBy('flats.flat_number', $order);
                 })
@@ -221,7 +222,7 @@ class DeliveryController extends Controller
                 ],
                 [
                     'flat' => function ($query, $direction) {
-                        $query->orderBy('flats.wing', $direction)
+                        $query->orderBy('wings.name', $direction)
                             ->orderBy('flats.floor', $direction)
                             ->orderBy('flats.flat_number', $direction);
                     },
@@ -282,6 +283,7 @@ class DeliveryController extends Controller
         $user = auth()->user();
 
         $flats = Flat::query()
+            ->leftJoin('wings', 'wings.id', '=', 'flats.wing_id')
             ->when(! $user->isSuperAdmin(), function ($query) use ($user) {
                 if ($user->isResident()) {
                     $query->where('id', $user->resident->flat_id);
@@ -289,9 +291,10 @@ class DeliveryController extends Controller
                     $query->where('society_id', $user->society_id);
                 }
             })
-            ->orderBy('wing')
-            ->orderBy('floor')
-            ->orderBy('flat_number')
+            ->orderBy('wings.name')
+            ->orderBy('flats.floor')
+            ->orderBy('flats.flat_number')
+            ->select('flats.*')
             ->get();
 
         $vendors = Delivery::query()
@@ -610,7 +613,7 @@ class DeliveryController extends Controller
             ->select([
                 'deliveries.*',
                 'users.name as resident_name',
-                'flats.wing as flat_wing',
+                'wings.name as flat_wing',
                 'flats.floor as flat_floor',
                 'flats.flat_number',
                 'flats.society_id',
@@ -619,6 +622,7 @@ class DeliveryController extends Controller
             ->leftJoin('residents', 'deliveries.resident_id', '=', 'residents.id')
             ->leftJoin('users', 'residents.user_id', '=', 'users.id')
             ->leftJoin('flats', 'deliveries.flat_id', '=', 'flats.id')
+            ->leftJoin('wings', 'wings.id', '=', 'flats.wing_id')
             ->leftJoin('societies', 'flats.society_id', '=', 'societies.id');
 
         $user = auth()->user();

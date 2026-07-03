@@ -9,17 +9,17 @@ use App\Http\Requests\Complaint\StoreComplaintRequest;
 use App\Http\Requests\Complaint\UpdateComplaintRequest;
 use App\Models\Complaint;
 use App\Services\ActivityLogger;
+use App\Traits\AppliesDataTableFilters;
 use Exception;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
-use App\Traits\AppliesDataTableFilters;
 
 class ComplaintController extends Controller
 {
-    use AuthorizesRequests, AppliesDataTableFilters;
+    use AppliesDataTableFilters, AuthorizesRequests;
 
     public function create()
     {

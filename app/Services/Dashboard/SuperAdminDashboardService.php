@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services\Dashboard;
+
 use App\Repositories\Dashboard\SuperAdminDashboardRepository;
 
 class SuperAdminDashboardService
@@ -12,7 +13,7 @@ class SuperAdminDashboardService
         private SuperAdminDashboardRepository $repository
     ) {}
 
-    public function getDashboard() : array
+    public function getDashboard(): array
     {
         return [
 

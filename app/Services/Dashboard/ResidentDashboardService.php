@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services\Dashboard;
+
 use App\Repositories\Dashboard\ResidentDashboardRepository;
 
 class ResidentDashboardService
