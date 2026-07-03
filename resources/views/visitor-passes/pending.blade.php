@@ -8,7 +8,7 @@
         <div class="row align-items-center">
 
             <div class="col">
-                <h5 class="mb-0 fw-bold text-dark">Visitor Pass List</h5>
+                <h5 class="mb-0 fw-bold text-dark">Today's Visitor List</h5>
             </div>
 
             <div class="col-auto">
@@ -54,6 +54,7 @@
                         <th>Phone</th>
                         <th>Flat</th>
                         <th>Purpose</th>
+                        <th>Visit Date</th>
                         <th>Status</th>
                         <th class="text-center">Action</th>
                     </tr>
@@ -164,6 +165,10 @@
                     {
                         data: 'purpose',
                         name: 'purpose'
+                    },
+                    {
+                        data: 'visit_date',
+                        name: 'visit_date'
                     },
                     {
                         data: 'status',

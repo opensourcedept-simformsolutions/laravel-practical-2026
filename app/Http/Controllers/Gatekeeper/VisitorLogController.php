@@ -102,7 +102,8 @@ class VisitorLogController extends Controller
                 ])
                     ->leftJoin('visitors', 'visitor_logs.visitor_id', '=', 'visitors.id')
                     ->leftJoin('flats', 'visitor_logs.flat_id', '=', 'flats.id')
-                    ->leftJoin('societies', 'flats.society_id', '=', 'societies.id');
+                    ->leftJoin('societies', 'flats.society_id', '=', 'societies.id')
+                    ->whereDate('visitor_logs.visit_date', today());
 
                 if (! $user->isSuperAdmin()) {
                     $query->where('flats.society_id', $user->society_id);

@@ -81,43 +81,45 @@ class ResidentController extends Controller
                         $deleteUrl = route('residents.destroy', $row->id);
                         $restore = route('residents.restore', $row->id);
  
+                        $html = '';
                         if (! $row->trashed()) {
-                            return '
-                        <div class="text-center">
-                        <a href="'.$editUrl.'" class="btn btn-primary btn-sm" title="Edit Resident"><i class="bi bi-pencil-square"></i></a>
- 
-                         <button
-                                class="btn btn-danger btn-action"
-                                data-url="'.$deleteUrl.'"
-                                data-method="DELETE"
-                                data-title="Delete Resident Details?"
-                                data-text="This action cannot be undone."
-                                data-confirm="Yes, Delete"
-                                data-success="Resident deleted successfully"
-                                title="Delete Flat">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                    ';
+                            $html .= '
+                                  <a href="'.$editUrl.'" class="btn btn-primary btn-sm" title="Edit Resident"><i class="bi bi-pencil-square"></i></a>
+
+                                  <button
+                                      class="btn btn-danger btn-action"
+                                      data-url="'.$deleteUrl.'"
+                                      data-method="DELETE"
+                                      data-title="Delete Resident Details?"
+                                      data-text="This action cannot be undone."
+                                      data-confirm="Yes, Delete"
+                                      data-success="Resident deleted successfully"
+                                      title="Delete Flat">
+                                      <i class="bi bi-trash"></i>
+                                  </button>
+                            ';
                         } else {
-                            return '
-                            <div class="text-center">
-                            <button
-                            class="btn btn-info btn-action"
-                            data-url="'.$restore.'"
-                            data-method="PATCH"
-                            data-title="Restore Delivery?"
-                            data-text="This delivery will be restored."
-                            data-confirm="Yes, Restore"
-                            title="Restore Delivery">
-                            <i class="bi bi-arrow-counterclockwise"></i>
-                         </button> </div>
-                         ';
+                            $html .= '
+                                  <button
+                                      class="btn btn-info btn-action"
+                                      data-url="'.$restore.'"
+                                      data-method="PATCH"
+                                      data-title="Restore Delivery?"
+                                      data-text="This delivery will be restored."
+                                      data-confirm="Yes, Restore"
+                                      title="Restore Delivery">
+                                          <i class="bi bi-arrow-counterclockwise"></i>
+                                  </button>
+                            ';
                         }
+                      
+                        return $html;
                     })
 
                     ->rawColumns(['type', 'actions'])
                     ->make(true);
             }
+          
             $societies = auth()->user()->isSuperAdmin()
                 ? Society::orderBy('name')->get()
                 : collect();

@@ -149,7 +149,6 @@
             ]
         });
 
-
         $(document).on('change', '#status-filter, #society_filter', function() {
             rd();
         });
