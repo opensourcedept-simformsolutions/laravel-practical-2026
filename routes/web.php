@@ -49,9 +49,12 @@ Route::middleware('auth')->group(function () {
                     Route::get('activity-logs/data', [ActivityLogController::class, 'data'])->name('activity-logs.data');
                 });
 
-            Route::resource('flats', FlatController::class)->except('show');
+            Route::resource('flats', FlatController::class)->except('show');  
+            Route::patch('/{flat}/restore', [FlatController::class,'restore'])->withTrashed()->name('flats.restore');
             Route::get('/flats/export', [FlatController::class, 'export'])->name('flats.export');
+            
             Route::resource('residents', ResidentController::class);
+            Route::patch('/{residents}/restore', [ResidentController::class,'restore'])->withTrashed()->name('residents.restore');
         });
 
     Route::middleware(['role:admin,gatekeeper'])

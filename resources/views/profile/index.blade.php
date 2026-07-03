@@ -13,7 +13,7 @@
                 <div class="d-flex justify-content-between align-items-center mb-4">
 
                     <div>
-                        <h3 class="mb-1">{{ $user->name }}</h3>
+                        <b class="mb-1 h6   ">{{ $user->name }}</b>
 
                         <span class="badge bg-primary">
                             {{ ucfirst($user->role->name) }}
@@ -30,6 +30,7 @@
                 </div>
 
                 <hr>
+                <br>
 
                 <div class="row">
 
@@ -102,6 +103,7 @@
                                         {{ $user->resident?->flat?->flat_number ?? '-' }}
                                     </td>
                                 </tr>
+                                
 
                             </table>
 

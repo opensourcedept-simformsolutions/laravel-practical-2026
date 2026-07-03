@@ -7,6 +7,7 @@ use App\Events\VisitorExited;
 use App\Http\Controllers\Controller;
 use App\Models\VisitorLog;
 use App\Services\ActivityLogger;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -22,42 +23,50 @@ class VisitorLogController extends Controller
     public function findPass(Request $request)
     {
         try {
+            $today = Carbon::today();
+
             $visitorLogId = decrypt($request->qr_code);
 
-            $visitorLog = VisitorLog::with([
-                'visitor',
-                'flat',
-            ])->findOrFail($visitorLogId);
-        } catch (Exception $e) {
-            Log::error('VisitorLogController findPass decryption/notfound error: '.$e->getMessage(), [
-                'exception' => $e,
-                'qr_code' => $request->qr_code,
+            $visitorLog = VisitorLog::with(['visitor', 'flat'])
+                ->find($visitorLogId);
+
+            if (! $visitorLog) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid or expired QR pass.',
+                ], 404);
+            }
+
+            if (Carbon::parse($visitorLog->visit_date)->toDateString() !== $today->toDateString()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid or expired QR pass.',
+                ], 422);
+            }
+
+            if ($visitorLog->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Visitor already entered or pass not valid.',
+                ], 422);
+            }
+
+            return response()->json([
+                'success' => true,
+                'id' => $visitorLog->id,
+                'visitor' => $visitorLog->visitor->name,
+                'phone' => $visitorLog->visitor->phone,
+                'purpose' => $visitorLog->purpose,
+                'status' => $visitorLog->status,
+                'flat' => $visitorLog->flat->wing.'-'.$visitorLog->flat->flat_number,
             ]);
-
+        } catch (Exception $e) {
             return response()->json([
-                'success' => false,
-                'message' => 'Invalid or expired QR pass.',
-            ], 422);
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ], 500);
         }
-
-        $this->authorize('view', $visitorLog);
-
-        if ($visitorLog->status !== 'pending') {
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Visitor already entered or pass not valid.',
-            ], 422);
-        }
-
-        return response()->json([
-            'id' => $visitorLog->id,
-            'visitor' => $visitorLog->visitor->name,
-            'phone' => $visitorLog->visitor->phone,
-            'purpose' => $visitorLog->purpose,
-            'status' => $visitorLog->status,
-            'flat' => $visitorLog->flat->wing.'-'.$visitorLog->flat->flat_number,
-        ]);
     }
 
     public function pending(Request $request)

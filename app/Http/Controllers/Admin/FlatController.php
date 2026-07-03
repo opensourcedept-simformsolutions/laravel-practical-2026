@@ -22,7 +22,7 @@ class FlatController extends Controller
 
         try {
             if ($request->ajax()) {
-
+                $user = auth()->user();
                 $query = Flat::query()
                     ->select([
                         'flats.*',
@@ -30,12 +30,20 @@ class FlatController extends Controller
                     ])
                     ->leftJoin('societies', 'flats.society_id', '=', 'societies.id');
 
-                if (! auth()->user()->isSuperAdmin()) {
+                if (! $user->isSuperAdmin()) {
                     $query->where('flats.society_id', auth()->user()->society_id);
                 }
 
-                if (auth()->user()->isSuperAdmin() && $request->filled('society_id')) {
+                if ($user->isSuperAdmin() && $request->filled('society_id')) {
                     $query->where('flats.society_id', $request->society_id);
+                }
+
+                if ($user->isSuperAdmin() || $user->isAdmin()) {
+                    match ($request->get('filter', 'active')) {
+                        'deleted' => $query->onlyTrashed(),
+                        'all' => $query->withTrashed(),
+                        default => null,
+                    };
                 }
 
                 return DataTables::of($query)
@@ -50,40 +58,56 @@ class FlatController extends Controller
                     ->editColumn('flat_number', fn ($row) => $row->flat_number ?? '-')
 
                     ->addColumn('actions', function ($row) {
-
+ 
                         $editUrl = route('flats.edit', $row->id);
                         $deleteUrl = route('flats.destroy', $row->id);
-
-                        return '
-                    <div class="text-center">
-                        <a href="'.$editUrl.'" class="btn btn-sm btn-primary">
-                            <i class="bi bi-pencil-square"></i>
-                        </a>
-
-                        <button
-                            class="btn btn-danger btn-action"
-                            data-url="'.$deleteUrl.'"
-                            data-method="DELETE"
-                            data-title="Delete Flat?"
-                            data-text="This action cannot be undone."
-                            data-confirm="Yes, Delete"
-                            data-success="Flat deleted successfully">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-                ';
+                        $restore = route('flats.restore', $row->id);
+ 
+                        $html = '<div class="text-center">';
+ 
+                        if (! $row->trashed()) {
+                            $html .= '
+                                <a href="'.$editUrl.'" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+ 
+                                <button
+                                    class="btn btn-danger btn-action"
+                                    data-url="'.$deleteUrl.'"
+                                    data-method="DELETE"
+                                    data-title="Delete Flat?"
+                                    data-text="This action cannot be undone."
+                                    data-confirm="Yes, Delete"
+                                    data-success="Flat deleted successfully">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            ';
+                        } else {
+                            $html .= '<button
+                                class="btn btn-info btn-action"
+                                data-url="'.$restore.'"
+                                data-method="PATCH"
+                                data-title="Restore Delivery?"
+                                data-text="This delivery will be restored."
+                                data-confirm="Yes, Restore"
+                                title="Restore Delivery">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                            </button>';
+                        }
+ 
+                        return $html .= '</div>';
                     })
 
                     ->rawColumns(['actions'])
                     ->make(true);
             }
 
-            // Web view load
             $societies = auth()->user()->isSuperAdmin()
                 ? Society::orderBy('name')->get()
                 : collect();
 
             return view('flats.index', compact('societies'));
+
         } catch (Exception $e) {
 
             Log::error('Flat listing error: '.$e->getMessage(), [
@@ -221,6 +245,27 @@ class FlatController extends Controller
         }
     }
 
+    public function restore(Flat $flat)
+    {
+        $this->authorize('restore', $flat);
+
+        try {
+            $flat->restore();
+
+            ActivityLogger::log('restore', $flat, 'flat restored.');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'flat restored successfully.',
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to restore flat.',
+            });
+        }
+    }
+              
     public function export(Request $request)
     {
         $this->authorize('viewAny', Flat::class);
@@ -285,7 +330,7 @@ class FlatController extends Controller
             ]);
         } catch (\Throwable $e) {
 
-            Log::error($e);
+            Log::error('Flat export error: '.$e->getMessage(), ['exception' => $e]);
 
             return back()->with([
                 'status' => 'error',
