@@ -51,6 +51,10 @@ class StoreVisitorPassRequest extends FormRequest
 
         $user = $this->user();
 
+        if ($user && $user->isGatekeeper()) {
+            unset($rules['visit_date']);
+        }
+
         if ($user && ($user->isAdmin() || $user->isGatekeeper())) {
             $rules['flat_id'] = [
                 'required',

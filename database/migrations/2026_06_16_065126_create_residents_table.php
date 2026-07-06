@@ -10,24 +10,28 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
+    
     {
-        Schema::create('residents', function (Blueprint $table) {
-            $table->id();
+        if (!Schema::hasTable('residents')) {
+            Schema::create('residents', function (Blueprint $table) {
+                $table->id();
 
-            $table->foreignId('user_id')
-                ->unique()
-                ->constrained()
-                ->cascadeOnDelete();
+                $table->foreignId('user_id')
+                    ->unique()
+                    ->constrained()
+                    ->cascadeOnDelete();
 
-            $table->foreignId('flat_id')
-                ->constrained()
-                ->cascadeOnDelete();
+                $table->foreignId('flat_id')
+                    ->constrained()
+                    ->cascadeOnDelete();
 
-            $table->enum('resident_type', ['owner', 'tenant']);
+                $table->enum('resident_type', ['owner', 'tenant']);
 
-            $table->timestamps();
-            $table->softDeletes();
-        });
+                $table->timestamps();
+                $table->softDeletes();
+            });
+    
+        }
     }
 
     /**

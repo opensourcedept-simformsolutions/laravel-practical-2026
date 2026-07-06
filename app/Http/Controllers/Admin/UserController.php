@@ -94,16 +94,16 @@ class UserController extends Controller
                     $impersonateUrl = route('impersonate.start', $row->id);
 
                     return '
-                        <div class="text-center">
-                            <a href="'.$editUrl.'" class="btn btn-primary btn-sm" title="Edit User">
-                                <i class="bi bi-pencil-square"></i>
+                        <div class="text-center d-flex justify-content-center gap-2">
+                            <a href="'.$editUrl.'" class="btn btn-primary btn-sm text-white" title="Edit User">
+                                <i class="bi bi-pencil-fill"></i>
                             </a>
 
                             <form action="'.$impersonateUrl.'" method="POST" class="d-inline">
                                 '.csrf_field().'
                                 <button type="submit"
-                                    class="btn btn-dark btn-sm" title="Impersonate User">
-                                    <i class="bi bi-person-check"></i>
+                                    class="btn btn-dark btn-sm text-white" title="Impersonate User">
+                                    <i class="bi bi-person-check-fill"></i>
                                 </button>
                             </form>
 
@@ -115,9 +115,9 @@ class UserController extends Controller
                                 '.method_field('DELETE').'
 
                                 <button
-                                    class="btn btn-danger btn-sm"
+                                    class="btn btn-danger text-white btn-sm"
                                     onclick="return confirm(\'Delete this user?\')" title="Delete User">
-                                    <i class="bi bi-trash"></i>
+                                    <i class="bi bi-trash-fill"></i>
                                 </button>
 
                             </form>

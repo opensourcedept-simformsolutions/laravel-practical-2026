@@ -10,40 +10,44 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
+    
     {
-        Schema::create('visitor_logs', function (Blueprint $table) {
-            $table->id();
+        if (!Schema::hasTable('visitor_logs')) {
+            Schema::create('visitor_logs', function (Blueprint $table) {
+                $table->id();
 
-            $table->foreignId('visitor_id')
-                ->constrained()
-                ->cascadeOnDelete();
+                $table->foreignId('visitor_id')
+                    ->constrained()
+                    ->cascadeOnDelete();
 
-            $table->foreignId('flat_id')
-                ->constrained()
-                ->cascadeOnDelete();
+                $table->foreignId('flat_id')
+                    ->constrained()
+                    ->cascadeOnDelete();
 
-            $table->foreignId('gatekeeper_id')
-                ->constrained('users')
-                ->cascadeOnDelete();
+                $table->foreignId('gatekeeper_id')
+                    ->constrained('users')
+                    ->cascadeOnDelete();
 
-            $table->string('purpose');
+                $table->string('purpose');
 
-            $table->timestamp('entry_time')->nullable();
-            $table->timestamp('exit_time')->nullable();
+                $table->timestamp('entry_time')->nullable();
+                $table->timestamp('exit_time')->nullable();
 
-            $table->enum('status', [
-                'accepted',
-                'pending',
-                'entered',
-                'exited',
-                'cancelled',
-            ])->default('pending');
+                $table->enum('status', [
+                    'accepted',
+                    'pending',
+                    'entered',
+                    'exited',
+                    'cancelled',
+                ])->default('pending');
 
-            $table->string('photo_path')->nullable();
+                $table->string('photo_path')->nullable();
 
-            $table->timestamps();
-            $table->softDeletes();
-        });
+                $table->timestamps();
+                $table->softDeletes();
+            });
+    
+        }
     }
 
     /**

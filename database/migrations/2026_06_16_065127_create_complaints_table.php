@@ -10,33 +10,37 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
+    
     {
-        Schema::create('complaints', function (Blueprint $table) {
-            $table->id();
+        if (!Schema::hasTable('complaints')) {
+            Schema::create('complaints', function (Blueprint $table) {
+                $table->id();
 
-            $table->foreignId('user_id')
-                ->constrained()
-                ->cascadeOnDelete();
+                $table->foreignId('user_id')
+                    ->constrained()
+                    ->cascadeOnDelete();
 
-            $table->enum('category', [
-                'security',
-                'cleaning',
-                'water',
-                'parking',
-            ]);
+                $table->enum('category', [
+                    'security',
+                    'cleaning',
+                    'water',
+                    'parking',
+                ]);
 
-            $table->text('description');
-            $table->text('admin_notes')->nullable();
+                $table->text('description');
+                $table->text('admin_notes')->nullable();
 
-            $table->enum('status', [
-                'open',
-                'in_progress',
-                'resolved',
-            ])->default('open');
+                $table->enum('status', [
+                    'open',
+                    'in_progress',
+                    'resolved',
+                ])->default('open');
 
-            $table->timestamps();
-            $table->softDeletes();
-        });
+                $table->timestamps();
+                $table->softDeletes();
+            });
+    
+        }
     }
 
     /**

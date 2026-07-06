@@ -6,6 +6,7 @@ use App\Events\VisitorEntered;
 use App\Events\VisitorExited;
 use App\Http\Controllers\Controller;
 use App\Models\VisitorLog;
+use App\Enums\VisitorStatus;
 use App\Services\ActivityLogger;
 use Carbon\Carbon;
 use Exception;
@@ -37,6 +38,8 @@ class VisitorLogController extends Controller
                 ], 404);
             }
 
+            $this->authorize('view', $visitorLog);
+
             if (Carbon::parse($visitorLog->visit_date)->toDateString() !== $today->toDateString()) {
                 return response()->json([
                     'success' => false,
@@ -44,7 +47,7 @@ class VisitorLogController extends Controller
                 ], 422);
             }
 
-            if ($visitorLog->status !== 'pending') {
+            if (!in_array($visitorLog->status, ['pending', 'approved'])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Visitor already entered or pass not valid.',
@@ -90,7 +93,7 @@ class VisitorLogController extends Controller
                             break;
                     }
                 }
-                $query->whereIn('visitor_logs.status', ['pending', 'entered']);
+                $query->whereIn('visitor_logs.status', [VisitorStatus::PENDING->value, VisitorStatus::PENDING_APPROVAL->value, VisitorStatus::APPROVED->value, VisitorStatus::ENTERED->value]);
                 $query->select([
                     'visitor_logs.*',
                     'visitors.name as visitor_name',
@@ -123,36 +126,36 @@ class VisitorLogController extends Controller
                                 $buttons .= '
                                     <button
                                         type="button"
-                                        class="btn btn-warning btn-sm btn-action"
+                                        class="btn btn-secondary text-white btn-sm btn-action"
                                         data-url="'.route('gatekeeper.visitor-logs.restore', $log->id).'"
                                         data-method="PATCH"
                                         data-title="Restore Visitor Pass?"
                                         data-text="This visitor pass will be restored."
                                         data-confirm="Restore"
-                                        data-color="#198754"
+                                        data-color="#6c757d"
                                         title="Restore">
-                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                        <i class="bi bi-arrow-up-left-circle-fill"></i>
                                     </button>
                                 ';
                             }
                         } else {
-                            if (auth()->user()->can('markEntry', $log) && $log->status !== 'entered') {
+                            if (auth()->user()->can('markEntry', $log) && $log->status !== VisitorStatus::ENTERED->value) {
                                 $buttons .= '
                                 <button
                                     type="button"
-                                    class="btn btn-success btn-sm entry-btn"
+                                    class="btn btn-success text-white btn-sm entry-btn"
                                     data-id="'.$log->id.'"
                                     title="Mark Entry">
-                                    <i class="bi bi-box-arrow-in-right"></i>
+                                    <i class="bi bi-door-open-fill"></i>
                                 </button>
                             ';
                             }
 
-                            if (auth()->user()->can('markExit', $log) && $log->status !== 'pending') {
+                            if (auth()->user()->can('markExit', $log) && $log->status !== VisitorStatus::PENDING->value) {
                                 $buttons .= '
                                 <button
                                     type="button"
-                                    class="btn btn-warning btn-sm btn-action"
+                                    class="btn btn-warning text-white btn-sm btn-action"
                                     data-url="'.route('gatekeeper.visitor-logs.mark-exit', $log).'"
                                     data-method="PATCH"
                                     data-title="Mark Exit?"
@@ -160,7 +163,7 @@ class VisitorLogController extends Controller
                                     data-confirm="Mark Exit"
                                     data-success="Visitor marked as exited."
                                     title="Mark Exit">
-                                    <i class="bi bi-box-arrow-right"></i>
+                                    <i class="bi bi-door-closed-fill"></i>
                                 </button>
                             ';
                             }
@@ -170,7 +173,7 @@ class VisitorLogController extends Controller
                                 <a href="'.route('passes.edit', $log).'"
                                 class="btn btn-primary btn-sm"
                                 title="Edit">
-                                    <i class="bi bi-pencil-square"></i>
+                                    <i class="bi bi-pencil-fill"></i>
                                 </a>
                             ';
                             }
@@ -179,7 +182,7 @@ class VisitorLogController extends Controller
                                 $buttons .= '
                                 <button
                                     type="button"
-                                    class="btn btn-danger btn-sm btn-action"
+                                    class="btn btn-danger text-white btn-sm btn-action"
                                     data-url="'.route('passes.destroy', $log).'"
                                     data-method="DELETE"
                                     data-title="Delete Visitor Pass?"
@@ -187,7 +190,7 @@ class VisitorLogController extends Controller
                                     data-confirm="Delete"
                                     data-success="Visitor pass deleted successfully."
                                     title="Delete">
-                                    <i class="bi bi-trash"></i>
+                                    <i class="bi bi-trash-fill"></i>
                                 </button>
                             ';
                             }
@@ -209,7 +212,11 @@ class VisitorLogController extends Controller
 
                         return match ($log->status) {
                             'pending' => '<span class="badge bg-none text-secondary">Pending</span>',
+                            'pending_approval' => '<span class="badge bg-none text-warning"><i class="bi bi-hourglass-split me-1"></i>Awaiting Approval</span>',
+                            'approved' => '<span class="badge bg-none text-success">Approved</span>',
+                            'rejected' => '<span class="badge bg-none text-danger">Rejected</span>',
                             'entered' => '<span class="badge bg-none text-success">Entered</span>',
+                            'expired' => '<span class="badge bg-none text-muted">Expired</span>',
                             default => ucfirst($log->status),
                         };
                     })
@@ -251,20 +258,22 @@ class VisitorLogController extends Controller
 
         try {
             $request->validate([
-                'photo' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+                'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
             ]);
 
-            if ($visitorLog->status !== 'pending') {
+            if (!in_array($visitorLog->status, [VisitorStatus::PENDING->value, VisitorStatus::APPROVED->value])) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Only Pending Passes Can Be Entered!',
+                    'message' => 'Only Pending or Approved Passes Can Be Entered!',
                 ], 422);
             }
 
             $visitorLog->entry_time = now();
             $visitorLog->gatekeeper_id = auth()->id();
-            $visitorLog->status = 'entered';
-            $visitorLog->photo_path = $request->file('photo')->store('visitor_photos', 'public');
+            $visitorLog->status = VisitorStatus::ENTERED->value;
+            if ($request->hasFile('photo')) {
+                $visitorLog->photo_path = $request->file('photo')->store('visitor_photos', 'public');
+            }
             $visitorLog->save();
 
             ActivityLogger::log('mark_entry', $visitorLog, "Visitor {$visitorLog->visitor->name} entered flat ".($visitorLog->flat?->wing ?? '-').'-'.($visitorLog->flat?->flat_number ?? '-').'.');
@@ -305,7 +314,7 @@ class VisitorLogController extends Controller
 
         try {
 
-            if ($visitorLog->status !== 'entered') {
+            if ($visitorLog->status !== VisitorStatus::ENTERED->value) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Only Entered Visitors Can Exit!',
@@ -313,7 +322,7 @@ class VisitorLogController extends Controller
             }
 
             $visitorLog->exit_time = now();
-            $visitorLog->status = 'exited';
+            $visitorLog->status = VisitorStatus::EXITED->value;
             $visitorLog->save();
 
             ActivityLogger::log('mark_exit', $visitorLog, "Visitor {$visitorLog->visitor->name} exited flat ".($visitorLog->flat?->wing ?? '-').'-'.($visitorLog->flat?->flat_number ?? '-').'.');

@@ -176,7 +176,7 @@
                         required: true,
                         minlength: 3,
                         maxlength: 255,
-                        lettersOnly: true
+                        pattern: /^[A-Za-z\s\.\'-]+$/
                     },
 
                     email: {

@@ -26,8 +26,6 @@ class UpdateVisitorPassRequest extends FormRequest
             'phone' => [
                 'required',
                 'regex:/^[6-9][0-9]{9}$/',
-                Rule::unique('visitors', 'phone')
-                    ->ignore($this->visitorLog->visitor_id),
             ],
 
             'purpose' => [
@@ -52,6 +50,10 @@ class UpdateVisitorPassRequest extends FormRequest
         ];
 
         $user = $this->user();
+
+        if ($user && $user->isGatekeeper()) {
+            unset($rules['visit_date']);
+        }
 
         if ($user && ($user->isAdmin() || $user->isGatekeeper())) {
             $rules['flat_id'] = [

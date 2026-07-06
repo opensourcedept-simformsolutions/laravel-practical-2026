@@ -53,8 +53,8 @@ class SocietyController extends Controller
 
                     $actions .= '
                         <a href="'.route('societies.show', $society->id).'"
-                            class="btn btn-info text-white" title="View Society">
-                            <i class="bi bi-eye"></i>
+                            class="btn btn-info text-white btn-sm" title="View Society">
+                            <i class="bi bi-eye-fill"></i>
                         </a>
                     ';
 
@@ -62,24 +62,24 @@ class SocietyController extends Controller
 
                         $actions .= '
                             <a href="'.route('societies.edit', $society->id).'"
-                                class="btn btn-primary" title="Edit Society">
-                                <i class="bi bi-pencil-square"></i>
+                                class="btn btn-primary btn-sm text-white" title="Edit Society">
+                                <i class="bi bi-pencil-fill"></i>
                             </a>
                         ';
 
                         $actions .= '
                             <button
-                                class="btn btn-danger btn-delete-society"
+                                class="btn btn-danger text-white btn-delete-society btn-sm"
                                 data-id="'.$society->id.'"
                                 title="Delete Society">
-                                <i class="bi bi-trash"></i>
+                                <i class="bi bi-trash-fill"></i>
                             </button>
                         ';
                     } else {
 
                         $actions .= '
                             <button
-                                class="btn btn-success btn-action"
+                                class="btn btn-secondary text-white btn-action btn-sm"
                                 data-url="'.route('societies.restore', $society->id).'"
                                 data-method="PATCH"
                                 data-title="Restore Society?"
@@ -87,7 +87,7 @@ class SocietyController extends Controller
                                 data-confirm="Yes, Restore"
                                 data-success="Society restored successfully"
                                 title="Restore Society">
-                                <i class="bi bi-arrow-counterclockwise"></i>
+                                <i class="bi bi-arrow-up-left-circle-fill"></i>
                             </button>
                         ';
                     }

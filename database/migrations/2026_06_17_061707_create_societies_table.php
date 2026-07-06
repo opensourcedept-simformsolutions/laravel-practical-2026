@@ -10,17 +10,21 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
+    
     {
-        Schema::create('societies', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('address');
-            $table->string('city');
-            $table->string('state');
-            $table->string('pincode', 6);
-            $table->timestamps();
-            $table->softDeletes();
-        });
+        if (!Schema::hasTable('societies')) {
+            Schema::create('societies', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->string('address');
+                $table->string('city');
+                $table->string('state');
+                $table->string('pincode', 6);
+                $table->timestamps();
+                $table->softDeletes();
+            });
+    
+        }
     }
 
     /**

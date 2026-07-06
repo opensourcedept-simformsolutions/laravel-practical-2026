@@ -15,10 +15,16 @@
                 <div class="col-auto">
                     <div class="d-flex align-items-center gap-2">
                         @can('is-admin')
-                            <select id="status-filter" class="form-select form-select-sm w-auto">
+                            <select id="status-filter" class="form-select form-select-sm w-auto me-1">
                                 <option value="active">Active Resident</option>
                                 <option value="deleted">Deleted Resident</option>
                                 <option value="all">All Resident</option>
+                            </select>
+                            <select id="flat-filter" class="form-select form-select-sm w-auto select2-flat">
+                                <option value="">All Flats</option>
+                                @foreach ($flats as $flat)
+                                    <option value="{{ $flat->id }}">{{ $flat->wing }}-{{ $flat->flat_number }}</option>
+                                @endforeach
                             </select>
                         @endcan
 
@@ -36,14 +42,22 @@
         <div class="card-body">
 
             @if (auth()->user()->isSuperAdmin())
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Society</label>
-                    <select id="society_filter" class="form-select form-select-sm">
-                        <option value="">All Societies</option>
-                        @foreach ($societies as $society)
-                            <option value="{{ $society->id }}">{{ $society->name }}</option>
-                        @endforeach
-                    </select>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Society</label>
+                        <select id="society_filter" class="form-select form-select-sm">
+                            <option value="">All Societies</option>
+                            @foreach ($societies as $society)
+                                <option value="{{ $society->id }}">{{ $society->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Flat</label>
+                        <select id="flat-filter" class="form-select form-select-sm">
+                            <option value="">All Flats</option>
+                        </select>
+                    </div>
                 </div>
             @endif
 
@@ -85,6 +99,7 @@
                 data: function(d) {
                     d.society_id = $('#society_filter').val();
                     d.filter = $('#status-filter').val();
+                    d.flat_id = $('#flat-filter').val();
                 }
             },
 
@@ -136,8 +151,35 @@
             ]
         });
 
-        $(document).on('change', '#status-filter, #society_filter', function() {
+        $(document).on('change', '#status-filter, #flat-filter', function() {
             rd();
+        });
+
+        $(document).on('change', '#society_filter', function() {
+            let societyId = $(this).val();
+            if (!societyId) {
+                $('#flat-filter').html('<option value="">All Flats</option>');
+                rd();
+                return;
+            }
+
+            $.ajax({
+                url: "/societies/" + societyId + "/flats",
+                type: 'GET',
+                success: function(response) {
+                    if (!response.success) return;
+                    let options = '<option value="">All Flats</option>';
+                    response.data.forEach(function(flat) {
+                        options += `<option value="${flat.id}">${flat.wing}-${flat.flat_number}</option>`;
+                    });
+                    $('#flat-filter').html(options);
+                    rd();
+                },
+                error: function() {
+                    $('#flat-filter').html('<option value="">Error loading flats</option>');
+                    rd();
+                }
+            });
         });
     </script>
 @endpush

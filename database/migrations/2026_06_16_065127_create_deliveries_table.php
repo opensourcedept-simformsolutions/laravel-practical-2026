@@ -10,32 +10,36 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
+    
     {
-        Schema::create('deliveries', function (Blueprint $table) {
-            $table->id();
+        if (!Schema::hasTable('deliveries')) {
+            Schema::create('deliveries', function (Blueprint $table) {
+                $table->id();
 
-            $table->foreignId('flat_id')
-                ->constrained()
-                ->cascadeOnDelete();
+                $table->foreignId('flat_id')
+                    ->constrained()
+                    ->cascadeOnDelete();
 
-            $table->foreignId('resident_id')
-                ->constrained()
-                ->cascadeOnDelete();
+                $table->foreignId('resident_id')
+                    ->constrained()
+                    ->cascadeOnDelete();
 
-            $table->string('vendor');
-            $table->text('package_details');
+                $table->string('vendor');
+                $table->text('package_details');
 
-            $table->enum('status', [
-                'received',
-                'delivered',
-            ])->default('received');
+                $table->enum('status', [
+                    'received',
+                    'delivered',
+                ])->default('received');
 
-            $table->timestamp('received_at')->nullable();
-            $table->timestamp('delivered_at')->nullable();
+                $table->timestamp('received_at')->nullable();
+                $table->timestamp('delivered_at')->nullable();
 
-            $table->timestamps();
-            $table->softDeletes();
-        });
+                $table->timestamps();
+                $table->softDeletes();
+            });
+    
+        }
     }
 
     /**

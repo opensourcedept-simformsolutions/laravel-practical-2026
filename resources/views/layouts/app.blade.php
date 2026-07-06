@@ -24,6 +24,15 @@
     <!-- daterangepicker -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 
+    <script>
+        window.userId = @json(auth()->id());
+        window.userRole = @json(auth()->user()?->role?->name);
+        window.flatId = @json(auth()->user()?->resident?->flat_id);
+        window.societyId = @json(auth()->user()?->society_id);
+        window.broadcastConnection = @json(config('broadcasting.default'));
+        window.reverbKey = @json(config('broadcasting.connections.reverb.key'));
+    </script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
@@ -121,7 +130,7 @@
 <body class="bg-light">
 
     <div class="app-layout">
-        <div class="sidebar-container bg-dark min-vh-100 p-0" id="sidebarContainer">
+        <div class="sidebar-container bg-dark min-vh-100 p-0 {{ request()->cookie('sidebar-collapsed') === 'true' ? 'collapsed' : '' }}" id="sidebarContainer">
             @include('partials.sidebar')
         </div>
         <div class="sidebar-backdrop d-lg-none" id="sidebarBackdrop"></div>

@@ -160,33 +160,33 @@ class ComplaintController extends Controller
                         if ($complaint->trashed()) {
                             $buttons = '
                                 <a href="'.route('complaints.show', $complaint).'"
-                                class="btn btn-info btn-sm" title="view">
-                                    <i class="bi bi-eye"></i>
+                                class="btn btn-info text-white btn-sm" title="view">
+                                    <i class="bi bi-eye-fill"></i>
                                 </a>
                             ';
                             if (auth()->user()->isSuperAdmin() || auth()->user()->isAdmin()) {
                                 $buttons .= '
                                     <button
                                         type="button"
-                                        class="btn btn-info btn-sm btn-action"
+                                        class="btn btn-secondary text-white btn-sm btn-action"
                                         data-url="'.route('complaints.restore', $complaint->id).'"
                                         data-method="PATCH"
                                         data-title="Restore Complaint?"
                                         data-text="This complaint will be restored."
                                         data-confirm="Restore"
                                         data-success="Complaint restored successfully."
-                                        data-color="#198754"
+                                        data-color="#6c757d"
                                         title="Restore">
 
-                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                        <i class="bi bi-arrow-up-left-circle-fill"></i>
                                     </button>
                                 ';
                             }
                         } else {
                             $buttons = '
                                 <a href="'.route('complaints.show', $complaint).'"
-                                class="btn btn-info btn-sm" title="view">
-                                    <i class="bi bi-eye"></i>
+                                class="btn btn-info text-white btn-sm" title="view">
+                                    <i class="bi bi-eye-fill"></i>
                                 </a>
                             ';
 
@@ -194,7 +194,7 @@ class ComplaintController extends Controller
                                 $buttons .= '
                                     <a href="'.route('complaints.edit', $complaint).'"
                                     class="btn btn-primary btn-sm" title="Edit">
-                                        <i class="bi bi-pencil-square"></i>
+                                        <i class="bi bi-pencil-fill"></i>
                                     </a>
                                 ';
                             }
@@ -203,7 +203,7 @@ class ComplaintController extends Controller
                                 $buttons .= '
                                 <button
                                     type="button"
-                                    class="btn btn-danger btn-sm btn-action"
+                                    class="btn btn-danger text-white btn-sm btn-action"
                                     data-url="'.route('complaints.destroy', $complaint).'"
                                     data-method="DELETE"
                                     data-title="Delete Complaint?"
@@ -211,7 +211,7 @@ class ComplaintController extends Controller
                                     data-confirm="Delete"
                                     data-success="Complaint deleted successfully."
                                     title="Delete">
-                                    <i class="bi bi-trash"></i>
+                                    <i class="bi bi-trash-fill"></i>
                                 </button>
                             ';
                             }

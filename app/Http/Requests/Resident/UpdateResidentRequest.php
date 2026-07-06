@@ -15,6 +15,9 @@ class UpdateResidentRequest extends FormRequest
     public function rules(): array
     {
         $resident = $this->route('resident');
+        $userId = $resident instanceof \App\Models\Resident 
+            ? $resident->user_id 
+            : \App\Models\Resident::findOrFail($resident)->user_id;
 
         return [
             'name' => [
@@ -30,7 +33,7 @@ class UpdateResidentRequest extends FormRequest
                 'email',
                 'max:255',
                 Rule::unique('users', 'email')
-                    ->ignore($resident->user_id)
+                    ->ignore($userId)
                     ->withoutTrashed(),
             ],
 
@@ -49,7 +52,7 @@ class UpdateResidentRequest extends FormRequest
 
             'resident_type' => [
                 'required',
-                Rule::in(['owner', 'tenant']),
+                Rule::in([\App\Enums\ResidentType::OWNER->value, \App\Enums\ResidentType::TENANT->value]),
             ],
             'society_id' => [
                 auth()->user()->isSuperAdmin() ? 'required' : 'nullable',

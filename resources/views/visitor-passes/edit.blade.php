@@ -62,6 +62,7 @@
                     @enderror
                 </div>
 
+                @if(!auth()->user()->isGatekeeper())
                 <div class="col-md-6">
                     <label class="form-label">Visit Date</label>
                     <input type="date" name="visit_date" class="form-control @error('visit_date') is-invalid @enderror"
@@ -70,6 +71,7 @@
                     <div class="invalid-feedback d-block">{{ $message }}</div>
                     @enderror
                 </div>
+                @endif
 
                 <div class="col-md-6">
                     <label class="form-label">Vehicle Number (Optional)</label>
@@ -120,10 +122,15 @@
             });
         }
 
-        $('input[name="visit_date"]').attr(
-            'min',
-            new Date().toISOString().split('T')[0]
-        );
+        @if(auth()->user()->isGatekeeper())
+            $('input[name="visit_date"]').attr('min', '{{ today()->format("Y-m-d") }}');
+            $('input[name="visit_date"]').attr('max', '{{ today()->format("Y-m-d") }}');
+        @else
+            $('input[name="visit_date"]').attr(
+                'min',
+                new Date().toISOString().split('T')[0]
+            );
+        @endif
 
         $('input[name="vehicle_number"]').on('input', function () {
             this.value = this.value.toUpperCase();
@@ -163,11 +170,13 @@
                 },
                 maxlength: 255
             },
+            @if(!auth()->user()->isGatekeeper())
             visit_date: {
                 required: true,
                 dateISO: true,
                 minToday: true
             },
+            @endif
             vehicle_number: {
                 maxlength: 20,
                 normalizer: function(value) {

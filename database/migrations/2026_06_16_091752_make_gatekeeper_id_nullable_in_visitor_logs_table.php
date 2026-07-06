@@ -10,12 +10,16 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
+    
     {
-        Schema::table('visitor_logs', function (Blueprint $table) {
-            $table->foreignId('gatekeeper_id')
-                ->nullable()
-                ->change();
-        });
+        if (Schema::hasTable('visitor_logs')) {
+            Schema::table('visitor_logs', function (Blueprint $table) {
+                $table->foreignId('gatekeeper_id')
+                    ->nullable()
+                    ->change();
+            });
+    
+        }
     }
 
     /**

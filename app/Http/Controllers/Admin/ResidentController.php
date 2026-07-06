@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Resident\StoreResidentRequest;
 use App\Http\Requests\Resident\UpdateResidentRequest;
+use App\Models\Flat;
 use App\Models\Resident;
 use App\Models\Role;
 use App\Models\Society;
@@ -52,6 +53,10 @@ class ResidentController extends Controller
                 if ($user->isSuperAdmin() && $request->filled('society_id')) {
                     $query->where('flats.society_id', $request->society_id);
                 }
+
+                if ($request->filled('flat_id')) {
+                    $query->where('residents.flat_id', $request->flat_id);
+                }
                 if ($user->isSuperAdmin() || $user->isAdmin()) {
                     match ($request->get('filter', 'active')) {
                         'deleted' => $query->onlyTrashed(),
@@ -82,13 +87,13 @@ class ResidentController extends Controller
                         $deleteUrl = route('residents.destroy', $row->id);
                         $restore = route('residents.restore', $row->id);
 
-                        $html = '';
+                        $html = '<div class="d-flex justify-content-center gap-2">';
                         if (! $row->trashed()) {
                             $html .= '
-                                  <a href="'.$editUrl.'" class="btn btn-primary btn-sm" title="Edit Resident"><i class="bi bi-pencil-square"></i></a>
+                                  <a href="'.$editUrl.'" class="btn btn-primary btn-sm" title="Edit Resident"><i class="bi bi-pencil-fill"></i></a>
 
                                   <button
-                                      class="btn btn-danger btn-action"
+                                      class="btn btn-danger text-white btn-action btn-sm"
                                       data-url="'.$deleteUrl.'"
                                       data-method="DELETE"
                                       data-title="Delete Resident Details?"
@@ -96,23 +101,24 @@ class ResidentController extends Controller
                                       data-confirm="Yes, Delete"
                                       data-success="Resident deleted successfully"
                                       title="Delete Flat">
-                                      <i class="bi bi-trash"></i>
+                                      <i class="bi bi-trash-fill"></i>
                                   </button>
                             ';
                         } else {
                             $html .= '
                                   <button
-                                      class="btn btn-info btn-action"
+                                      class="btn btn-secondary text-white btn-action btn-sm"
                                       data-url="'.$restore.'"
                                       data-method="PATCH"
-                                      data-title="Restore Delivery?"
-                                      data-text="This delivery will be restored."
+                                      data-title="Restore Resident?"
+                                      data-text="This resident details will be restored."
                                       data-confirm="Yes, Restore"
-                                      title="Restore Delivery">
-                                          <i class="bi bi-arrow-counterclockwise"></i>
+                                      title="Restore Resident">
+                                          <i class="bi bi-arrow-up-left-circle-fill"></i>
                                   </button>
                             ';
                         }
+                        $html .= '</div>';
 
                         return $html;
                     })
@@ -125,7 +131,11 @@ class ResidentController extends Controller
                 ? Society::orderBy('name')->get()
                 : collect();
 
-            return view('residents.index', compact('societies'));
+            $flats = ! auth()->user()->isSuperAdmin()
+                ? Flat::where('society_id', auth()->user()->society_id)->orderBy('wing')->orderBy('flat_number')->get()
+                : collect();
+
+            return view('residents.index', compact('societies', 'flats'));
 
         } catch (Exception $e) {
 

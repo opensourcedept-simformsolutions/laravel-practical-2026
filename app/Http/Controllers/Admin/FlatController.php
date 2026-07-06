@@ -66,35 +66,36 @@ class FlatController extends Controller
                         $deleteUrl = route('flats.destroy', $row->id);
                         $restore = route('flats.restore', $row->id);
 
-                        $html = '<div class="text-center">';
+                        $html = '<div class="text-center d-flex justify-content-center gap-2">';
 
                         if (! $row->trashed()) {
                             $html .= '
-                                <a href="'.$editUrl.'" class="btn btn-sm btn-primary">
-                                    <i class="bi bi-pencil-square"></i>
+                                <a href="'.$editUrl.'" class="btn btn-sm btn-primary text-white" title="Edit Flat">
+                                    <i class="bi bi-pencil-fill"></i>
                                 </a>
  
                                 <button
-                                    class="btn btn-danger btn-action"
+                                    class="btn btn-danger text-white btn-action btn-sm"
                                     data-url="'.$deleteUrl.'"
                                     data-method="DELETE"
                                     data-title="Delete Flat?"
                                     data-text="This action cannot be undone."
                                     data-confirm="Yes, Delete"
-                                    data-success="Flat deleted successfully">
-                                    <i class="bi bi-trash"></i>
+                                    data-success="Flat deleted successfully"
+                                    title="Delete Flat">
+                                    <i class="bi bi-trash-fill"></i>
                                 </button>
                             ';
                         } else {
                             $html .= '<button
-                                class="btn btn-info btn-action"
+                                class="btn btn-secondary text-white btn-action btn-sm"
                                 data-url="'.$restore.'"
                                 data-method="PATCH"
-                                data-title="Restore Delivery?"
-                                data-text="This delivery will be restored."
+                                data-title="Restore Flat?"
+                                data-text="This flat will be restored."
                                 data-confirm="Yes, Restore"
-                                title="Restore Delivery">
-                                <i class="bi bi-arrow-counterclockwise"></i>
+                                title="Restore Flat">
+                                <i class="bi bi-arrow-up-left-circle-fill"></i>
                             </button>';
                         }
 

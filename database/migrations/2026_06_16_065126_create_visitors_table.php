@@ -10,15 +10,19 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
+    
     {
-        Schema::create('visitors', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('phone');
-            $table->string('vehicle_number')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
-        });
+        if (!Schema::hasTable('visitors')) {
+            Schema::create('visitors', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->string('phone');
+                $table->string('vehicle_number')->nullable();
+                $table->timestamps();
+                $table->softDeletes();
+            });
+    
+        }
     }
 
     /**

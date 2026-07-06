@@ -32,10 +32,10 @@ class WingController extends Controller
                     ->addColumn('actions', function ($row) {
                         $edit = route('wings.edit', $row->id);
                         $del = route('wings.destroy', $row->id);
-                        $html = '<div class="text-center">';
-                        $html .= '<a href="'.$edit.'" class="btn btn-sm btn-primary"><i class="bi bi-pencil-square"></i></a> ';
-                        $html .= '<button class="btn btn-danger btn-action" data-url="'.$del.'" data-method="DELETE">';
-                        $html .= '<i class="bi bi-trash"></i></button>';
+                        $html = '<div class="text-center d-flex justify-content-center gap-2">';
+                        $html .= '<a href="'.$edit.'" class="btn btn-sm btn-primary text-white" title="Edit Wing"><i class="bi bi-pencil-fill"></i></a> ';
+                        $html .= '<button class="btn btn-danger text-white btn-action btn-sm" data-url="'.$del.'" data-method="DELETE" data-title="Delete Wing?" data-text="This action cannot be undone." data-confirm="Yes, Delete" data-success="Wing deleted successfully" title="Delete Wing">';
+                        $html .= '<i class="bi bi-trash-fill"></i></button>';
                         $html .= '</div>';
 
                         return $html;

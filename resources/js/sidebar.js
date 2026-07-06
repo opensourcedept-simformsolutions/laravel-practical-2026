@@ -14,6 +14,43 @@ function applySidebarState($sidebarContainer, $toggleButton, isCollapsed) {
             $('body').css('overflow', '');
         }
     }
+
+    if (isCollapsed) {
+        $('.sidebar-link').each(function () {
+            const $link = $(this);
+            const $label = $link.find('.sidebar-link-label');
+            if ($label.length) {
+                const $span = $label.find('span:first-child');
+                const titleText = $span.length ? $span.text().trim() : $label.text().trim();
+                if (titleText) {
+                    $link.attr('title', titleText);
+                }
+            }
+        });
+
+        const $reportsToggle = $('#reportsToggle');
+        if ($reportsToggle.length) {
+            const $label = $reportsToggle.find('.sidebar-link-label');
+            if ($label.length) {
+                const titleText = $label.text().trim();
+                if (titleText) {
+                    $reportsToggle.attr('title', titleText);
+                }
+            }
+        }
+    } else {
+        $('.sidebar-link').removeAttr('title');
+        $('#reportsToggle').removeAttr('title');
+    }
+}
+
+function getSidebarCollapsed() {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; sidebar-collapsed=`);
+    if (parts.length === 2) {
+        return parts.pop().split(';').shift() === 'true';
+    }
+    return localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true';
 }
 
 $(function () {
@@ -37,7 +74,7 @@ $(function () {
         if (window.innerWidth < 992) {
             applySidebarState($sidebarContainer, $toggleButton, true);
         } else {
-            const isCollapsed = localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true';
+            const isCollapsed = getSidebarCollapsed();
             applySidebarState($sidebarContainer, $toggleButton, isCollapsed);
         }
     }
@@ -45,7 +82,7 @@ $(function () {
     if (window.innerWidth < 992) {
         applySidebarState($sidebarContainer, $toggleButton, true);
     } else {
-        const isCollapsed = localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true';
+        const isCollapsed = getSidebarCollapsed();
         applySidebarState($sidebarContainer, $toggleButton, isCollapsed);
     }
 
@@ -58,6 +95,7 @@ $(function () {
 
         if (window.innerWidth >= 992) {
             localStorage.setItem(SIDEBAR_STORAGE_KEY, String(nextState));
+            document.cookie = "sidebar-collapsed=" + nextState + "; path=/; max-age=" + (30 * 24 * 60 * 60);
         }
     });
 
@@ -76,7 +114,10 @@ $(function () {
 
 $(function () {
     $('#reportsToggle').click(function () {
-        $('#reportsMenu').toggleClass('d-none');
-        $('#reportsArrow').toggleClass('rotate-180');
+        const $menu = $('#reportsMenu');
+        const $arrow = $('#reportsArrow');
+        
+        $menu.slideToggle(200);
+        $arrow.toggleClass('rotate-180');
     });
 });

@@ -10,10 +10,14 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
+    
     {
-        Schema::table('visitor_logs', function (Blueprint $table) {
-            $table->date('visit_date')->nullable();
-        });
+        if (Schema::hasTable('visitor_logs') && !Schema::hasColumn('visitor_logs', 'visit_date')) {
+            Schema::table('visitor_logs', function (Blueprint $table) {
+                $table->date('visit_date')->nullable();
+            });
+    
+        }
     }
 
     /**

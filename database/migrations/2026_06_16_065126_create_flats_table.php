@@ -10,15 +10,19 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
+    
     {
-        Schema::create('flats', function (Blueprint $table) {
-            $table->id();
-            $table->string('wing');
-            $table->integer('floor');
-            $table->string('flat_number');
-            $table->timestamps();
-            $table->softDeletes();
-        });
+        if (!Schema::hasTable('flats')) {
+            Schema::create('flats', function (Blueprint $table) {
+                $table->id();
+                $table->string('wing');
+                $table->integer('floor');
+                $table->string('flat_number');
+                $table->timestamps();
+                $table->softDeletes();
+            });
+    
+        }
     }
 
     /**

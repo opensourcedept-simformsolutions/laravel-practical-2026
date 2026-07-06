@@ -99,7 +99,7 @@ class ActivityLogController extends Controller
                                 class="btn btn-sm btn-info text-white view-properties-btn" 
                                 data-properties="'.e(json_encode($row->properties)).'" 
                                 data-id="'.$row->id.'">
-                            <i class="bi bi-info-circle"></i> Details
+                                <i class="bi bi-info-circle-fill"></i> Details
                         </button>
                     ';
                 })

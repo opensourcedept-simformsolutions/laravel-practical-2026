@@ -35,7 +35,17 @@ class ResidentWelcomeNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return [\App\Channels\CustomDatabaseChannel::class, 'mail'];
+    }
+
+    public function toTitle(object $notifiable): string
+    {
+        return "Welcome to SocietyMS";
+    }
+
+    public function toMessage(object $notifiable): string
+    {
+        return "Welcome to SocietyMS! Your resident account has been set up successfully.";
     }
 
     /**

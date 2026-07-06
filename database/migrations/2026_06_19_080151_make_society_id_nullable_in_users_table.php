@@ -10,15 +10,19 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
+    
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('society_id');
+        if (Schema::hasTable('users')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropConstrainedForeignId('society_id');
 
-            $table->foreignId('society_id')
-                ->nullable()
-                ->constrained('societies')
-                ->nullOnDelete();
-        });
+                $table->foreignId('society_id')
+                    ->nullable()
+                    ->constrained('societies')
+                    ->nullOnDelete();
+            });
+    
+        }
     }
 
     /**

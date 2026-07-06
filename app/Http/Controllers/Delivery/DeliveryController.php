@@ -286,9 +286,9 @@ class DeliveryController extends Controller
             ->leftJoin('wings', 'wings.id', '=', 'flats.wing_id')
             ->when(! $user->isSuperAdmin(), function ($query) use ($user) {
                 if ($user->isResident()) {
-                    $query->where('id', $user->resident->flat_id);
+                    $query->where('flats.id', $user->resident->flat_id);
                 } else {
-                    $query->where('society_id', $user->society_id);
+                    $query->where('flats.society_id', $user->society_id);
                 }
             })
             ->orderBy('wings.name')

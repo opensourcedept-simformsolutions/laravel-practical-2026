@@ -15,6 +15,7 @@ class VisitorLog extends Model
         'flat_id',
         'purpose',
         'created_by',
+        'approved_by',
         'gatekeeper_id',
         'entry_time',
         'exit_time',
@@ -45,6 +46,11 @@ class VisitorLog extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
     public function getQrCodeDataAttribute()
