@@ -106,6 +106,8 @@ Route::middleware('auth')->group(function () {
             Route::get('report/data', 'report')->name('report.data');
             Route::get('{visitorLog}', 'show')->name('show');
             Route::patch('{visitorLog}/cancel', 'cancel')->name('cancel');
+            Route::patch('{visitorLog}/approve', 'approve')->name('approve');
+            Route::patch('{visitorLog}/reject', 'reject')->name('reject');
         });
 
     Route::middleware(['role:super_admin'])

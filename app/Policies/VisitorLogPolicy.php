@@ -40,10 +40,10 @@ class VisitorLogPolicy
 
     public function update(User $user, VisitorLog $visitorLog): bool
     {
-        if (($user->isAdmin() || $user->isGatekeeper()) && $visitorLog->created_by === $user->id && $visitorLog->status === 'pending') {
+        if (($user->isAdmin() || $user->isGatekeeper()) && $visitorLog->created_by === $user->id && in_array($visitorLog->status, ['pending', 'pending_approval'])) {
             return true;
         }
-        if ($user->isResident() && $user->resident && $visitorLog->flat_id === $user->resident->flat_id && $visitorLog->status === 'pending') {
+        if ($user->isResident() && $user->resident && $visitorLog->flat_id === $user->resident->flat_id && in_array($visitorLog->status, ['pending', 'pending_approval'])) {
             return true;
         }
 
@@ -63,11 +63,11 @@ class VisitorLogPolicy
 
     public function delete(User $user, VisitorLog $visitorLog): bool
     {
-        if (($user->isAdmin() || $user->isGatekeeper()) && $visitorLog->created_by === $user->id && $visitorLog->status === 'pending') {
+        if (($user->isAdmin() || $user->isGatekeeper()) && $visitorLog->created_by === $user->id && in_array($visitorLog->status, ['pending', 'pending_approval', 'approved', 'rejected'])) {
             return true;
         }
 
-        if ($user->isResident() && $user->resident && $visitorLog->flat_id === $user->resident->flat_id && $visitorLog->status === 'pending') {
+        if ($user->isResident() && $user->resident && $visitorLog->flat_id === $user->resident->flat_id && in_array($visitorLog->status, ['pending', 'pending_approval', 'approved', 'rejected'])) {
             return true;
         }
 
@@ -87,7 +87,7 @@ class VisitorLogPolicy
     public function markEntry(User $user, VisitorLog $visitorLog): bool
     {
         return ($user->isAdmin() || $user->isGatekeeper())
-        && $visitorLog->status === 'pending'
+        && in_array($visitorLog->status, ['pending', 'approved'])
         && $visitorLog->flat->society_id === $user->society_id;
     }
 

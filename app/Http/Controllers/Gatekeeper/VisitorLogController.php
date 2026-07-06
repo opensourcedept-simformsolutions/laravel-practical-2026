@@ -37,6 +37,8 @@ class VisitorLogController extends Controller
                 ], 404);
             }
 
+            $this->authorize('view', $visitorLog);
+
             if (Carbon::parse($visitorLog->visit_date)->toDateString() !== $today->toDateString()) {
                 return response()->json([
                     'success' => false,
@@ -44,7 +46,7 @@ class VisitorLogController extends Controller
                 ], 422);
             }
 
-            if ($visitorLog->status !== 'pending') {
+            if (!in_array($visitorLog->status, ['pending', 'approved'])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Visitor already entered or pass not valid.',
@@ -90,7 +92,7 @@ class VisitorLogController extends Controller
                             break;
                     }
                 }
-                $query->whereIn('visitor_logs.status', ['pending', 'entered']);
+                $query->whereIn('visitor_logs.status', ['pending', 'pending_approval', 'approved', 'entered']);
                 $query->select([
                     'visitor_logs.*',
                     'visitors.name as visitor_name',
@@ -208,6 +210,9 @@ class VisitorLogController extends Controller
 
                         return match ($log->status) {
                             'pending' => '<span class="badge bg-none text-secondary">Pending</span>',
+                            'pending_approval' => '<span class="badge bg-none text-warning"><i class="bi bi-hourglass-split me-1"></i>Awaiting Approval</span>',
+                            'approved' => '<span class="badge bg-none text-success">Approved</span>',
+                            'rejected' => '<span class="badge bg-none text-danger">Rejected</span>',
                             'entered' => '<span class="badge bg-none text-success">Entered</span>',
                             default => ucfirst($log->status),
                         };
@@ -253,10 +258,10 @@ class VisitorLogController extends Controller
                 'photo' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
             ]);
 
-            if ($visitorLog->status !== 'pending') {
+            if (!in_array($visitorLog->status, ['pending', 'approved'])) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Only Pending Passes Can Be Entered!',
+                    'message' => 'Only Pending or Approved Passes Can Be Entered!',
                 ], 422);
             }
 

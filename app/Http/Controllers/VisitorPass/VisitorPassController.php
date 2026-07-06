@@ -119,7 +119,38 @@ class VisitorPassController extends Controller
                         </a>
                     ';
 
-                    if ($row->status === 'pending') {
+                    if ($row->status === 'pending_approval' && auth()->user()->isResident()) {
+                        $actions .= '
+                            <button
+                                type="button"
+                                class="btn btn-success btn-action btn-sm text-white"
+                                data-url="'.route('passes.approve', $row->id).'"
+                                data-method="PATCH"
+                                data-title="Approve Visitor?"
+                                data-text="Confirm you want to allow this visitor entry."
+                                data-confirm="Approve"
+                                data-success="Visitor approved successfully"
+                                data-color="#198754"
+                                title="Approve">
+                                <i class="bi bi-check-lg"></i>
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-danger btn-action btn-sm text-white"
+                                data-url="'.route('passes.reject', $row->id).'"
+                                data-method="PATCH"
+                                data-title="Reject Visitor?"
+                                data-text="Confirm you want to deny this visitor entry."
+                                data-confirm="Reject"
+                                data-success="Visitor rejected successfully"
+                                data-color="#dc3545"
+                                title="Reject">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        ';
+                    }
+
+                    if (in_array($row->status, ['pending', 'pending_approval'])) {
                         $actions .= '
                             <a href="'.route('passes.edit', $row->id).'" class="btn btn-primary" title="Edit Pass">
                                 <i class="bi bi-pencil-square"></i>
@@ -127,7 +158,7 @@ class VisitorPassController extends Controller
                         ';
                     }
 
-                    if ($row->status === 'pending') {
+                    if (in_array($row->status, ['pending', 'pending_approval', 'approved'])) {
                         $actions .= '
                             <button
                                 class="btn btn-danger btn-action"
@@ -219,7 +250,7 @@ class VisitorPassController extends Controller
                 $visitorLog->flat_id = $flatId;
                 $visitorLog->created_by = $user->id;
                 $visitorLog->purpose = $validated['purpose'];
-                $visitorLog->status = 'pending';
+                $visitorLog->status = $user->isGatekeeper() ? 'pending_approval' : 'pending';
                 $visitorLog->visit_date = $validated['visit_date'];
 
                 $visitorLog->save();
@@ -227,6 +258,9 @@ class VisitorPassController extends Controller
 
             if ($visitorLog) {
                 ActivityLogger::log('create', $visitorLog, "Visitor Pass for {$visitorLog->visitor->name} was created.");
+                if ($visitorLog->status === 'pending_approval') {
+                    event(new \App\Events\VisitorApprovalRequested($visitorLog));
+                }
             }
 
             Session::flash('message', 'Visitor Pass Created Successfully.');
@@ -339,11 +373,11 @@ class VisitorPassController extends Controller
         $this->authorize('cancel', $visitorLog);
 
         try {
-            if ($visitorLog->status !== 'pending') {
+            if (!in_array($visitorLog->status, ['pending', 'pending_approval', 'approved'])) {
 
                 return response()->json([
                     'success' => false,
-                    'message' => 'Only pending visitor passes can be cancelled.',
+                    'message' => 'This visitor pass cannot be cancelled.',
                 ], 422);
             }
 
@@ -562,10 +596,10 @@ class VisitorPassController extends Controller
 
         try {
 
-            if ($visitorLog->status !== 'pending') {
+            if (!in_array($visitorLog->status, ['pending', 'pending_approval', 'approved', 'rejected'])) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Only pending passes can be deleted.',
+                    'message' => 'This pass cannot be deleted.',
                 ], 422);
             }
 
@@ -593,6 +627,62 @@ class VisitorPassController extends Controller
                 'message' => 'Something went wrong while deleting the visitor pass.',
             ], 500);
         }
+    }
+
+    public function approve(VisitorLog $visitorLog)
+    {
+        $user = auth()->user();
+        if (!$user->isResident() || !$user->resident || (int) $visitorLog->flat_id !== (int) $user->resident->flat_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($visitorLog->status !== 'pending_approval') {
+            return response()->json([
+                'success' => false,
+                'message' => 'This visitor pass cannot be approved.',
+            ], 422);
+        }
+
+        $visitorLog->update([
+            'status' => 'approved',
+        ]);
+
+        ActivityLogger::log('approve', $visitorLog, "Visitor Pass for {$visitorLog->visitor->name} was approved.");
+
+        event(new \App\Events\VisitorApprovalStatusUpdated($visitorLog));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Visitor request approved successfully.',
+        ]);
+    }
+
+    public function reject(VisitorLog $visitorLog)
+    {
+        $user = auth()->user();
+        if (!$user->isResident() || !$user->resident || (int) $visitorLog->flat_id !== (int) $user->resident->flat_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($visitorLog->status !== 'pending_approval') {
+            return response()->json([
+                'success' => false,
+                'message' => 'This visitor pass cannot be rejected.',
+            ], 422);
+        }
+
+        $visitorLog->update([
+            'status' => 'rejected',
+        ]);
+
+        ActivityLogger::log('reject', $visitorLog, "Visitor Pass for {$visitorLog->visitor->name} was rejected.");
+
+        event(new \App\Events\VisitorApprovalStatusUpdated($visitorLog));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Visitor request rejected successfully.',
+        ]);
     }
 
     private function getFlatOptions()

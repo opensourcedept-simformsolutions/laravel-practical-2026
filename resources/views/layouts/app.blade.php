@@ -24,6 +24,13 @@
     <!-- daterangepicker -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 
+    <script>
+        window.userId = @json(auth()->id());
+        window.userRole = @json(auth()->user()?->role?->name);
+        window.flatId = @json(auth()->user()?->resident?->flat_id);
+        window.societyId = @json(auth()->user()?->society_id);
+    </script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
