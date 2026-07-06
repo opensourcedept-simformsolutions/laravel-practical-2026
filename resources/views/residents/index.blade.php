@@ -120,7 +120,7 @@
                 },
                 {
                     data: 'wing',
-                    name: 'flats.wing'
+                    name: 'wings.name'
                 },
                 {
                     data: 'type',

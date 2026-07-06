@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services\Dashboard;
+
 use App\Repositories\Dashboard\GatekeeperDashboardRepository;
 
 class GatekeeperDashboardService
@@ -12,13 +13,13 @@ class GatekeeperDashboardService
         private GatekeeperDashboardRepository $repository
     ) {}
 
-    public function getDashboard($user) : array
+    public function getDashboard($user): array
     {
 
         return [
             'role' => 'gatekeeper',
 
-            'stats' => $this->repository->getStats($user)
+            'stats' => $this->repository->getStats($user),
 
         ];
 

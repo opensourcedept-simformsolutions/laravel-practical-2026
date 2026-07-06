@@ -96,12 +96,13 @@ class VisitorLogController extends Controller
                     'visitors.name as visitor_name',
                     'visitors.phone as visitor_phone',
                     'societies.name as society_name',
-                    'flats.wing as flat_wing',
+                    'wings.name as flat_wing',
                     'flats.floor as flat_floor',
                     'flats.flat_number',
                 ])
                     ->leftJoin('visitors', 'visitor_logs.visitor_id', '=', 'visitors.id')
                     ->leftJoin('flats', 'visitor_logs.flat_id', '=', 'flats.id')
+                    ->leftJoin('wings', 'wings.id', '=', 'flats.wing_id')
                     ->leftJoin('societies', 'flats.society_id', '=', 'societies.id')
                     ->whereDate('visitor_logs.visit_date', today());
 
@@ -216,7 +217,7 @@ class VisitorLogController extends Controller
                         $query->orderBy('societies.name', $order);
                     })
                     ->orderColumn('flat_details', function ($query, $order) {
-                        $query->orderBy('flats.wing', $order)
+                        $query->orderBy('wings.name', $order)
                             ->orderBy('flats.flat_number', $order);
                     })
                     ->rawColumns(['status', 'action'])
@@ -362,12 +363,13 @@ class VisitorLogController extends Controller
                         'visitor_logs.*',
                         'visitors.name as visitor_name',
                         'visitors.phone as visitor_phone',
-                        'flats.wing as flat_wing',
+                        'wings.name as flat_wing',
                         'flats.floor as flat_floor',
                         'flats.flat_number',
                     ])
                     ->leftJoin('visitors', 'visitor_logs.visitor_id', '=', 'visitors.id')
-                    ->leftJoin('flats', 'visitor_logs.flat_id', '=', 'flats.id');
+                    ->leftJoin('flats', 'visitor_logs.flat_id', '=', 'flats.id')
+                    ->leftJoin('wings', 'wings.id', '=', 'flats.wing_id');
 
                 if (! $user->isSuperAdmin()) {
                     $query->where('flats.society_id', $user->society_id);
@@ -410,7 +412,7 @@ class VisitorLogController extends Controller
                         ';
                     })
                     ->orderColumn('flat_details', function ($query, $order) {
-                        $query->orderBy('flats.wing', $order)
+                        $query->orderBy('wings.name', $order)
                             ->orderBy('flats.flat_number', $order);
                     })
                     ->rawColumns(['photo_path'])

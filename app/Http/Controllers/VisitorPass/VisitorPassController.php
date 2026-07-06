@@ -49,13 +49,14 @@ class VisitorPassController extends Controller
                     'visitor_logs.*',
                     'visitors.name as visitor_name',
                     'visitors.phone as visitor_phone',
-                    'flats.wing as flat_wing',
+                    'wings.name as flat_wing',
                     'flats.flat_number as flat_number',
                     'creators.name as creator_name',
                     'gatekeepers.name as gatekeeper_name',
                 ])
                 ->leftJoin('visitors', 'visitors.id', '=', 'visitor_logs.visitor_id')
                 ->leftJoin('flats', 'flats.id', '=', 'visitor_logs.flat_id')
+                ->leftJoin('wings', 'wings.id', '=', 'flats.wing_id')
                 ->leftJoin('users as creators', 'creators.id', '=', 'visitor_logs.created_by')
                 ->leftJoin('users as gatekeepers', 'gatekeepers.id', '=', 'visitor_logs.gatekeeper_id');
 
@@ -71,46 +72,37 @@ class VisitorPassController extends Controller
 
             return DataTables::of($query)
                 ->addIndexColumn()
-
                 ->editColumn('visitor', fn ($row) => $row->visitor_name ?? '-')
                 ->editColumn('phone', fn ($row) => $row->visitor_phone ?? '-')
-
                 ->editColumn(
                     'flat',
                     fn ($row) => $row->flat_wing && $row->flat_number
                         ? $row->flat_wing.'-'.$row->flat_number
                         : '-'
                 )
-
                 ->editColumn('creator', fn ($row) => $row->creator_name ?? '-')
                 ->editColumn('gatekeeper', fn ($row) => $row->gatekeeper_name ?? '-')
-
                 ->editColumn('purpose', fn ($row) => $row->purpose ?? '-')
                 ->editColumn('status', fn ($row) => ucfirst($row->status))
-
                 ->editColumn(
                     'entry_time',
                     fn ($row) => $row->entry_time
                         ? format_date($row->entry_time)
                         : '-'
                 )
-
                 ->editColumn(
                     'exit_time',
                     fn ($row) => $row->exit_time
                         ? format_date($row->exit_time)
                         : '-'
                 )
-
                 ->editColumn(
                     'visit_date',
                     fn ($row) => $row->visit_date
                         ? format_date($row->visit_date, 'd M Y')
                         : '-'
                 )
-
                 ->addColumn('actions', function ($row) {
-
                     $actions = '<div class="d-flex justify-content-center gap-2">';
 
                     $actions .= '
@@ -147,7 +139,6 @@ class VisitorPassController extends Controller
 
                     return $actions;
                 })
-
                 ->rawColumns(['actions'])
                 ->make(true);
         } catch (Exception $e) {
@@ -290,12 +281,10 @@ class VisitorPassController extends Controller
         $this->authorize('update', $visitorLog);
 
         try {
-
             $validated = $request->validated();
             $user = auth()->user();
 
             DB::transaction(function () use ($validated, $visitorLog, $user) {
-
                 $visitorLog->visitor->update([
                     'name' => $validated['name'],
                     'phone' => $validated['phone'],
@@ -310,7 +299,6 @@ class VisitorPassController extends Controller
 
                 $visitorLog->purpose = $validated['purpose'];
                 $visitorLog->visit_date = $validated['visit_date'];
-
                 $visitorLog->save();
             });
 
@@ -418,7 +406,7 @@ class VisitorPassController extends Controller
                 ->editColumn('status', fn ($row) => ucfirst($row->status))
                 ->editColumn('gatekeeper', fn ($row) => $row->gatekeeper_name ?? '-')
                 ->orderColumn('flat', function ($query, $order) {
-                    $query->orderBy('flats.wing', $order)
+                    $query->orderBy('wings.name', $order)
                         ->orderBy('flats.flat_number', $order);
                 })
                 ->rawColumns([])
@@ -455,7 +443,7 @@ class VisitorPassController extends Controller
                 ],
                 [
                     'flat' => function ($query, $direction) {
-                        $query->orderBy('flats.wing', $direction)
+                        $query->orderBy('wings.name', $direction)
                             ->orderBy('flats.floor', $direction)
                             ->orderBy('flats.flat_number', $direction);
                     },
@@ -516,7 +504,7 @@ class VisitorPassController extends Controller
                 'visitor_logs.*',
                 'visitors.name as visitor_name',
                 'visitors.phone as visitor_phone',
-                'flats.wing as flat_wing',
+                'wings.name as flat_wing',
                 'flats.floor as flat_floor',
                 'flats.flat_number',
                 'creators.name as creator_name',
@@ -525,6 +513,7 @@ class VisitorPassController extends Controller
             ])
             ->leftJoin('visitors', 'visitors.id', '=', 'visitor_logs.visitor_id')
             ->leftJoin('flats', 'flats.id', '=', 'visitor_logs.flat_id')
+            ->leftJoin('wings', 'wings.id', '=', 'flats.wing_id')
             ->leftJoin('users as creators', 'creators.id', '=', 'visitor_logs.created_by')
             ->leftJoin('users as gatekeepers', 'gatekeepers.id', '=', 'visitor_logs.gatekeeper_id')
             ->leftJoin('societies', 'societies.id', '=', 'flats.society_id');

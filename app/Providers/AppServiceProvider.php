@@ -42,6 +42,9 @@ class AppServiceProvider extends ServiceProvider
             return $user->isResident();
         });
 
+        // register Wing policy
+        Gate::policy(\App\Models\Wing::class, \App\Policies\WingPolicy::class);
+
         Event::listen(VisitorEntered::class, SendVisitorEntryMail::class);
 
         Event::listen(VisitorExited::class, SendVisitorExitMail::class);

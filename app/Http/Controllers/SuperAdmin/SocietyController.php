@@ -8,9 +8,11 @@ use App\Http\Requests\Society\UpdateSocietyRequest;
 use App\Models\Flat;
 use App\Models\Society;
 use App\Services\ActivityLogger;
+use App\Services\SocietyDeletionService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 use Yajra\DataTables\Facades\DataTables;
 
 class SocietyController extends Controller
@@ -67,13 +69,8 @@ class SocietyController extends Controller
 
                         $actions .= '
                             <button
-                                class="btn btn-danger btn-action"
-                                data-url="'.route('societies.destroy', $society->id).'"
-                                data-method="DELETE"
-                                data-title="Delete Society?"
-                                data-text="This action can be restored later."
-                                data-confirm="Yes, Delete"
-                                data-success="Society deleted successfully"
+                                class="btn btn-danger btn-delete-society"
+                                data-id="'.$society->id.'"
                                 title="Delete Society">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -209,26 +206,37 @@ class SocietyController extends Controller
         }
     }
 
-    public function destroy(Society $society)
+    public function destroy(Request $request, Society $society)
     {
         $this->authorize('delete', $society);
 
+        $validated = $request->validate([
+            'mode' => ['required', 'in:soft,force'],
+        ]);
+
         try {
 
-            ActivityLogger::log('delete', $society, "Society {$society->name} was deleted.");
-            $society->delete();
+            $service = app(SocietyDeletionService::class);
+
+            if ($validated['mode'] === 'soft') {
+
+                $service->softDelete($society);
+            } else {
+
+                $service->forceDelete($society);
+            }
 
             return response()->json([
                 'success' => true,
                 'message' => 'Society deleted successfully.',
             ]);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
 
-            Log::error($e->getMessage());
+            Log::error($e);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Something went wrong.',
+                'message' => 'Deletion failed. Everything has been rolled back.',
             ], 500);
         }
     }
@@ -279,6 +287,30 @@ class SocietyController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to load flats.',
+            ], 500);
+        }
+    }
+
+    public function deletePreview(Society $society)
+    {
+        $this->authorize('delete', $society);
+
+        try {
+
+            $summary = app(SocietyDeletionService::class)
+                ->preview($society);
+
+            return response()->json([
+                'success' => true,
+                'data' => $summary,
+            ]);
+        } catch (Exception $e) {
+
+            Log::error($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to generate delete preview.',
             ], 500);
         }
     }

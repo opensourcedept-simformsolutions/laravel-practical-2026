@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Repositories\Dashboard;
+
 use Illuminate\Support\Facades\DB;
 
 class GatekeeperDashboardRepository

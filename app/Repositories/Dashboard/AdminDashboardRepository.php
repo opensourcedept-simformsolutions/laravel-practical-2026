@@ -1,14 +1,8 @@
 <?php
 
 namespace App\Repositories\Dashboard;
-use App\Models\Resident;
-use App\Models\Complaint;
-use App\Models\Delivery;
-use App\Models\Flat;
-use App\Models\User;
-use App\Models\VisitorLog;
-use Illuminate\Support\Facades\DB;
 
+use Illuminate\Support\Facades\DB;
 
 class AdminDashboardRepository
 {

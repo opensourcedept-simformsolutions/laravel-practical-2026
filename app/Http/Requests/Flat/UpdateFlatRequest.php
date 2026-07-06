@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Flat;
 
+use App\Models\Wing;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -21,35 +22,32 @@ class UpdateFlatRequest extends FormRequest
     public function rules(): array
     {
         $flatId = $this->route('flat'); // adjust if your route param name differs
+        $wing = null;
+        if ($this->filled('wing_id')) {
+            $wing = Wing::find($this->input('wing_id'));
+        }
+
+        $floorMax = $wing ? (int) $wing->total_floors : 50;
+        $flatMax = $wing ? (int) $wing->flats_per_floor : 9999;
 
         return [
-            'wing' => [
-                'required',
-                'string',
-                'max:20',
-                'regex:/^[A-Za-z0-9]+$/',
-            ],
+            'wing_id' => ['required', 'exists:wings,id'],
 
             'floor' => [
                 'required',
                 'integer',
-                'min:0',
-                'max:50',
+                'min:1',
+                "max:{$floorMax}",
             ],
 
             'flat_number' => [
                 'required',
                 'integer',
-                'between:1,9999',
+                'min:1',
+                "max:{$flatMax}",
                 Rule::unique('flats')
                     ->where(function ($query) {
-                        $societyId = auth()->user()->isSuperAdmin()
-                            ? (request('society_id') ?? $this->route('flat')?->society_id)
-                            : auth()->user()->society_id;
-
-                        return $query->where('society_id', $societyId)
-                            ->where('wing', request('wing'))
-                            ->where('floor', request('floor'));
+                        return $query->where('wing_id', request('wing_id'))->where('floor', request('floor'));
                     })
                     ->ignore($flatId),
             ],
@@ -62,9 +60,8 @@ class UpdateFlatRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'wing.required' => 'Wing is required.',
-            'wing.regex' => 'Wing must be valid.',
-            'wing.max' => 'Wing may not exceed 20 characters.',
+            'wing_id.required' => 'Wing is required.',
+            'wing_id.exists' => 'Selected wing is invalid.',
 
             'floor.required' => 'Floor is required.',
             'floor.integer' => 'Floor must be a number.',

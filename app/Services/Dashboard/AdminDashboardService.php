@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services\Dashboard;
+
 use App\Repositories\Dashboard\AdminDashboardRepository;
 
 class AdminDashboardService
@@ -9,17 +10,16 @@ class AdminDashboardService
      * Create a new class instance.
      */
     public function __construct(
-         private AdminDashboardRepository $repository
-    )
-    {}
+        private AdminDashboardRepository $repository
+    ) {}
 
-    public function getDashboard($user) : array
+    public function getDashboard($user): array
     {
         return [
 
             'role' => 'admin',
 
-            'stats' => $this->repository->getStats($user)
+            'stats' => $this->repository->getStats($user),
         ];
     }
 }

@@ -24,7 +24,7 @@ class ResidentController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('viewAny', resident::class);
+        $this->authorize('viewAny', Resident::class);
 
         try {
 
@@ -39,10 +39,11 @@ class ResidentController extends Controller
                         'users.email as user_email',
                         'users.phone as user_phone',
                         'flats.flat_number as flat_number',
-                        'flats.wing as flat_wing',
+                        'wings.name as flat_wing',
                     ])
                     ->leftJoin('users', 'residents.user_id', '=', 'users.id')
-                    ->leftJoin('flats', 'residents.flat_id', '=', 'flats.id');
+                    ->leftJoin('flats', 'residents.flat_id', '=', 'flats.id')
+                    ->leftJoin('wings', 'wings.id', '=', 'flats.wing_id');
 
                 if (! $user->isSuperAdmin()) {
                     $query->where('flats.society_id', $user->society_id);
@@ -76,11 +77,11 @@ class ResidentController extends Controller
                     })
 
                     ->addColumn('actions', function ($row) {
- 
+
                         $editUrl = route('residents.edit', $row->id);
                         $deleteUrl = route('residents.destroy', $row->id);
                         $restore = route('residents.restore', $row->id);
- 
+
                         $html = '';
                         if (! $row->trashed()) {
                             $html .= '
@@ -112,14 +113,14 @@ class ResidentController extends Controller
                                   </button>
                             ';
                         }
-                      
+
                         return $html;
                     })
 
                     ->rawColumns(['type', 'actions'])
                     ->make(true);
             }
-          
+
             $societies = auth()->user()->isSuperAdmin()
                 ? Society::orderBy('name')->get()
                 : collect();
@@ -139,7 +140,7 @@ class ResidentController extends Controller
 
     public function create()
     {
-        $this->authorize('create', resident::class);
+        $this->authorize('create', Resident::class);
 
         try {
             $user = auth()->user();
@@ -165,7 +166,7 @@ class ResidentController extends Controller
 
     public function store(StoreResidentRequest $request)
     {
-        $this->authorize('create', resident::class);
+        $this->authorize('create', Resident::class);
 
         try {
             $data = $request->validated();
@@ -204,7 +205,7 @@ class ResidentController extends Controller
                     'society_id' => $societyId,
                 ]);
 
-                $resident = resident::create([
+                $resident = Resident::create([
                     'user_id' => $user->id,
                     'flat_id' => $data['flat_id'],
                     'resident_type' => $data['resident_type'],
@@ -236,7 +237,7 @@ class ResidentController extends Controller
         }
     }
 
-    public function edit(resident $resident)
+    public function edit(Resident $resident)
     {
         $this->authorize('update', $resident);
 
@@ -265,7 +266,7 @@ class ResidentController extends Controller
 
     public function update(
         UpdateResidentRequest $request,
-        resident $resident
+        Resident $resident
     ) {
         $this->authorize('update', $resident);
 
@@ -309,7 +310,7 @@ class ResidentController extends Controller
         }
     }
 
-    public function destroy(resident $resident)
+    public function destroy(Resident $resident)
     {
         $this->authorize('delete', $resident);
 
@@ -318,7 +319,7 @@ class ResidentController extends Controller
             DB::transaction(function () use ($resident) {
 
                 $user = $resident->user;
-                $this->authorize('create', resident::class);
+                $this->authorize('create', Resident::class);
 
                 ActivityLogger::log('delete', $resident, "Resident {$resident->user->name} was removed.");
 

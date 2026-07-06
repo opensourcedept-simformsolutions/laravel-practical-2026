@@ -13,7 +13,7 @@ class Flat extends Model
 
     protected $fillable = [
         'society_id',
-        'wing',
+        'wing_id',
         'floor',
         'flat_number',
     ];
@@ -38,6 +38,11 @@ class Flat extends Model
         return $this->belongsTo(Society::class);
     }
 
+    public function wingRelation()
+    {
+        return $this->belongsTo(Wing::class, 'wing_id');
+    }
+
     protected static function booted()
     {
         static::deleting(function ($flat) {
@@ -45,11 +50,20 @@ class Flat extends Model
         });
     }
 
-    protected function wing(): Attribute
+    // Keep backward-compatible `wing` attribute accessor so views can continue
+    // to use `$flat->wing`. Preference is given to the new `wingRelation`.
+    public function getWingAttribute($value)
     {
-        return Attribute::make(
-            set: fn (string $value) => strtoupper($value),
-            get: fn (string $value) => strtoupper($value),
-        );
+        if ($this->wing_id && $this->relationLoaded('wingRelation')) {
+            return $this->wingRelation->name;
+        }
+
+        if ($this->wing_id) {
+            $wing = Wing::find($this->wing_id);
+
+            return $wing ? $wing->name : strtoupper($value);
+        }
+
+        return strtoupper($value);
     }
 }

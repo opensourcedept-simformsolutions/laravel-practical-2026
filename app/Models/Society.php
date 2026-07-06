@@ -23,8 +23,14 @@ class Society extends Model
         return $this->hasMany(User::class);
     }
 
+    public function wings()
+    {
+        return $this->hasMany(Wing::class);
+    }
+
     public function flats()
     {
-        return $this->hasMany(Flat::class);
+        // flats via wings
+        return $this->hasManyThrough(Flat::class, Wing::class, 'society_id', 'wing_id', 'id', 'id');
     }
 }
