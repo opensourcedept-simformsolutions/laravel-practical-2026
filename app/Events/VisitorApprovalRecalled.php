@@ -9,20 +9,19 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class VisitorApprovalStatusUpdated implements ShouldBroadcastNow
+class VisitorApprovalRecalled implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public VisitorLog $visitorLog)
+    public function __construct(public VisitorLog $visitorLog, public int $oldFlatId)
     {
-        $this->visitorLog->load(['visitor', 'flat']);
+        $this->visitorLog->load(['visitor']);
     }
 
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('society.'.$this->visitorLog->flat->society_id),
-            new PrivateChannel('flat.'.$this->visitorLog->flat_id),
+            new PrivateChannel('flat.'.$this->oldFlatId),
         ];
     }
 
@@ -31,14 +30,11 @@ class VisitorApprovalStatusUpdated implements ShouldBroadcastNow
         return [
             'id' => $this->visitorLog->id,
             'visitor_name' => $this->visitorLog->visitor->name,
-            'status' => $this->visitorLog->status,
-            'flat_name' => $this->visitorLog->flat->wing.'-'.$this->visitorLog->flat->flat_number,
-            'approver_name' => $this->visitorLog->approver?->name ?? 'System',
         ];
     }
 
     public function broadcastAs(): string
     {
-        return 'visitor.approval.status.updated';
+        return 'visitor.approval.recalled';
     }
 }

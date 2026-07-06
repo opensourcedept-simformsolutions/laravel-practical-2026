@@ -17,6 +17,7 @@ $(document).ready(function () {
             window.Echo.private(`flat.${window.flatId}`)
                 .listen('.visitor.approval.requested', (e) => {
                     console.log('Echo: VisitorApprovalRequested received:', e);
+                    window.currentPendingVisitorLogId = e.id;
                     
                     Swal.fire({
                         title: 'Visitor Approval Request',
@@ -31,13 +32,21 @@ $(document).ready(function () {
                         `,
                         icon: 'question',
                         showCancelButton: true,
+                        showDenyButton: true,
                         confirmButtonText: '<i class="bi bi-check-circle me-1"></i>Approve',
-                        cancelButtonText: '<i class="bi bi-x-circle me-1"></i>Reject',
+                        denyButtonText: '<i class="bi bi-x-circle me-1"></i>Reject',
+                        cancelButtonText: '<i class="bi bi-clock me-1"></i>Decide Later',
                         confirmButtonColor: '#198754', // green
-                        cancelButtonColor: '#dc3545', // red
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
+                        denyButtonColor: '#dc3545', // red
+                        cancelButtonColor: '#6c757d', // gray
+                        allowOutsideClick: true,
+                        allowEscapeKey: true,
                     }).then((result) => {
+                        if (result.isDismissed) {
+                            console.log('Echo: Modal dismissed, user will decide later.');
+                            return;
+                        }
+
                         let status = result.isConfirmed ? 'approve' : 'reject';
                         let url = `/passes/${e.id}/${status}`;
                         
@@ -65,6 +74,39 @@ $(document).ready(function () {
                             }
                         });
                     });
+                })
+                .listen('.visitor.approval.recalled', (e) => {
+                    console.log('Echo: VisitorApprovalRecalled received:', e);
+                    if (Swal.isVisible() && Swal.getTitle() && Swal.getTitle().textContent.includes('Visitor Approval Request')) {
+                        Swal.close();
+                        if (window.Toast) {
+                            window.Toast.fire({
+                                icon: 'info',
+                                title: `Visitor request for "${e.visitor_name}" was recalled/corrected.`
+                            });
+                        }
+                    }
+                    if (typeof rd === 'function') {
+                        rd();
+                    }
+                })
+                .listen('.visitor.approval.status.updated', (e) => {
+                    console.log('Echo: VisitorApprovalStatusUpdated received for flat:', e);
+                    if (window.currentPendingVisitorLogId === e.id) {
+                        if (Swal.isVisible() && Swal.getTitle() && Swal.getTitle().textContent.includes('Visitor Approval Request')) {
+                            Swal.close();
+                        }
+                        window.currentPendingVisitorLogId = null;
+                    }
+                    if (window.Toast) {
+                        window.Toast.fire({
+                            icon: (e.status === 'approved' || e.status === 'entered') ? 'success' : 'error',
+                            title: `Visitor "${e.visitor_name}" has been ${e.status.toUpperCase()} by ${e.approver_name}!`
+                        });
+                    }
+                    if (typeof rd === 'function') {
+                        rd();
+                    }
                 });
         }
 
@@ -78,8 +120,8 @@ $(document).ready(function () {
                     // Show a Toast
                     if (window.Toast) {
                         window.Toast.fire({
-                            icon: e.status === 'approved' ? 'success' : 'error',
-                            title: `Visitor "${e.visitor_name}" for flat ${e.flat_name} has been ${e.status.toUpperCase()}!`
+                            icon: (e.status === 'approved' || e.status === 'entered') ? 'success' : 'error',
+                            title: `Visitor "${e.visitor_name}" for flat ${e.flat_name} has been ${e.status.toUpperCase()} by ${e.approver_name}!`
                         });
                     }
                     

@@ -199,7 +199,7 @@
                 $('#captureBtn').removeClass('d-none');
                 $('#recaptureBtn').addClass('d-none');
                 $('#preview').attr('src', '').addClass('d-none');
-                $('#entryForm button[type="submit"]').prop('disabled', true);
+                $('#entryForm button[type="submit"]').prop('disabled', false);
 
                 const modal = new bootstrap.Modal(document.getElementById('entryModal'));
 
@@ -254,7 +254,7 @@
                 $('#video').removeClass('d-none');
                 $('#captureBtn').removeClass('d-none');
                 $('#recaptureBtn').addClass('d-none');
-                $('#entryForm button[type="submit"]').prop('disabled', true);
+                $('#entryForm button[type="submit"]').prop('disabled', false);
 
                 try {
                     stream = await navigator.mediaDevices.getUserMedia({
@@ -285,26 +285,18 @@
                 $('#recaptureBtn').addClass('d-none');
 
                 $('#entryForm button[type="submit"]')
-                    .prop('disabled', true);
+                    .prop('disabled', false);
             });
 
             $('#entryForm').on('submit', function(e) {
                 e.preventDefault();
 
-                if (!capturedFile) {
-
-                    Toast.fire({
-                        icon: 'warning',
-                        title: 'Please capture a photo first'
-                    });
-
-                    return;
-                }
-
                 const formData = new FormData();
                 formData.append('_token', $('input[name="_token"]').val());
                 formData.append('_method', 'PATCH');
-                formData.append('photo', capturedFile);
+                if (capturedFile) {
+                    formData.append('photo', capturedFile);
+                }
 
                 $('#entryForm button[type="submit"]').prop('disabled', true);
 

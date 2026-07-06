@@ -9,9 +9,17 @@
     <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
       <h5 class="mb-0 fw-bold text-dark">Visitor Pass List</h5>
 
-      <a href="{{ route('passes.create') }}" type="button" class="btn btn-primary btn-sm">
-        <i class="bi bi-plus-square me-1"></i> Create Pass
-      </a>
+      <div class="d-flex align-items-center gap-2">
+        <select id="status-filter" class="form-select form-select-sm w-auto">
+            <option value="active">Active Pass</option>
+            <option value="deleted">Deleted Pass</option>
+            <option value="all">All Pass</option>
+        </select>
+
+        <a href="{{ route('passes.create') }}" type="button" class="btn btn-primary btn-sm">
+          <i class="bi bi-plus-square me-1"></i> Create Pass
+        </a>
+      </div>
     </div>
 
     <div class="card-body">
@@ -52,7 +60,12 @@
       table = $('#passTable').DataTable({
         processing: true,
         serverSide: true,
-        ajax: "{{ route('passes.data') }}",
+        ajax: {
+            url: "{{ route('passes.data') }}",
+            data: function(d) {
+                d.filter = $('#status-filter').val();
+            }
+        },
 
         columns: [{
             data: 'DT_RowIndex',
@@ -106,6 +119,10 @@
             searchable: false,
           }
         ]
+      });
+
+      $(document).on('change', '#status-filter', function() {
+          rd();
       });
 
     });

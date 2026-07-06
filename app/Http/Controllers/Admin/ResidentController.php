@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Resident\StoreResidentRequest;
 use App\Http\Requests\Resident\UpdateResidentRequest;
+use App\Models\Flat;
 use App\Models\Resident;
 use App\Models\Role;
 use App\Models\Society;
@@ -24,7 +25,7 @@ class ResidentController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('viewAny', resident::class);
+        $this->authorize('viewAny', Resident::class);
 
         try {
 
@@ -51,6 +52,10 @@ class ResidentController extends Controller
                 if ($user->isSuperAdmin() && $request->filled('society_id')) {
                     $query->where('flats.society_id', $request->society_id);
                 }
+
+                if ($request->filled('flat_id')) {
+                    $query->where('residents.flat_id', $request->flat_id);
+                }
                 if ($user->isSuperAdmin() || $user->isAdmin()) {
                     match ($request->get('filter', 'active')) {
                         'deleted' => $query->onlyTrashed(),
@@ -76,11 +81,11 @@ class ResidentController extends Controller
                     })
 
                     ->addColumn('actions', function ($row) {
- 
+
                         $editUrl = route('residents.edit', $row->id);
                         $deleteUrl = route('residents.destroy', $row->id);
                         $restore = route('residents.restore', $row->id);
- 
+
                         $html = '';
                         if (! $row->trashed()) {
                             $html .= '
@@ -112,19 +117,23 @@ class ResidentController extends Controller
                                   </button>
                             ';
                         }
-                      
+
                         return $html;
                     })
 
                     ->rawColumns(['type', 'actions'])
                     ->make(true);
             }
-          
+
             $societies = auth()->user()->isSuperAdmin()
                 ? Society::orderBy('name')->get()
                 : collect();
 
-            return view('residents.index', compact('societies'));
+            $flats = ! auth()->user()->isSuperAdmin()
+                ? Flat::where('society_id', auth()->user()->society_id)->orderBy('wing')->orderBy('flat_number')->get()
+                : collect();
+
+            return view('residents.index', compact('societies', 'flats'));
 
         } catch (Exception $e) {
 
@@ -139,7 +148,7 @@ class ResidentController extends Controller
 
     public function create()
     {
-        $this->authorize('create', resident::class);
+        $this->authorize('create', Resident::class);
 
         try {
             $user = auth()->user();
@@ -165,7 +174,7 @@ class ResidentController extends Controller
 
     public function store(StoreResidentRequest $request)
     {
-        $this->authorize('create', resident::class);
+        $this->authorize('create', Resident::class);
 
         try {
             $data = $request->validated();
@@ -204,7 +213,7 @@ class ResidentController extends Controller
                     'society_id' => $societyId,
                 ]);
 
-                $resident = resident::create([
+                $resident = Resident::create([
                     'user_id' => $user->id,
                     'flat_id' => $data['flat_id'],
                     'resident_type' => $data['resident_type'],
@@ -236,7 +245,7 @@ class ResidentController extends Controller
         }
     }
 
-    public function edit(resident $resident)
+    public function edit(Resident $resident)
     {
         $this->authorize('update', $resident);
 
@@ -265,7 +274,7 @@ class ResidentController extends Controller
 
     public function update(
         UpdateResidentRequest $request,
-        resident $resident
+        Resident $resident
     ) {
         $this->authorize('update', $resident);
 
@@ -309,7 +318,7 @@ class ResidentController extends Controller
         }
     }
 
-    public function destroy(resident $resident)
+    public function destroy(Resident $resident)
     {
         $this->authorize('delete', $resident);
 
@@ -318,7 +327,7 @@ class ResidentController extends Controller
             DB::transaction(function () use ($resident) {
 
                 $user = $resident->user;
-                $this->authorize('create', resident::class);
+                $this->authorize('create', Resident::class);
 
                 ActivityLogger::log('delete', $resident, "Resident {$resident->user->name} was removed.");
 

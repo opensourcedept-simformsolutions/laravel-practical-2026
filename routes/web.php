@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ResidentController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Common\DashboardController;
 use App\Http\Controllers\Common\ProfileController;
+use App\Http\Controllers\Common\NotificationController;
 use App\Http\Controllers\Complaint\ComplaintController;
 use App\Http\Controllers\Delivery\DeliveryController;
 use App\Http\Controllers\Gatekeeper\VisitorLogController;
@@ -34,6 +35,15 @@ Route::middleware('auth')->group(function () {
             Route::get('/', 'index')->name('profile');
             Route::get('/edit', 'edit')->name('profile.edit');
             Route::patch('/', 'update')->name('profile.update');
+        });
+
+    Route::controller(NotificationController::class)
+        ->prefix('notifications')
+        ->name('notifications.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::patch('/{id}/read', 'markAsRead')->name('read');
+            Route::post('/read-all', 'markAllAsRead')->name('read-all');
         });
 
     Route::middleware(['role:admin'])
@@ -102,6 +112,7 @@ Route::middleware('auth')->group(function () {
             Route::get('{visitorLog}/edit', 'edit')->name('edit');
             Route::put('{visitorLog}', 'update')->name('update');
             Route::delete('{visitorLog}', 'destroy')->name('destroy');
+            Route::patch('{visitorLog}/restore', 'restore')->withTrashed()->name('restore');
             Route::get('report', 'report')->name('report');
             Route::get('report/data', 'report')->name('report.data');
             Route::get('{visitorLog}', 'show')->name('show');

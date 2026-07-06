@@ -6,6 +6,7 @@ use App\Events\VisitorEntered;
 use App\Events\VisitorExited;
 use App\Http\Controllers\Controller;
 use App\Models\VisitorLog;
+use App\Enums\VisitorStatus;
 use App\Services\ActivityLogger;
 use Carbon\Carbon;
 use Exception;
@@ -92,7 +93,7 @@ class VisitorLogController extends Controller
                             break;
                     }
                 }
-                $query->whereIn('visitor_logs.status', ['pending', 'pending_approval', 'approved', 'entered']);
+                $query->whereIn('visitor_logs.status', [VisitorStatus::PENDING->value, VisitorStatus::PENDING_APPROVAL->value, VisitorStatus::APPROVED->value, VisitorStatus::ENTERED->value]);
                 $query->select([
                     'visitor_logs.*',
                     'visitors.name as visitor_name',
@@ -137,7 +138,7 @@ class VisitorLogController extends Controller
                                 ';
                             }
                         } else {
-                            if (auth()->user()->can('markEntry', $log) && $log->status !== 'entered') {
+                            if (auth()->user()->can('markEntry', $log) && $log->status !== VisitorStatus::ENTERED->value) {
                                 $buttons .= '
                                 <button
                                     type="button"
@@ -149,7 +150,7 @@ class VisitorLogController extends Controller
                             ';
                             }
 
-                            if (auth()->user()->can('markExit', $log) && $log->status !== 'pending') {
+                            if (auth()->user()->can('markExit', $log) && $log->status !== VisitorStatus::PENDING->value) {
                                 $buttons .= '
                                 <button
                                     type="button"
@@ -255,10 +256,10 @@ class VisitorLogController extends Controller
 
         try {
             $request->validate([
-                'photo' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+                'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
             ]);
 
-            if (!in_array($visitorLog->status, ['pending', 'approved'])) {
+            if (!in_array($visitorLog->status, [VisitorStatus::PENDING->value, VisitorStatus::APPROVED->value])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Only Pending or Approved Passes Can Be Entered!',
@@ -267,8 +268,10 @@ class VisitorLogController extends Controller
 
             $visitorLog->entry_time = now();
             $visitorLog->gatekeeper_id = auth()->id();
-            $visitorLog->status = 'entered';
-            $visitorLog->photo_path = $request->file('photo')->store('visitor_photos', 'public');
+            $visitorLog->status = VisitorStatus::ENTERED->value;
+            if ($request->hasFile('photo')) {
+                $visitorLog->photo_path = $request->file('photo')->store('visitor_photos', 'public');
+            }
             $visitorLog->save();
 
             ActivityLogger::log('mark_entry', $visitorLog, "Visitor {$visitorLog->visitor->name} entered flat ".($visitorLog->flat?->wing ?? '-').'-'.($visitorLog->flat?->flat_number ?? '-').'.');
@@ -309,7 +312,7 @@ class VisitorLogController extends Controller
 
         try {
 
-            if ($visitorLog->status !== 'entered') {
+            if ($visitorLog->status !== VisitorStatus::ENTERED->value) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Only Entered Visitors Can Exit!',
@@ -317,7 +320,7 @@ class VisitorLogController extends Controller
             }
 
             $visitorLog->exit_time = now();
-            $visitorLog->status = 'exited';
+            $visitorLog->status = VisitorStatus::EXITED->value;
             $visitorLog->save();
 
             ActivityLogger::log('mark_exit', $visitorLog, "Visitor {$visitorLog->visitor->name} exited flat ".($visitorLog->flat?->wing ?? '-').'-'.($visitorLog->flat?->flat_number ?? '-').'.');

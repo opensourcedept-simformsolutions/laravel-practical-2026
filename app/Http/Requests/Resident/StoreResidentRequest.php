@@ -45,7 +45,7 @@ class StoreResidentRequest extends FormRequest
 
             'resident_type' => [
                 'required',
-                Rule::in(['owner', 'tenant']),
+                Rule::in([\App\Enums\ResidentType::OWNER->value, \App\Enums\ResidentType::TENANT->value]),
             ],
             'society_id' => [
                 auth()->user()->isSuperAdmin() ? 'required' : 'nullable',

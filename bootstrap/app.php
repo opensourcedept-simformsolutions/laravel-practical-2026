@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
         ]);
         $middleware->append(NormalizeInput::class);
+        $middleware->append(\App\Http\Middleware\RequestLoggerMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

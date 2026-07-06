@@ -2,12 +2,20 @@
 
 namespace App\Http\Controllers\VisitorPass;
 
+use App\Enums\VisitorStatus;
+use App\Events\VisitorApprovalRecalled;
+use App\Events\VisitorApprovalRequested;
+use App\Events\VisitorApprovalStatusUpdated;
+use App\Events\VisitorEntered;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\VisitorPass\StoreVisitorPassRequest;
 use App\Http\Requests\VisitorPass\UpdateVisitorPassRequest;
 use App\Models\Flat;
+use App\Models\Notification;
+use App\Models\User;
 use App\Models\Visitor;
 use App\Models\VisitorLog;
+use App\Notifications\VisitorStatusNotification;
 use App\Services\ActivityLogger;
 use App\Traits\AppliesDataTableFilters;
 use Exception;
@@ -69,6 +77,12 @@ class VisitorPassController extends Controller
                 }
             }
 
+            match ($request->get('filter', 'active')) {
+                'deleted' => $query->onlyTrashed(),
+                'all' => $query->withTrashed(),
+                default => null,
+            };
+
             return DataTables::of($query)
                 ->addIndexColumn()
 
@@ -114,64 +128,96 @@ class VisitorPassController extends Controller
                     $actions = '<div class="d-flex justify-content-center gap-2">';
 
                     $actions .= '
-                        <a href="'.route('passes.show', $row->id).'" class="btn btn-info text-white" title="View Pass">
+                        <a href="'.route('passes.show', $row->id).'" class="btn btn-info text-white btn-sm" title="View Pass">
                             <i class="bi bi-eye"></i>
                         </a>
                     ';
 
-                    if ($row->status === 'pending_approval' && auth()->user()->isResident()) {
+                    if ($row->trashed()) {
                         $actions .= '
                             <button
-                                type="button"
-                                class="btn btn-success btn-action btn-sm text-white"
-                                data-url="'.route('passes.approve', $row->id).'"
+                                class="btn btn-info btn-action btn-sm text-white"
+                                data-url="'.route('passes.restore', $row->id).'"
                                 data-method="PATCH"
-                                data-title="Approve Visitor?"
-                                data-text="Confirm you want to allow this visitor entry."
-                                data-confirm="Approve"
-                                data-success="Visitor approved successfully"
-                                data-color="#198754"
-                                title="Approve">
-                                <i class="bi bi-check-lg"></i>
-                            </button>
-                            <button
-                                type="button"
-                                class="btn btn-danger btn-action btn-sm text-white"
-                                data-url="'.route('passes.reject', $row->id).'"
-                                data-method="PATCH"
-                                data-title="Reject Visitor?"
-                                data-text="Confirm you want to deny this visitor entry."
-                                data-confirm="Reject"
-                                data-success="Visitor rejected successfully"
-                                data-color="#dc3545"
-                                title="Reject">
-                                <i class="bi bi-x-lg"></i>
+                                data-title="Restore Visitor Pass?"
+                                data-text="This visitor pass will be restored."
+                                data-confirm="Yes, Restore"
+                                data-success="Visitor pass restored successfully"
+                                title="Restore Pass">
+                                <i class="bi bi-arrow-counterclockwise"></i>
                             </button>
                         ';
-                    }
+                    } else {
+                        if ($row->status === VisitorStatus::PENDING_APPROVAL->value && auth()->user()->isResident()) {
+                            $actions .= '
+                                <button
+                                    type="button"
+                                    class="btn btn-success btn-action btn-sm text-white"
+                                    data-url="'.route('passes.approve', $row->id).'"
+                                    data-method="PATCH"
+                                    data-title="Approve Visitor?"
+                                    data-text="Confirm you want to allow this visitor entry."
+                                    data-confirm="Approve"
+                                    data-success="Visitor approved successfully"
+                                    data-color="#198754"
+                                    title="Approve">
+                                    <i class="bi bi-check-lg"></i>
+                                </button>
+                                <button
+                                    type="button"
+                                    class="btn btn-danger btn-action btn-sm text-white"
+                                    data-url="'.route('passes.reject', $row->id).'"
+                                    data-method="PATCH"
+                                    data-title="Reject Visitor?"
+                                    data-text="Confirm you want to deny this visitor entry."
+                                    data-confirm="Reject"
+                                    data-success="Visitor rejected successfully"
+                                    data-color="#dc3545"
+                                    title="Reject">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            ';
+                        }
 
-                    if (in_array($row->status, ['pending', 'pending_approval'])) {
-                        $actions .= '
-                            <a href="'.route('passes.edit', $row->id).'" class="btn btn-primary" title="Edit Pass">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-                        ';
-                    }
+                        if (in_array($row->status, [VisitorStatus::PENDING->value, VisitorStatus::PENDING_APPROVAL->value])) {
+                            $actions .= '
+                                <a href="'.route('passes.edit', $row->id).'" class="btn btn-primary btn-sm" title="Edit Pass">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                            ';
+                        }
 
-                    if (in_array($row->status, ['pending', 'pending_approval', 'approved'])) {
-                        $actions .= '
-                            <button
-                                class="btn btn-danger btn-action"
-                                data-url="'.route('passes.cancel', $row->id).'"
-                                data-method="PATCH"
-                                data-title="Cancel Visitor Pass?"
-                                data-text="This action cannot be undone."
-                                data-confirm="Yes, Cancel"
-                                data-success="Visitor pass cancelled successfully"
-                                title="Cancel Pass">
-                                <i class="bi bi-x-lg"></i>
-                            </button>
-                        ';
+                        if (in_array($row->status, [VisitorStatus::PENDING->value, VisitorStatus::PENDING_APPROVAL->value])) {
+                            $actions .= '
+                                <button
+                                    class="btn btn-danger btn-action btn-sm"
+                                    data-url="'.route('passes.cancel', $row->id).'"
+                                    data-method="PATCH"
+                                    data-title="Cancel Visitor Pass?"
+                                    data-text="This action cannot be undone."
+                                    data-confirm="Yes, Cancel"
+                                    data-success="Visitor pass cancelled successfully"
+                                    title="Cancel Pass">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            ';
+                        }
+
+                        if (in_array($row->status, [VisitorStatus::PENDING->value, VisitorStatus::PENDING_APPROVAL->value, VisitorStatus::REJECTED->value])) {
+                            $actions .= '
+                                <button
+                                    class="btn btn-danger btn-action btn-sm"
+                                    data-url="'.route('passes.destroy', $row->id).'"
+                                    data-method="DELETE"
+                                    data-title="Delete Visitor Pass?"
+                                    data-text="This action cannot be undone."
+                                    data-confirm="Yes, Delete"
+                                    data-success="Visitor pass deleted successfully"
+                                    title="Delete Pass">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            ';
+                        }
                     }
 
                     $actions .= '</div>';
@@ -250,7 +296,7 @@ class VisitorPassController extends Controller
                 $visitorLog->flat_id = $flatId;
                 $visitorLog->created_by = $user->id;
                 $visitorLog->purpose = $validated['purpose'];
-                $visitorLog->status = $user->isGatekeeper() ? 'pending_approval' : 'pending';
+                $visitorLog->status = $user->isGatekeeper() ? VisitorStatus::PENDING_APPROVAL->value : VisitorStatus::PENDING->value;
                 $visitorLog->visit_date = $validated['visit_date'];
 
                 $visitorLog->save();
@@ -258,8 +304,19 @@ class VisitorPassController extends Controller
 
             if ($visitorLog) {
                 ActivityLogger::log('create', $visitorLog, "Visitor Pass for {$visitorLog->visitor->name} was created.");
-                if ($visitorLog->status === 'pending_approval') {
-                    event(new \App\Events\VisitorApprovalRequested($visitorLog));
+                if ($visitorLog->status === VisitorStatus::PENDING_APPROVAL->value) {
+                    $residents = User::whereHas('resident', function ($q) use ($visitorLog) {
+                        $q->where('flat_id', $visitorLog->flat_id);
+                    })->get();
+
+                    foreach ($residents as $residentUser) {
+                        try {
+                            $residentUser->notify(new VisitorStatusNotification($visitorLog));
+                        } catch (Exception $e) {
+                            Log::error('Failed to notify flat member of pending approval: '.$e->getMessage());
+                        }
+                    }
+                    event(new VisitorApprovalRequested($visitorLog));
                 }
             }
 
@@ -327,6 +384,7 @@ class VisitorPassController extends Controller
 
             $validated = $request->validated();
             $user = auth()->user();
+            $oldFlatId = (int) $visitorLog->flat_id;
 
             DB::transaction(function () use ($validated, $visitorLog, $user) {
 
@@ -353,6 +411,39 @@ class VisitorPassController extends Controller
 
             ActivityLogger::log('update', $visitorLog, "Visitor Pass for {$visitorLog->visitor->name} was updated.");
 
+            if ($oldFlatId !== (int) $visitorLog->flat_id && in_array($visitorLog->status, [VisitorStatus::PENDING_APPROVAL->value, VisitorStatus::APPROVED->value, VisitorStatus::REJECTED->value])) {
+                // Delete notifications for the old flat
+                Notification::whereJsonContains('data->visitor_log_id', $visitorLog->id)->delete();
+
+                // Reset the status to pending_approval and clear approver (since it was wrong flat)
+                $visitorLog->update([
+                    'status' => VisitorStatus::PENDING_APPROVAL->value,
+                    'approved_by' => null,
+                ]);
+
+                // Broadcast recall to old flat
+                event(new VisitorApprovalRecalled($visitorLog, $oldFlatId));
+
+                // Log the correction in ActivityLog
+                ActivityLogger::log('update', $visitorLog, "Visitor Pass flat corrected from Flat ID {$oldFlatId} to Flat ID {$visitorLog->flat_id}. Status reset to pending_approval.");
+
+                // Notify all members of the new flat
+                $residents = User::whereHas('resident', function ($q) use ($visitorLog) {
+                    $q->where('flat_id', $visitorLog->flat_id);
+                })->get();
+
+                foreach ($residents as $residentUser) {
+                    try {
+                        $residentUser->notify(new VisitorStatusNotification($visitorLog));
+                    } catch (Exception $e) {
+                        Log::error('Failed to notify flat member of pending approval: '.$e->getMessage());
+                    }
+                }
+
+                // Broadcast request to new flat
+                event(new VisitorApprovalRequested($visitorLog));
+            }
+
             if ($user->isGatekeeper()) {
                 return redirect()->route('gatekeeper.visitor-logs.pending');
             }
@@ -373,7 +464,7 @@ class VisitorPassController extends Controller
         $this->authorize('cancel', $visitorLog);
 
         try {
-            if (!in_array($visitorLog->status, ['pending', 'pending_approval', 'approved'])) {
+            if (! in_array($visitorLog->status, [VisitorStatus::PENDING->value, VisitorStatus::PENDING_APPROVAL->value])) {
 
                 return response()->json([
                     'success' => false,
@@ -382,7 +473,7 @@ class VisitorPassController extends Controller
             }
 
             $visitorLog->update([
-                'status' => 'cancelled',
+                'status' => VisitorStatus::CANCELLED->value,
             ]);
 
             ActivityLogger::log('cancel', $visitorLog, "Visitor Pass for {$visitorLog->visitor->name} was cancelled.");
@@ -596,7 +687,7 @@ class VisitorPassController extends Controller
 
         try {
 
-            if (!in_array($visitorLog->status, ['pending', 'pending_approval', 'approved', 'rejected'])) {
+            if (! in_array($visitorLog->status, [VisitorStatus::PENDING->value, VisitorStatus::PENDING_APPROVAL->value, VisitorStatus::REJECTED->value])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'This pass cannot be deleted.',
@@ -629,27 +720,85 @@ class VisitorPassController extends Controller
         }
     }
 
+    public function restore(VisitorLog $visitorLog)
+    {
+        $this->authorize('restore', $visitorLog);
+
+        try {
+            $visitorLog->restore();
+
+            ActivityLogger::log('restore', $visitorLog, "Visitor Pass for {$visitorLog->visitor->name} was restored.");
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Visitor pass restored successfully.',
+            ]);
+        } catch (Exception $e) {
+            Log::error('Visitor pass restore error: '.$e->getMessage(), [
+                'exception' => $e,
+                'visitor_log_id' => $visitorLog->id,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong while restoring the visitor pass.',
+            ], 500);
+        }
+    }
+
     public function approve(VisitorLog $visitorLog)
     {
         $user = auth()->user();
-        if (!$user->isResident() || !$user->resident || (int) $visitorLog->flat_id !== (int) $user->resident->flat_id) {
+        if (! $user->isResident() || ! $user->resident || (int) $visitorLog->flat_id !== (int) $user->resident->flat_id) {
             abort(403, 'Unauthorized action.');
         }
 
-        if ($visitorLog->status !== 'pending_approval') {
+        if ($visitorLog->status !== VisitorStatus::PENDING_APPROVAL->value) {
+            $msg = 'This visitor pass cannot be approved.';
+            if (in_array($visitorLog->status, [VisitorStatus::APPROVED->value, VisitorStatus::ENTERED->value])) {
+                $msg = 'This visitor pass has already been approved.';
+            } elseif ($visitorLog->status === VisitorStatus::REJECTED->value) {
+                $msg = 'This visitor pass has already been rejected.';
+            }
+
             return response()->json([
                 'success' => false,
-                'message' => 'This visitor pass cannot be approved.',
+                'message' => $msg,
             ], 422);
         }
 
         $visitorLog->update([
-            'status' => 'approved',
+            'status' => VisitorStatus::ENTERED->value,
+            'entry_time' => now(),
+            'approved_by' => $user->id,
         ]);
 
         ActivityLogger::log('approve', $visitorLog, "Visitor Pass for {$visitorLog->visitor->name} was approved.");
 
-        event(new \App\Events\VisitorApprovalStatusUpdated($visitorLog));
+        // Delete existing notifications for this visitor log
+        Notification::whereJsonContains('data->visitor_log_id', $visitorLog->id)->delete();
+
+        // Send notifications to all members of the flat
+        $residents = User::whereHas('resident', function ($q) use ($visitorLog) {
+            $q->where('flat_id', $visitorLog->flat_id);
+        })->get();
+
+        foreach ($residents as $residentUser) {
+            try {
+                $residentUser->notify(new VisitorStatusNotification($visitorLog));
+            } catch (Exception $e) {
+                Log::error('Failed to notify flat member: '.$e->getMessage());
+            }
+        }
+
+        // Also trigger the VisitorEntered event so the entry email is sent!
+        try {
+            event(new VisitorEntered($visitorLog));
+        } catch (Exception $e) {
+            Log::error('Failed to dispatch VisitorEntered event on approval: '.$e->getMessage());
+        }
+
+        event(new VisitorApprovalStatusUpdated($visitorLog));
 
         return response()->json([
             'success' => true,
@@ -660,24 +809,48 @@ class VisitorPassController extends Controller
     public function reject(VisitorLog $visitorLog)
     {
         $user = auth()->user();
-        if (!$user->isResident() || !$user->resident || (int) $visitorLog->flat_id !== (int) $user->resident->flat_id) {
+        if (! $user->isResident() || ! $user->resident || (int) $visitorLog->flat_id !== (int) $user->resident->flat_id) {
             abort(403, 'Unauthorized action.');
         }
 
-        if ($visitorLog->status !== 'pending_approval') {
+        if ($visitorLog->status !== VisitorStatus::PENDING_APPROVAL->value) {
+            $msg = 'This visitor pass cannot be rejected.';
+            if (in_array($visitorLog->status, [VisitorStatus::APPROVED->value, VisitorStatus::ENTERED->value])) {
+                $msg = 'This visitor pass has already been approved.';
+            } elseif ($visitorLog->status === VisitorStatus::REJECTED->value) {
+                $msg = 'This visitor pass has already been rejected.';
+            }
+
             return response()->json([
                 'success' => false,
-                'message' => 'This visitor pass cannot be rejected.',
+                'message' => $msg,
             ], 422);
         }
 
         $visitorLog->update([
-            'status' => 'rejected',
+            'status' => VisitorStatus::REJECTED->value,
+            'approved_by' => $user->id,
         ]);
 
         ActivityLogger::log('reject', $visitorLog, "Visitor Pass for {$visitorLog->visitor->name} was rejected.");
 
-        event(new \App\Events\VisitorApprovalStatusUpdated($visitorLog));
+        // Delete existing notifications for this visitor log
+        Notification::whereJsonContains('data->visitor_log_id', $visitorLog->id)->delete();
+
+        // Send notifications to all members of the flat
+        $residents = User::whereHas('resident', function ($q) use ($visitorLog) {
+            $q->where('flat_id', $visitorLog->flat_id);
+        })->get();
+
+        foreach ($residents as $residentUser) {
+            try {
+                $residentUser->notify(new VisitorStatusNotification($visitorLog));
+            } catch (Exception $e) {
+                Log::error('Failed to notify flat member: '.$e->getMessage());
+            }
+        }
+
+        event(new VisitorApprovalStatusUpdated($visitorLog));
 
         return response()->json([
             'success' => true,

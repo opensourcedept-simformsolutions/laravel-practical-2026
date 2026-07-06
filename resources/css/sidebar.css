@@ -231,3 +231,57 @@
         width: 260px;
     }
 }
+
+/* Premium Sidebar Enhancements */
+.sidebar-section-header {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #475569;
+    letter-spacing: 1.2px;
+    padding: 14px 16px 6px 16px;
+    margin-top: 8px;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.sidebar-container.collapsed .sidebar-section-header {
+    opacity: 0;
+    visibility: hidden;
+    height: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+}
+
+/* Micro-interaction: slide link text on hover */
+.sidebar-container:not(.collapsed) .sidebar-link:hover {
+    padding-left: 22px;
+}
+
+/* Active Dropdown Toggle Style */
+.sidebar-dropdown-toggle.active {
+    color: #fff;
+    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(59, 130, 246, 0.15);
+    font-weight: 600;
+}
+
+/* Notification Badge Pulse Effect */
+.badge-pulse {
+    position: relative;
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+    animation: badge-pulse-animation 1.6s infinite cubic-bezier(0.66, 0, 0, 1);
+}
+
+@keyframes badge-pulse-animation {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 6px rgba(220, 53, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    }
+}
+

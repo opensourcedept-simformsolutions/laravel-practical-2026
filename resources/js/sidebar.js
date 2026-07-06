@@ -76,7 +76,10 @@ $(function () {
 
 $(function () {
     $('#reportsToggle').click(function () {
-        $('#reportsMenu').toggleClass('d-none');
-        $('#reportsArrow').toggleClass('rotate-180');
+        const $menu = $('#reportsMenu');
+        const $arrow = $('#reportsArrow');
+        
+        $menu.slideToggle(200);
+        $arrow.toggleClass('rotate-180');
     });
 });

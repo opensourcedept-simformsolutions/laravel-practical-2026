@@ -11,61 +11,88 @@
 
     <div class="sidebar-menu">
 
+        {{-- Section: Core --}}
+        <div class="sidebar-section-header">Core</div>
+
         {{-- Dashboard --}}
         <x-sidebar-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
             <i class="bi bi-speedometer2"></i>
             <span class="sidebar-link-label">Dashboard</span>
         </x-sidebar-link>
 
-        @can('is-super-admin')
-            {{-- Society --}}
-            <x-sidebar-link :href="route('societies.index')" :active="request()->routeIs('societies.index')">
-                <i class="bi bi-buildings"></i>
-                <span class="sidebar-link-label">Society</span>
-            </x-sidebar-link>
-        @endcan
+        {{-- Notifications --}}
+        <x-sidebar-link :href="route('notifications.index')" :active="request()->routeIs('notifications.*')">
+            <i class="bi bi-bell"></i>
+            <span class="sidebar-link-label d-flex justify-content-between align-items-center w-100">
+                <span>Notifications</span>
+                @if(auth()->user()->unreadNotifications->count() > 0)
+                    <span class="badge bg-danger rounded-pill badge-pulse ms-1">{{ auth()->user()->unreadNotifications->count() }}</span>
+                @endif
+            </span>
+        </x-sidebar-link>
 
-        @can('is-admin')
-            {{-- Flats --}}
-            <x-sidebar-link :href="route('flats.index')" :active="request()->routeIs('flats.index')">
-                <i class="bi bi-building"></i>
-                <span class="sidebar-link-label">Flats</span>
-            </x-sidebar-link>
+        {{-- Section: Society Management --}}
+        @canany(['is-super-admin', 'is-admin'])
+            <div class="sidebar-section-header">Society Admin</div>
+            
+            @can('is-super-admin')
+                {{-- Society --}}
+                <x-sidebar-link :href="route('societies.index')" :active="request()->routeIs('societies.index')">
+                    <i class="bi bi-buildings"></i>
+                    <span class="sidebar-link-label">Society</span>
+                </x-sidebar-link>
+            @endcan
 
-            {{-- Residents --}}
-            <x-sidebar-link :href="route('residents.index')" :active="request()->routeIs('residents.index')">
-                <i class="bi bi-people-fill"></i>
-                <span class="sidebar-link-label">Residents</span>
-            </x-sidebar-link>
+            @can('is-admin')
+                {{-- Flats --}}
+                <x-sidebar-link :href="route('flats.index')" :active="request()->routeIs('flats.index')">
+                    <i class="bi bi-building"></i>
+                    <span class="sidebar-link-label">Flats</span>
+                </x-sidebar-link>
 
-            {{-- Users Management --}}
-            <x-sidebar-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('admin.users.index')">
-                <i class="bi bi-person-gear"></i>
-                <span class="sidebar-link-label">Users Management</span>
-            </x-sidebar-link>
-        @endcan
+                {{-- Residents --}}
+                <x-sidebar-link :href="route('residents.index')" :active="request()->routeIs('residents.index')">
+                    <i class="bi bi-people-fill"></i>
+                    <span class="sidebar-link-label">Residents</span>
+                </x-sidebar-link>
 
-        {{-- Visitor Passes --}}
-        @canany(['is-admin', 'is-resident'])
-            <x-sidebar-link :href="route('passes.index')" :active="request()->routeIs('passes.*')">
-                <i class="bi bi-person-vcard"></i>
-                <span class="sidebar-link-label">Visitor Passes</span>
-            </x-sidebar-link>
+                {{-- Users Management --}}
+                <x-sidebar-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('admin.users.index')">
+                    <i class="bi bi-person-gear"></i>
+                    <span class="sidebar-link-label">Users Management</span>
+                </x-sidebar-link>
+            @endcan
         @endcanany
 
-        @canany(['is-admin', 'is-gatekeeper'])
-            {{-- Pending Passes --}}
-            <x-sidebar-link :href="route('gatekeeper.visitor-logs.pending')" :active="request()->routeIs('gatekeeper.visitor-logs.*')">
-                <i class="bi bi-person-check"></i>
-                <span class="sidebar-link-label">Pending Passes</span>
-            </x-sidebar-link>
+        {{-- Section: Visitor Control --}}
+        @canany(['is-super-admin', 'is-admin', 'is-resident', 'is-gatekeeper'])
+            <div class="sidebar-section-header">Visitor Control</div>
 
-            {{-- Scan Visitor Pass --}}
-            <x-sidebar-link :href="route('gatekeeper.scan')" :active="request()->routeIs('gatekeeper.scan')">
-                <i class="bi bi-qr-code-scan"></i>
-                <span class="sidebar-link-label">Scan Visitor Pass</span>
-            </x-sidebar-link>
+            @canany(['is-admin', 'is-resident'])
+                {{-- Visitor Passes --}}
+                <x-sidebar-link :href="route('passes.index')" :active="request()->routeIs('passes.*')">
+                    <i class="bi bi-person-vcard"></i>
+                    <span class="sidebar-link-label">Visitor Passes</span>
+                </x-sidebar-link>
+            @endcanany
+
+            @canany(['is-admin', 'is-gatekeeper'])
+                {{-- Pending Passes --}}
+                <x-sidebar-link :href="route('gatekeeper.visitor-logs.pending')" :active="request()->routeIs('gatekeeper.visitor-logs.*')">
+                    <i class="bi bi-person-check"></i>
+                    <span class="sidebar-link-label">Pending Passes</span>
+                </x-sidebar-link>
+
+                {{-- Scan Visitor Pass --}}
+                <x-sidebar-link :href="route('gatekeeper.scan')" :active="request()->routeIs('gatekeeper.scan')">
+                    <i class="bi bi-qr-code-scan"></i>
+                    <span class="sidebar-link-label">Scan Visitor Pass</span>
+                </x-sidebar-link>
+            @endcanany
         @endcanany
+
+        {{-- Section: Operations --}}
+        <div class="sidebar-section-header">Operations</div>
 
         {{-- Delivery --}}
         <x-sidebar-link :href="route('deliveries.index')" :active="request()->routeIs('deliveries.*')">
@@ -87,12 +114,15 @@
             </x-sidebar-link>
         @endcanany
 
+        {{-- Section: Analytics --}}
+        <div class="sidebar-section-header">Analytics</div>
+
         {{-- Reports --}}
         @php
             $reportsActive = request()->routeIs('reports.*');
         @endphp
         <div class="sidebar-dropdown">
-            <button type="button" class="sidebar-dropdown-toggle" id="reportsToggle">
+            <button type="button" class="sidebar-dropdown-toggle {{ $reportsActive ? 'active' : '' }}" id="reportsToggle">
                 <span>
                     <i class="bi bi-file-earmark-bar-graph"></i>
                     <span class="sidebar-link-label">Reports</span>
@@ -101,7 +131,7 @@
                 <i class="bi bi-chevron-down {{ $reportsActive ? 'rotate-180' : '' }}" id="reportsArrow"></i>
             </button>
 
-            <div class="sidebar-dropdown-menu {{ $reportsActive ? '' : 'd-none' }}" id="reportsMenu">
+            <div class="sidebar-dropdown-menu" style="{{ $reportsActive ? 'display: block;' : 'display: none;' }}" id="reportsMenu">
 
                 <x-sidebar-link :href="route('reports.deliveries.')" :active="request()->routeIs('reports.deliveries*')">
                     <i class="bi bi-box-seam"></i>
