@@ -1,0 +1,12 @@
+#!/command/with-contenv sh
+# Queue Default-2 Finish Script
+# Graceful shutdown handler for default queue worker #2
+
+echo "[queue-default-2] Default queue worker #2 stopped with exit code: $1"
+
+if [ "$1" -ne 0 ]; then
+    echo "[queue-default-2] Worker exited with error, container will restart"
+fi
+
+exit 0
+

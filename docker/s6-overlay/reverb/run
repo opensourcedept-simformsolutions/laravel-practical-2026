@@ -1,0 +1,17 @@
+#!/command/with-contenv sh
+# Reverb WebSocket Service
+# Runs Laravel Reverb WebSocket server
+
+set -e
+
+echo "[reverb] Starting Laravel Reverb WebSocket Server..."
+
+cd /var/www/html
+
+# Run Reverb server with proper host binding for container
+# No need for s6-setuidgid since container already runs as www-data
+exec php artisan reverb:start \
+    --host=0.0.0.0 \
+    --port=9001 \
+    --verbose
+
