@@ -1,0 +1,17 @@
+#!/command/with-contenv sh
+# Queue Default-1 Service
+# Runs Laravel queue worker #1 for default queue
+
+set -e
+
+echo "[queue-default-1] Starting Laravel Queue Worker #1 for default queue..."
+
+cd /var/www/html
+
+exec php artisan queue:work \
+    --queue=notification,email,default \
+    --sleep=3 \
+    --tries=3 \
+    --max-time=3600 \
+    --verbose
+

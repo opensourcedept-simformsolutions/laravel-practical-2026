@@ -29,6 +29,7 @@
         window.userRole = @json(auth()->user()?->role?->name);
         window.flatId = @json(auth()->user()?->resident?->flat_id);
         window.societyId = @json(auth()->user()?->society_id);
+        window.reverbKey = @json(config('broadcasting.connections.reverb.key'));
     </script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])

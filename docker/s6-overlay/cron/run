@@ -1,0 +1,13 @@
+#!/command/with-contenv sh
+# Cron Service
+# Runs Laravel Scheduler
+
+set -e
+
+echo "[cron] Starting Laravel Scheduler..."
+
+cd /var/www/html
+
+exec php artisan schedule:work \
+    --verbose
+

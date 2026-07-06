@@ -21,6 +21,8 @@
         "vite": "^7.0.7"
     },
     "dependencies": {
-        "jquery": "^4.0.0"
+        "jquery": "^4.0.0",
+        "laravel-echo": "^2.3.7",
+        "pusher-js": "^8.5.0"
     }
 }

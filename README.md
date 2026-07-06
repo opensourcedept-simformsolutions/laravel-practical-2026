@@ -303,6 +303,53 @@ The Super Admin Dashboard provides a centralized overview of societies, resident
 ![Visitor Report](docs/screenshots/report-visitor.png)
 
 ---
+
+## Docker (Production)
+
+A production-oriented Docker Compose stack is included, running nginx, PHP-FPM, a queue worker, Reverb (websockets), a scheduler, MySQL, and Redis as separate services (`docker-compose.yml`, images built from `docker/Dockerfile`).
+
+### 1. Configure environment
+
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+Fill in `APP_URL`, mail, and any other production secrets in `.env`. `docker-compose.yml` overrides `DB_HOST`/`DB_PORT`/`REDIS_HOST`/`REDIS_PORT` to point at the `db`/`redis` containers automatically, regardless of what's in `.env`.
+
+### 2. Build and start
+
+```bash
+docker compose build
+docker compose up -d
+```
+
+### 3. First-time deploy steps
+
+```bash
+docker compose run --rm app php artisan migrate --force
+docker compose run --rm app php artisan db:seed   # optional
+```
+
+(`storage:link` and package discovery are already baked into the image at build time.)
+
+### 4. Verify
+
+```bash
+curl -I http://localhost/up        # Laravel health check via nginx
+docker compose ps                  # all services should report healthy
+docker compose logs -f queue       # watch queued jobs (e.g. visitor entry/exit emails) drain
+docker compose logs -f reverb      # confirm the websocket server is listening
+```
+
+### Notes
+
+- Only `nginx` publishes a port to the host (`APP_PORT`, default 80). `app`, `queue`, `reverb`, `db`, and `redis` are internal-only.
+- Reverb traffic (`/app/*`, `/apps/*`) is reverse-proxied through nginx to the `reverb` service — see `docker/nginx/default.conf`.
+- TLS termination is left to whatever sits in front of nginx (load balancer/Cloudflare) or can be added directly in `docker/nginx/default.conf`.
+- To pick up code changes, rebuild and redeploy the images — `opcache.validate_timestamps` is disabled for production performance, so a running container won't see file changes without a restart.
+
+---
 ## License
 
 This project was developed as part of an internship and academic learning project.
