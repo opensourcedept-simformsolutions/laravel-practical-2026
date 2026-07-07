@@ -41,6 +41,14 @@ class FlatController extends Controller
                     $query->where('flats.society_id', $request->society_id);
                 }
 
+                if ($request->filled('wing_id')) {
+                    $query->where('flats.wing_id', $request->wing_id);
+                }
+
+                if ($request->filled('floor')) {
+                    $query->where('flats.floor', $request->floor);
+                }
+
                 if ($user->isSuperAdmin() || $user->isAdmin()) {
                     match ($request->get('filter', 'active')) {
                         'deleted' => $query->onlyTrashed(),
@@ -62,11 +70,18 @@ class FlatController extends Controller
 
                     ->addColumn('actions', function ($row) {
 
+                        $showUrl = route('flats.show', $row->id);
                         $editUrl = route('flats.edit', $row->id);
                         $deleteUrl = route('flats.destroy', $row->id);
                         $restore = route('flats.restore', $row->id);
 
                         $html = '<div class="text-center d-flex justify-content-center gap-2">';
+
+                        $html .= '
+                            <a href="'.$showUrl.'" class="btn btn-sm btn-info text-white" title="View Flat">
+                                <i class="bi bi-eye-fill"></i>
+                            </a>
+                        ';
 
                         if (! $row->trashed()) {
                             $html .= '
@@ -110,7 +125,17 @@ class FlatController extends Controller
                 ? Society::orderBy('name')->get()
                 : collect();
 
-            return view('flats.index', compact('societies'));
+            $wings = auth()->user()->isSuperAdmin()
+                ? collect()
+                : Wing::where('society_id', auth()->user()->society_id)->orderBy('name')->get();
+
+            $query = Flat::query();
+            if (!auth()->user()->isSuperAdmin()) {
+                $query->where('society_id', auth()->user()->society_id);
+            }
+            $floors = $query->orderBy('floor')->pluck('floor')->unique()->values();
+
+            return view('flats.index', compact('societies', 'wings', 'floors'));
 
         } catch (Exception $e) {
 
@@ -124,6 +149,24 @@ class FlatController extends Controller
                     'message' => 'Failed to load flats.',
                 ], 500);
             }
+
+            return redirect()->back()->with([
+                'message' => 'Something went wrong.',
+                'status' => 'error',
+            ]);
+        }
+    }
+
+    public function show(Flat $flat)
+    {
+        $this->authorize('view', $flat);
+
+        try {
+            $flat->load(['wingRelation', 'society', 'residents.user']);
+
+            return view('flats.show', compact('flat'));
+        } catch (Exception $e) {
+            Log::error('Flat show page error: '.$e->getMessage(), ['exception' => $e]);
 
             return redirect()->back()->with([
                 'message' => 'Something went wrong.',

@@ -25,6 +25,12 @@ class WingController extends Controller
                 $query = Wing::query()->select(['wings.*', 'societies.name as society_name'])
                     ->leftJoin('societies', 'societies.id', '=', 'wings.society_id');
 
+                if (!auth()->user()->isSuperAdmin()) {
+                    $query->where('wings.society_id', auth()->user()->society_id);
+                } elseif ($request->filled('society_id')) {
+                    $query->where('wings.society_id', $request->society_id);
+                }
+
                 return DataTables::of($query)
                     ->addIndexColumn()
                     ->editColumn('name', fn ($row) => $row->name)
@@ -85,11 +91,14 @@ class WingController extends Controller
             $inserts = [];
             for ($f = 1; $f <= $wing->total_floors; $f++) {
                 for ($n = 1; $n <= $wing->flats_per_floor; $n++) {
-                    if (! Flat::where('wing_id', $wing->id)->where('floor', $f)->where('flat_number', $n)->exists()) {
+                    $flatNumber = ($f * 100) + $n;
+                    if (! Flat::where('wing_id', $wing->id)->where('floor', $f)->where('flat_number', $flatNumber)->exists()) {
                         $inserts[] = [
+                            'society_id' => $societyId,
                             'wing_id' => $wing->id,
+                            'wing' => $wing->name,
                             'floor' => $f,
-                            'flat_number' => $n,
+                            'flat_number' => $flatNumber,
                             'created_at' => now(),
                             'updated_at' => now(),
                         ];
@@ -135,13 +144,23 @@ class WingController extends Controller
 
             $wing->update($data);
 
+            // Update wing name on all associated flats for backward-compatibility
+            Flat::where('wing_id', $wing->id)->update(['wing' => $wing->name]);
+
             // synchronize flats: create missing, prevent deletion if related records exist
             $desired = [];
             for ($f = 1; $f <= $wing->total_floors; $f++) {
                 for ($n = 1; $n <= $wing->flats_per_floor; $n++) {
-                    $desired[] = ['floor' => $f, 'flat_number' => $n];
-                    if (! Flat::where('wing_id', $wing->id)->where('floor', $f)->where('flat_number', $n)->exists()) {
-                        Flat::create(['wing_id' => $wing->id, 'floor' => $f, 'flat_number' => $n]);
+                    $flatNumber = ($f * 100) + $n;
+                    $desired[] = ['floor' => $f, 'flat_number' => $flatNumber];
+                    if (! Flat::where('wing_id', $wing->id)->where('floor', $f)->where('flat_number', $flatNumber)->exists()) {
+                        Flat::create([
+                            'society_id' => $wing->society_id,
+                            'wing_id' => $wing->id,
+                            'wing' => $wing->name,
+                            'floor' => $f,
+                            'flat_number' => $flatNumber
+                        ]);
                     }
                 }
             }
@@ -150,7 +169,7 @@ class WingController extends Controller
             $toDelete = Flat::where('wing_id', $wing->id)
                 ->where(function ($q) use ($wing) {
                     $q->where('floor', '>', $wing->total_floors)
-                        ->orWhere('flat_number', '>', $wing->flats_per_floor);
+                        ->orWhere(DB::raw('flat_number % 100'), '>', $wing->flats_per_floor);
                 })->get();
 
             foreach ($toDelete as $flat) {
@@ -206,5 +225,20 @@ class WingController extends Controller
         return Wing::where('society_id', $society->id)
             ->orderBy('name')
             ->get(['id', 'name', 'total_floors', 'flats_per_floor']);
+    }
+
+    public function flats(Wing $wing)
+    {
+        $this->authorize('viewAny', Wing::class);
+
+        $flats = Flat::where('wing_id', $wing->id)
+            ->orderBy('floor')
+            ->orderBy('flat_number')
+            ->get(['id', 'floor', 'flat_number', 'wing']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $flats,
+        ]);
     }
 }

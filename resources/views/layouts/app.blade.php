@@ -202,6 +202,16 @@
       timer: 3000,
       timerProgressBar: true,
     });
+
+    $(document).ready(function() {
+      if ($.fn.select2) {
+        $.fn.select2.defaults.set("theme", "bootstrap-5");
+        $.fn.select2.defaults.set("width", "100%");
+        
+        // Auto-initialize on all standard select inputs
+        $('select').not('.dataTables_length select, .dt-input, .swal2-select, [data-select2-ignore], .select2-hidden-accessible').select2();
+      }
+    });
     </script>
 
     @stack('scripts')

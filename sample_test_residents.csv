@@ -1,0 +1,6 @@
+Name,Email,Phone,Wing Name,Flat Number,Resident Type (owner/tenant)
+Alice Johnson,alice.johnson@example.com,9988776655,A,101,owner
+Bob Smith,superadmin@societyms.test,9988776644,A,102,tenant
+Charlie Brown,charlie.brown@example.com,9988776633,Z,999,owner
+David Miller,,9988776622,B,201,tenant
+Eve Green,eve.green@example.com,,B,202,

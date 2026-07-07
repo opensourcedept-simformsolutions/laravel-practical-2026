@@ -120,4 +120,24 @@ $(function () {
         $menu.slideToggle(200);
         $arrow.toggleClass('rotate-180');
     });
+
+    // Persist sidebar scroll position
+    const $sidebarMenu = $('.sidebar-menu');
+    if ($sidebarMenu.length) {
+        const savedScrollTop = sessionStorage.getItem('sidebar-scroll');
+        if (savedScrollTop !== null) {
+            $sidebarMenu.scrollTop(parseInt(savedScrollTop, 10));
+        }
+
+        $sidebarMenu.on('scroll', function() {
+            sessionStorage.setItem('sidebar-scroll', $sidebarMenu.scrollTop());
+        });
+
+        if (savedScrollTop === null) {
+            const $activeLink = $sidebarMenu.find('.active');
+            if ($activeLink.length) {
+                $activeLink[0].scrollIntoView({ block: 'nearest' });
+            }
+        }
+    }
 });

@@ -80,9 +80,9 @@
 
                             <div class="form-check mb-3">
 
-                                <input type="checkbox" name="remember" class="form-check-input">
+                                <input type="checkbox" name="remember" id="remember" value="1" class="form-check-input" {{ old('remember') ? 'checked' : '' }}>
 
-                                <label class="form-check-label">
+                                <label class="form-check-label" for="remember">
                                     Remember Me
                                 </label>
 

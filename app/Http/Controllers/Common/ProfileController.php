@@ -37,14 +37,38 @@ class ProfileController extends Controller
     }
 
     /**
+     * Display the user's password change form.
+     */
+    public function passwordEdit(Request $request): View
+    {
+        return view('profile.password', [
+            'user' => $request->user(),
+        ]);
+    }
+
+    /**
      * Update the user's profile information.
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         try {
             $user = $request->user();
+            
+            $emailChanged = $user->email !== $request->email;
+            
             $user->fill($request->validated());
+            
+            if ($emailChanged) {
+                $user->email_verified_at = null;
+            }
+            
             $user->save();
+
+            if ($emailChanged) {
+                $user->sendEmailVerificationNotification();
+                ActivityLogger::log('update', $user, 'Updated profile email and triggered verification.');
+                return Redirect::route('profile.edit')->with('status', 'verification-link-sent');
+            }
 
             ActivityLogger::log('update', $user, 'Updated personal profile information.');
 

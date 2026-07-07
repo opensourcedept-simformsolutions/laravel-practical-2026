@@ -101,6 +101,18 @@ class ComplaintController extends Controller
 
                 $user = auth()->user();
 
+                if ($request->filled('category')) {
+                    $query->where('complaints.category', $request->category);
+                }
+
+                if ($request->filled('complaint_status')) {
+                    $query->where('complaints.status', $request->complaint_status);
+                }
+
+                if ($user->isSuperAdmin() && $request->filled('society_id')) {
+                    $query->where('users.society_id', $request->society_id);
+                }
+
                 if ($user->isResident() || $user->isGatekeeper()) {
 
                     $query->where('complaints.user_id', $user->id);

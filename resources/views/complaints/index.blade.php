@@ -4,46 +4,84 @@
 
 @section('content')
 
-<div class="card shadow-sm border-0 rounded-3">
-
-    <div class="card-header bg-white border-bottom py-3">
-        <div class="row align-items-center">
-
-            <div class="col">
-                @if (auth()->user()->isSuperAdmin())
-                <h5 class="mb-0 fw-bold text-dark">All Complaints</h5>
-                @elseif(auth()->user()->isAdmin())
-                <h5 class="mb-0 fw-bold text-dark">Society Complaints</h5>
-                @else
-                <h5 class="mb-0 fw-bold text-dark">My Complaints</h5>
+    <!-- Filter Card -->
+    <div class="card shadow-sm border-0 rounded-3 mb-4">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold text-dark">
+                <i class="bi bi-funnel me-2 text-primary"></i>Filters
+            </h6>
+            <button type="button" id="btnResetFilters" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                @if (auth()->user()->isSuperAdmin() || auth()->user()->isAdmin())
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold text-secondary small">Soft-Delete Status</label>
+                        <select id="complaintFilter" class="form-select form-select-sm">
+                            <option value="active" selected>Active Complaints</option>
+                            <option value="deleted">Deleted Complaints</option>
+                            <option value="all">All Complaints</option>
+                        </select>
+                    </div>
                 @endif
-            </div>
 
-            <div class="col-auto">
-                <div class="d-flex align-items-center gap-2">
+                @if (auth()->user()->isSuperAdmin())
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold text-secondary small">Society</label>
+                        <select id="society-filter" class="form-select form-select-sm">
+                            <option value="">All Societies</option>
+                            @foreach (\App\Models\Society::orderBy('name')->get() as $soc)
+                                <option value="{{ $soc->id }}">{{ $soc->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
 
-                    @can('is-admin')
-                    <select id="complaintFilter" class="form-select form-select-sm w-auto">
-                        <option value="active" selected>Active Complaints</option>
-                        <option value="deleted">Deleted Complaints</option>
-                        <option value="all">All Complaints</option>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold text-secondary small">Category</label>
+                    <select id="category-filter" class="form-select form-select-sm">
+                        <option value="">All Categories</option>
+                        @foreach (\App\Enums\ComplaintCategory::cases() as $cat)
+                            <option value="{{ $cat->value }}">{{ ucfirst($cat->value) }}</option>
+                        @endforeach
                     </select>
-                    @endcan
+                </div>
 
-                    @canany(['is-gatekeeper', 'is-admin'])
-                    <a href="{{ route('complaints.create') }}" class="btn btn-primary">
-                        <i class="bi bi-plus-square me-1"></i>
-                        Create Complaint
-                    </a>
-                    @endcanany
-
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold text-secondary small">Complaint Status</label>
+                    <select id="complaint-status-filter" class="form-select form-select-sm">
+                        <option value="">All Statuses</option>
+                        <option value="open">Open</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="resolved">Resolved</option>
+                    </select>
                 </div>
             </div>
-
         </div>
     </div>
 
-    <div class="card-body">
+    <!-- Data Card -->
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            @if (auth()->user()->isSuperAdmin())
+            <h5 class="mb-0 fw-bold text-dark">All Complaints</h5>
+            @elseif(auth()->user()->isAdmin())
+            <h5 class="mb-0 fw-bold text-dark">Society Complaints</h5>
+            @else
+            <h5 class="mb-0 fw-bold text-dark">My Complaints</h5>
+            @endif
+
+            @canany(['is-gatekeeper', 'is-admin'])
+            <a href="{{ route('complaints.create') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-square me-1"></i>
+                Create Complaint
+            </a>
+            @endcanany
+        </div>
+
+        <div class="card-body">
 
         <div class="table-responsive">
 
@@ -76,15 +114,11 @@
         </div>
 
     </div>
-
-</div>
 @endsection
 
 @push('scripts')
 <script>
     $(document).ready(function() {
-
-            let currentFilter = 'active';
 
             table = $('#complaintsTable').DataTable({
                 processing: true,
@@ -93,7 +127,10 @@
                 ajax: {
                     url: "{{ route('complaints.index') }}",
                     data: function (d) {
-                        d.filter = currentFilter;
+                        d.filter = $('#complaintFilter').val() || 'active';
+                        d.category = $('#category-filter').val();
+                        d.complaint_status = $('#complaint-status-filter').val();
+                        d.society_id = $('#society-filter').val();
                     }
                 },
 
@@ -144,8 +181,13 @@
                     });
                 }
             });
-            $('#complaintFilter').on('change', function () {
-                currentFilter = $(this).val();
+            $('#complaintFilter, #category-filter, #complaint-status-filter, #society-filter').on('change', function () {
+                table.ajax.reload();
+            });
+
+            $('#btnResetFilters').click(function() {
+                $('#category-filter, #complaint-status-filter, #society-filter').val('').trigger('change');
+                $('#complaintFilter').val('active').trigger('change');
                 table.ajax.reload();
             });
         });

@@ -34,7 +34,20 @@ class VisitorPassController extends Controller
         $this->authorize('viewAny', VisitorLog::class);
 
         try {
-            return view('visitor-passes.index');
+            $user = auth()->user();
+            $flats = collect();
+
+            if (!$user->isResident()) {
+                if (!$user->isSuperAdmin()) {
+                    $flats = Flat::where('society_id', $user->society_id)
+                        ->orderBy('wing')
+                        ->orderBy('floor')
+                        ->orderBy('flat_number')
+                        ->get();
+                }
+            }
+
+            return view('visitor-passes.index', compact('flats'));
         } catch (Exception $e) {
             Log::error('Visitor pass index page error: '.$e->getMessage(), ['exception' => $e]);
 
@@ -76,6 +89,18 @@ class VisitorPassController extends Controller
                         $q->where('society_id', $user->society_id);
                     });
                 }
+            }
+
+            if ($request->filled('visit_status')) {
+                $query->where('visitor_logs.status', $request->visit_status);
+            }
+
+            if ($request->filled('flat_id')) {
+                $query->where('visitor_logs.flat_id', $request->flat_id);
+            }
+
+            if ($request->filled('visit_date')) {
+                $query->whereDate('visitor_logs.visit_date', $request->visit_date);
             }
 
             match ($request->get('filter', 'active')) {

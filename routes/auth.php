@@ -26,6 +26,21 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::get('verify-email', function (\Illuminate\Http\Request $request) {
+        return $request->user()->hasVerifiedEmail()
+                    ? redirect()->intended(route('dashboard', absolute: false))
+                    : view('auth.verify-email');
+    })->name('verification.notice');
+
+    Route::get('verify-email/{id}/{hash}', function (\Illuminate\Foundation\Auth\EmailVerificationRequest $request) {
+        $request->fulfill();
+        return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+    })->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+
+    Route::post('email/verification-notification', function (\Illuminate\Http\Request $request) {
+        $request->user()->sendEmailVerificationNotification();
+        return back()->with('status', 'verification-link-sent');
+    })->middleware('throttle:6,1')->name('verification.send');
 
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
 

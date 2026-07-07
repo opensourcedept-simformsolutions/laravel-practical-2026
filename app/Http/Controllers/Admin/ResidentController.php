@@ -19,6 +19,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 use Throwable;
+use App\Models\BulkImport;
+use App\Models\Wing;
+use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 
 class ResidentController extends Controller
@@ -57,6 +60,15 @@ class ResidentController extends Controller
                 if ($request->filled('flat_id')) {
                     $query->where('residents.flat_id', $request->flat_id);
                 }
+
+                if ($request->filled('resident_type')) {
+                    $query->where('residents.resident_type', $request->resident_type);
+                }
+
+                if ($request->filled('wing_id')) {
+                    $query->where('flats.wing_id', $request->wing_id);
+                }
+
                 if ($user->isSuperAdmin() || $user->isAdmin()) {
                     match ($request->get('filter', 'active')) {
                         'deleted' => $query->onlyTrashed(),
@@ -83,11 +95,19 @@ class ResidentController extends Controller
 
                     ->addColumn('actions', function ($row) {
 
+                        $showUrl = route('residents.show', $row->id);
                         $editUrl = route('residents.edit', $row->id);
                         $deleteUrl = route('residents.destroy', $row->id);
                         $restore = route('residents.restore', $row->id);
 
                         $html = '<div class="d-flex justify-content-center gap-2">';
+
+                        $html .= '
+                            <a href="'.$showUrl.'" class="btn btn-info btn-sm text-white" title="View Resident">
+                                <i class="bi bi-eye-fill"></i>
+                            </a>
+                        ';
+
                         if (! $row->trashed()) {
                             $html .= '
                                   <a href="'.$editUrl.'" class="btn btn-primary btn-sm" title="Edit Resident"><i class="bi bi-pencil-fill"></i></a>
@@ -135,13 +155,41 @@ class ResidentController extends Controller
                 ? Flat::where('society_id', auth()->user()->society_id)->orderBy('wing')->orderBy('flat_number')->get()
                 : collect();
 
-            return view('residents.index', compact('societies', 'flats'));
+            $wings = auth()->user()->isSuperAdmin()
+                ? collect()
+                : Wing::where('society_id', auth()->user()->society_id)->orderBy('name')->get();
+
+            return view('residents.index', compact('societies', 'flats', 'wings'));
 
         } catch (Exception $e) {
 
             Log::error('Resident listing error: '.$e->getMessage());
 
             return back()->with([
+                'message' => 'Something went wrong.',
+                'status' => 'error',
+            ]);
+        }
+    }
+
+    public function show(Resident $resident)
+    {
+        $this->authorize('view', $resident);
+
+        try {
+            $resident->load(['user', 'flat.wingRelation', 'flat.society']);
+
+            // Get other residents in the same flat (co-residents)
+            $coResidents = Resident::where('flat_id', $resident->flat_id)
+                ->where('id', '!=', $resident->id)
+                ->with('user')
+                ->get();
+
+            return view('residents.show', compact('resident', 'coResidents'));
+        } catch (Exception $e) {
+            Log::error('Resident show page error: '.$e->getMessage(), ['exception' => $e]);
+
+            return redirect()->back()->with([
                 'message' => 'Something went wrong.',
                 'status' => 'error',
             ]);
@@ -377,5 +425,352 @@ class ResidentController extends Controller
                 'message' => 'Failed to restore resident.',
             ]);
         }
+    }
+
+    public function showImportForm(Request $request)
+    {
+        $this->authorize('create', Resident::class);
+        return view('residents.import');
+    }
+
+    public function downloadSampleCsv()
+    {
+        $this->authorize('create', Resident::class);
+
+        $headers = ['Name', 'Email', 'Phone', 'Wing Name', 'Flat Number', 'Resident Type (owner/tenant)'];
+        $sampleRows = [
+            ['John Doe', 'john.doe@example.com', '9988776655', 'A', '101', 'owner'],
+            ['Jane Smith', '', '9988776644', 'B', '202', 'tenant'],
+            ['Robert Brown', 'robert.brown@example.com', '', 'A', '102', ''],
+        ];
+
+        $callback = function() use ($headers, $sampleRows) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $headers);
+            foreach ($sampleRows as $row) {
+                fputcsv($file, $row);
+            }
+            fclose($file);
+        };
+
+        return response()->streamDownload($callback, 'residents_sample.csv', [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="residents_sample.csv"',
+        ]);
+    }
+
+    public function handleUpload(Request $request)
+    {
+        $this->authorize('create', Resident::class);
+
+        $request->validate([
+            'csv_file' => ['required', 'file', 'mimes:csv,txt', 'max:5120'],
+        ]);
+
+        $file = $request->file('csv_file');
+        $filename = time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('temp_bulk_uploads', $filename);
+
+        $bulkImport = BulkImport::create([
+            'user_id' => auth()->id(),
+            'filename' => $filename,
+            'original_filename' => $file->getClientOriginalName(),
+            'status' => 'pending',
+        ]);
+
+        $filePath = Storage::path($path);
+        if (($handle = fopen($filePath, 'r')) !== false) {
+            $headers = fgetcsv($handle);
+            fclose($handle);
+        } else {
+            return back()->with(['message' => 'Unable to read the uploaded file at: ' . $filePath, 'status' => 'error']);
+        }
+
+        if (empty($headers)) {
+            return back()->with(['message' => 'The uploaded file is empty.', 'status' => 'error']);
+        }
+
+        $headers = array_map(function($h) {
+            return trim(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $h));
+        }, $headers);
+
+        $societies = auth()->user()->isSuperAdmin() ? Society::all() : collect();
+
+        return view('residents.import_map', compact('bulkImport', 'headers', 'societies'));
+    }
+
+    public function showValidationPreview(Request $request)
+    {
+        $this->authorize('create', Resident::class);
+
+        $request->validate([
+            'import_id' => ['required', 'exists:bulk_imports,id'],
+            'map_name' => [$request->has('rows') ? 'nullable' : 'required', 'string'],
+            'map_email' => [$request->has('rows') ? 'nullable' : 'required', 'string'],
+            'map_phone' => [$request->has('rows') ? 'nullable' : 'required', 'string'],
+            'map_flat_number' => [$request->has('rows') ? 'nullable' : 'required', 'string'],
+            'map_wing' => [$request->has('rows') ? 'nullable' : 'required', 'string'],
+            'map_resident_type' => ['nullable', 'string'],
+            'default_resident_type' => ['required', 'in:owner,tenant'],
+            'fallback_email_action' => ['required', 'in:generate,fail'],
+            'fallback_phone_action' => ['required', 'in:generate,fail'],
+            'society_id' => auth()->user()->isSuperAdmin() ? ['required', 'exists:societies,id'] : ['nullable'],
+        ]);
+
+        $bulkImport = BulkImport::findOrFail($request->import_id);
+        $filePath = Storage::path('temp_bulk_uploads/' . $bulkImport->filename);
+
+        if (!file_exists($filePath)) {
+            return redirect()->route('residents.import.form')->with(['message' => 'Uploaded file not found at: ' . $filePath, 'status' => 'error']);
+        }
+
+        $societyId = auth()->user()->isSuperAdmin() ? $request->society_id : auth()->user()->society_id;
+
+        $rows = [];
+        if ($request->has('rows')) {
+            $submittedRows = $request->input('rows');
+            foreach ($submittedRows as $r) {
+                $rows[] = [
+                    'name' => $r['name'] ?? '',
+                    'email' => $r['email'] ?? '',
+                    'phone' => $r['phone'] ?? '',
+                    'wing' => $r['wing'] ?? '',
+                    'flat_number' => $r['flat_number'] ?? '',
+                    'resident_type' => $r['resident_type'] ?? '',
+                ];
+            }
+            $map = [
+                'name' => 'name',
+                'email' => 'email',
+                'phone' => 'phone',
+                'flat_number' => 'flat_number',
+                'wing' => 'wing',
+                'resident_type' => 'resident_type',
+            ];
+        } else {
+            if (($handle = fopen($filePath, 'r')) !== false) {
+                $headers = fgetcsv($handle);
+                $headers = array_map(function($h) {
+                    return trim(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $h));
+                }, $headers);
+
+                while (($data = fgetcsv($handle)) !== false) {
+                    if (count($data) <= count($headers)) {
+                        $data = array_pad($data, count($headers), '');
+                    }
+                    $rows[] = array_combine($headers, array_slice($data, 0, count($headers)));
+                }
+                fclose($handle);
+            }
+            $map = [
+                'name' => $request->map_name,
+                'email' => $request->map_email,
+                'phone' => $request->map_phone,
+                'flat_number' => $request->map_flat_number,
+                'wing' => $request->map_wing,
+                'resident_type' => $request->map_resident_type,
+            ];
+        }
+
+        $validatedRows = [];
+        $isValid = true;
+        $totalRows = count($rows);
+        $validCount = 0;
+        $invalidCount = 0;
+
+        $csvEmails = [];
+        $csvPhones = [];
+
+        foreach ($rows as $index => $row) {
+            $rowNum = $index + 2;
+            $errors = [];
+
+            $rawName = isset($row[$map['name']]) ? trim($row[$map['name']]) : '';
+            $rawEmail = isset($row[$map['email']]) ? trim($row[$map['email']]) : '';
+            $rawPhone = isset($row[$map['phone']]) ? trim($row[$map['phone']]) : '';
+            $rawFlatNumber = isset($row[$map['flat_number']]) ? trim($row[$map['flat_number']]) : '';
+            $rawWingName = isset($row[$map['wing']]) ? trim($row[$map['wing']]) : '';
+            $rawType = ($map['resident_type'] && isset($row[$map['resident_type']])) ? strtolower(trim($row[$map['resident_type']])) : '';
+
+            if (empty($rawType) || !in_array($rawType, ['owner', 'tenant'])) {
+                $rawType = $request->default_resident_type;
+            }
+
+            if (empty($rawName)) {
+                $errors[] = "Name is required.";
+            } elseif (strlen($rawName) < 2 || strlen($rawName) > 100) {
+                $errors[] = "Name must be between 2 and 100 characters.";
+            } elseif (!preg_match("/^[A-Za-z\s\.\'-]+$/", $rawName)) {
+                $errors[] = "Name format is invalid (letters and basic symbols only).";
+            }
+
+            if (empty($rawEmail)) {
+                if ($request->fallback_email_action === 'generate') {
+                    $slug = Str::slug($rawName ?: 'resident');
+                    $rawEmail = $slug . '_' . rand(100, 999) . '@dummy.societyms.test';
+                } else {
+                    $errors[] = "Email is required.";
+                }
+            } elseif (!filter_var($rawEmail, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = "Invalid email format.";
+            } elseif (User::where('email', $rawEmail)->exists()) {
+                $errors[] = "Email '{$rawEmail}' is already registered in the system.";
+            } elseif (in_array($rawEmail, $csvEmails)) {
+                $errors[] = "Duplicate email '{$rawEmail}' in the uploaded file.";
+            } else {
+                $csvEmails[] = $rawEmail;
+            }
+
+            if (empty($rawPhone)) {
+                if ($request->fallback_phone_action === 'generate') {
+                    $rawPhone = '99' . rand(10000000, 99999999);
+                } else {
+                    $errors[] = "Phone is required.";
+                }
+            } elseif (strlen($rawPhone) < 7 || strlen($rawPhone) > 20) {
+                $errors[] = "Phone number must be between 7 and 20 digits.";
+            } elseif (!preg_match("/^[0-9+\-\s()]+$/", $rawPhone)) {
+                $errors[] = "Phone format is invalid.";
+            }
+
+            $flatId = null;
+            if (empty($rawFlatNumber) || empty($rawWingName)) {
+                $errors[] = "Wing and Flat Number are required to map to a flat.";
+            } else {
+                $wing = Wing::where('society_id', $societyId)
+                    ->where('name', $rawWingName)
+                    ->first();
+
+                if (!$wing) {
+                    $errors[] = "Wing '{$rawWingName}' does not exist in the selected society.";
+                } else {
+                    $flat = Flat::where('wing_id', $wing->id)
+                        ->where('flat_number', $rawFlatNumber)
+                        ->first();
+
+                    if (!$flat) {
+                        $errors[] = "Flat '{$rawFlatNumber}' does not exist inside Wing '{$rawWingName}'.";
+                    } else {
+                        $flatId = $flat->id;
+                    }
+                }
+            }
+
+            $rowValid = empty($errors);
+            if ($rowValid) {
+                $validCount++;
+            } else {
+                $invalidCount++;
+                $isValid = false;
+            }
+
+            $validatedRows[] = [
+                'row_number' => $rowNum,
+                'name' => $rawName,
+                'email' => $rawEmail,
+                'phone' => $rawPhone,
+                'wing' => $rawWingName,
+                'flat_number' => $rawFlatNumber,
+                'flat_id' => $flatId,
+                'resident_type' => $rawType,
+                'valid' => $rowValid,
+                'errors' => $errors,
+            ];
+        }
+
+        $validatedFilename = 'validated_' . $bulkImport->id . '.json';
+        Storage::put('temp_bulk_uploads/' . $validatedFilename, json_encode($validatedRows));
+
+        $bulkImport->update([
+            'total_rows' => $totalRows,
+            'status' => 'validated',
+        ]);
+
+        $showEditor = ($invalidCount <= 10);
+
+        return view('residents.import_preview', compact('bulkImport', 'validatedRows', 'isValid', 'totalRows', 'validCount', 'invalidCount', 'societyId', 'showEditor'));
+    }
+
+    public function processImport(Request $request)
+    {
+        $this->authorize('create', Resident::class);
+
+        $request->validate([
+            'import_id' => ['required', 'exists:bulk_imports,id'],
+            'society_id' => ['required', 'exists:societies,id'],
+        ]);
+
+        $bulkImport = BulkImport::findOrFail($request->import_id);
+        $jsonFilename = 'validated_' . $bulkImport->id . '.json';
+        $jsonPath = 'temp_bulk_uploads/' . $jsonFilename;
+
+        if (!Storage::exists($jsonPath)) {
+            return redirect()->route('residents.import.form')->with(['message' => 'Validated data file not found.', 'status' => 'error']);
+        }
+
+        $validatedRows = json_decode(Storage::get($jsonPath), true);
+        $hasInvalidRows = collect($validatedRows)->contains('valid', false);
+        if ($hasInvalidRows) {
+            return back()->with(['message' => 'Cannot import file with validation errors. Please fix errors first.', 'status' => 'error']);
+        }
+
+        // Dispatch background job
+        \App\Jobs\ProcessBulkImport::dispatch(
+            $bulkImport->id,
+            $request->society_id,
+            auth()->id()
+        );
+
+        $bulkImport->update(['status' => 'processing']);
+
+        Session::flash('message', 'Resident bulk import has been queued and will process in the background. You will receive a system notification once complete.');
+        Session::flash('status', 'success');
+
+        return redirect()->route('residents.index');
+    }
+
+    public function downloadErrorReport($importId)
+    {
+        $this->authorize('create', Resident::class);
+
+        $bulkImport = BulkImport::findOrFail($importId);
+        $jsonFilename = 'validated_' . $bulkImport->id . '.json';
+        $jsonPath = 'temp_bulk_uploads/' . $jsonFilename;
+
+        if (!Storage::exists($jsonPath)) {
+            return redirect()->route('residents.import.form')->with(['message' => 'Validation error history not found.', 'status' => 'error']);
+        }
+
+        $validatedRows = json_decode(Storage::get($jsonPath), true);
+        
+        $headers = ['Row Number', 'Name', 'Email', 'Phone', 'Wing Name', 'Flat Number', 'Resident Type', 'Validation Errors'];
+        
+        $callback = function() use ($headers, $validatedRows) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $headers);
+            
+            foreach ($validatedRows as $row) {
+                if (!$row['valid']) {
+                    fputcsv($file, [
+                        $row['row_number'],
+                        $row['name'],
+                        $row['email'],
+                        $row['phone'],
+                        $row['wing'],
+                        $row['flat_number'],
+                        $row['resident_type'],
+                        implode('; ', $row['errors'])
+                    ]);
+                }
+            }
+            fclose($file);
+        };
+
+        $exportName = 'error_report_' . str_replace('.csv', '', $bulkImport->original_filename) . '.csv';
+
+        return response()->streamDownload($callback, $exportName, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $exportName . '"',
+        ]);
     }
 }

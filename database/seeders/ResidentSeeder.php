@@ -7,6 +7,7 @@ use App\Models\Resident;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class ResidentSeeder extends Seeder
 {
@@ -14,27 +15,25 @@ class ResidentSeeder extends Seeder
     {
         $residentRole = Role::where('name', 'resident')->firstOrFail();
 
-        $users = User::where('role_id', $residentRole->id)->get();
+        foreach (Flat::all() as $flat) {
+            $count = rand(2, 3);
+            for ($i = 1; $i <= $count; $i++) {
+                $user = User::create([
+                    'name' => fake()->name(),
+                    'email' => "resident_f{$flat->id}_{$i}@societyms.test",
+                    'phone' => fake()->numerify('9#########'),
+                    'password' => Hash::make('1'),
+                    'role_id' => $residentRole->id,
+                    'society_id' => $flat->society_id,
+                    'email_verified_at' => now(),
+                ]);
 
-        foreach ($users as $user) {
-
-            $flat = Flat::where('society_id', $user->society_id)
-                ->whereDoesntHave('residents')
-                ->inRandomOrder()
-                ->first();
-
-            if (! $flat) {
-                continue;
+                Resident::create([
+                    'user_id' => $user->id,
+                    'flat_id' => $flat->id,
+                    'resident_type' => $i === 1 ? 'owner' : 'tenant',
+                ]);
             }
-
-            Resident::create([
-                'user_id' => $user->id,
-                'flat_id' => $flat->id,
-                'resident_type' => fake()->randomElement([
-                    'owner',
-                    'tenant',
-                ]),
-            ]);
         }
     }
 }

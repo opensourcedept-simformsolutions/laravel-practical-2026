@@ -27,16 +27,18 @@ Route::get('/', function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])
-        ->name('dashboard');
-
     Route::controller(ProfileController::class)
         ->prefix('profile')
         ->group(function () {
             Route::get('/', 'index')->name('profile');
             Route::get('/edit', 'edit')->name('profile.edit');
             Route::patch('/', 'update')->name('profile.update');
+            Route::get('/password', 'passwordEdit')->name('profile.password.edit');
         });
+
+    Route::middleware('verified')->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'index'])
+            ->name('dashboard');
 
     Route::controller(NotificationController::class)
         ->prefix('notifications')
@@ -57,13 +59,21 @@ Route::middleware('auth')->group(function () {
 
                     Route::resource('users', UserController::class)
                         ->except(['show']);
+                    Route::patch('users/{user}/restore', [UserController::class, 'restore'])->withTrashed()->name('users.restore');
                     Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
                     Route::get('activity-logs/data', [ActivityLogController::class, 'data'])->name('activity-logs.data');
                 });
 
-            Route::resource('flats', FlatController::class)->except('show');
+            Route::resource('flats', FlatController::class);
             Route::patch('/{flat}/restore', [FlatController::class, 'restore'])->withTrashed()->name('flats.restore');
             Route::get('/flats/export', [FlatController::class, 'export'])->name('flats.export');
+
+            Route::get('residents/import/sample', [ResidentController::class, 'downloadSampleCsv'])->name('residents.import.sample');
+            Route::get('residents/import/errors/{import}', [ResidentController::class, 'downloadErrorReport'])->name('residents.import.errors');
+            Route::get('residents/import', [ResidentController::class, 'showImportForm'])->name('residents.import.form');
+            Route::post('residents/import/upload', [ResidentController::class, 'handleUpload'])->name('residents.import.upload');
+            Route::post('residents/import/map', [ResidentController::class, 'showValidationPreview'])->name('residents.import.map');
+            Route::post('residents/import/process', [ResidentController::class, 'processImport'])->name('residents.import.process');
 
             Route::resource('residents', ResidentController::class);
             Route::patch('/{residents}/restore', [ResidentController::class, 'restore'])->withTrashed()->name('residents.restore');
@@ -145,6 +155,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/societies/{society}/wings', [WingController::class, 'bySociety'])
         ->name('societies.wings');
 
+    // API: return flats for a wing
+    Route::get('/wings/{wing}/flats', [WingController::class, 'flats'])
+        ->name('wings.flats');
+
     // Wings (super-admin + society admin)
     Route::middleware(['auth', 'role:super_admin,admin'])->group(function () {
         Route::resource('wings', WingController::class)->except(['show']);
@@ -214,6 +228,7 @@ Route::middleware('auth')->group(function () {
             Route::post('leave', 'stop')->name('stop');
             Route::post('{user}', 'start')->name('start');
         });
+    });
 });
 
 require __DIR__.'/auth.php';

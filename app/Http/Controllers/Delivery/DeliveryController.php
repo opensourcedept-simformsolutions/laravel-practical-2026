@@ -75,6 +75,22 @@ class DeliveryController extends Controller
                 };
             }
 
+            if ($request->filled('delivery_status')) {
+                $query->where('deliveries.status', $request->delivery_status);
+            }
+
+            if ($request->filled('vendor')) {
+                $query->where('deliveries.vendor', $request->vendor);
+            }
+
+            if ($request->filled('flat_id')) {
+                $query->where('deliveries.flat_id', $request->flat_id);
+            }
+
+            if ($user->isSuperAdmin() && $request->filled('society_id')) {
+                $query->where('flats.society_id', $request->society_id);
+            }
+
             if (! $user->isSuperAdmin()) {
                 if ($user->isResident()) {
                     $query->where('deliveries.flat_id', $user->resident->flat_id);
@@ -327,7 +343,20 @@ class DeliveryController extends Controller
     {
         $this->authorize('viewAny', Delivery::class);
 
-        return view('deliveries.index');
+        $user = auth()->user();
+        $flats = collect();
+
+        if (!$user->isResident()) {
+            if (!$user->isSuperAdmin()) {
+                $flats = Flat::where('society_id', $user->society_id)
+                    ->orderBy('wing')
+                    ->orderBy('floor')
+                    ->orderBy('flat_number')
+                    ->get();
+            }
+        }
+
+        return view('deliveries.index', compact('flats'));
     }
 
     /**

@@ -77,6 +77,12 @@ class UserController extends Controller
                 );
             }
 
+            match ($request->get('filter', 'active')) {
+                'deleted' => $query->onlyTrashed(),
+                'all' => $query->withTrashed(),
+                default => null,
+            };
+
             return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn(
@@ -92,37 +98,54 @@ class UserController extends Controller
                     $editUrl = route('admin.users.edit', $row->id);
                     $deleteUrl = route('admin.users.destroy', $row->id);
                     $impersonateUrl = route('impersonate.start', $row->id);
+                    $restoreUrl = route('admin.users.restore', $row->id);
 
-                    return '
-                        <div class="text-center d-flex justify-content-center gap-2">
+                    $html = '<div class="text-center d-flex justify-content-center gap-2">';
+
+                    if (!$row->trashed()) {
+                        $html .= '
                             <a href="'.$editUrl.'" class="btn btn-primary btn-sm text-white" title="Edit User">
                                 <i class="bi bi-pencil-fill"></i>
                             </a>
-
+                        ';
+                        
+                        $html .= '
                             <form action="'.$impersonateUrl.'" method="POST" class="d-inline">
                                 '.csrf_field().'
-                                <button type="submit"
-                                    class="btn btn-dark btn-sm text-white" title="Impersonate User">
+                                <button type="submit" class="btn btn-dark btn-sm text-white" title="Impersonate User">
                                     <i class="bi bi-person-check-fill"></i>
                                 </button>
                             </form>
+                        ';
 
-                            <form action="'.$deleteUrl.'"
-                                method="POST"
-                                class="d-inline">
+                        $html .= '
+                            <button class="btn btn-danger text-white btn-action btn-sm"
+                                data-url="'.$deleteUrl.'"
+                                data-method="DELETE"
+                                data-title="Delete User?"
+                                data-text="This user will be soft-deleted."
+                                data-confirm="Yes, Delete"
+                                data-success="User deleted successfully"
+                                title="Delete User">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        ';
+                    } else {
+                        $html .= '
+                            <button class="btn btn-secondary text-white btn-action btn-sm"
+                                data-url="'.$restoreUrl.'"
+                                data-method="PATCH"
+                                data-title="Restore User?"
+                                data-text="This user will be restored."
+                                data-confirm="Yes, Restore"
+                                title="Restore User">
+                                <i class="bi bi-arrow-up-left-circle-fill"></i>
+                            </button>
+                        ';
+                    }
 
-                                '.csrf_field().'
-                                '.method_field('DELETE').'
-
-                                <button
-                                    class="btn btn-danger text-white btn-sm"
-                                    onclick="return confirm(\'Delete this user?\')" title="Delete User">
-                                    <i class="bi bi-trash-fill"></i>
-                                </button>
-
-                            </form>
-                        </div>
-                    ';
+                    $html .= '</div>';
+                    return $html;
                 })
 
                 ->rawColumns(['actions'])
@@ -263,6 +286,13 @@ class UserController extends Controller
             ActivityLogger::log('delete', $user, "User {$user->name} was deleted.");
             $user->delete();
 
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'User deleted successfully.',
+                ]);
+            }
+
             Session::flash('message', 'User deleted successfully.');
             Session::flash('status', 'success');
 
@@ -270,10 +300,40 @@ class UserController extends Controller
         } catch (Exception $e) {
             Log::error('User delete error: '.$e->getMessage(), ['exception' => $e]);
 
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to delete user.',
+                ], 500);
+            }
+
             Session::flash('message', 'Something went wrong.');
             Session::flash('status', 'error');
 
             return redirect()->back();
+        }
+    }
+
+    public function restore(User $user)
+    {
+        $this->authorize('restore', $user);
+
+        try {
+            $user->restore();
+
+            ActivityLogger::log('restore', $user, 'User restored.');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User restored successfully.',
+            ]);
+        } catch (Exception $e) {
+            Log::error('User restore error: '.$e->getMessage(), ['exception' => $e]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to restore user.',
+            ]);
         }
     }
 }

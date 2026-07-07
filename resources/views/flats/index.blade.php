@@ -4,42 +4,24 @@
 
 @section('content')
 
-    <div class="card shadow-sm border-0 rounded-3">
-        <div class="card-header bg-white border-bottom py-3">
-            <div class="row align-items-center">
-                <div class="col">
-                    <h5 class="mb-0 fw-bold text-dark">Flat List</h5>
-                </div>
-
-                <div class="col-auto">
-                    <div class="d-flex align-items-center gap-2">
-                        @can('is-admin')
-                            <select id="status-filter" class="form-select form-select-sm w-auto">
-                                <option value="active">Active Flats</option>
-                                <option value="deleted">Deleted Flats</option>
-                                <option value="all">All Flats</option>
-                            </select>
-                        @endcan
-
-                        @canany(['is-gatekeeper', 'is-admin'])
-                            <a href="{{ route('flats.create') }}" class="btn btn-primary">
-                                <i class="bi bi-plus-square me-1"></i>
-                                Create Flat
-                            </a>
-                        @endcanany
-                    </div>
-                </div>
-            </div>
+    @if (auth()->user()->isSuperAdmin() || auth()->user()->isAdmin())
+    <!-- Filter Card -->
+    <div class="card shadow-sm border-0 rounded-3 mb-4">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold text-dark">
+                <i class="bi bi-funnel me-2 text-primary"></i>Filters
+            </h6>
+            <button type="button" id="btnResetFilters" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+            </button>
         </div>
-
         <div class="card-body">
-            @if (auth()->user()->isSuperAdmin())
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Society</label>
-                        <select id="society_filter" name="society_id" class="form-select">
+            <div class="row g-3">
+                @if (auth()->user()->isSuperAdmin())
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold text-secondary small">Society</label>
+                        <select id="society_filter" name="society_id" class="form-select form-select-sm">
                             <option value="">Select Society</option>
-
                             @foreach ($societies as $society)
                                 <option value="{{ $society->id }}"
                                     {{ old('society_id') == $society->id ? 'selected' : '' }}>
@@ -47,16 +29,62 @@
                                 </option>
                             @endforeach
                         </select>
-
-                        @error('society_id')
-                            <div class="text-danger pt-1">
-                                {{ $message }}
-                            </div>
-                        @enderror
                     </div>
-                </div>
-            @endif
+                @endif
 
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold text-secondary small">Wing</label>
+                    <select id="wing_filter" class="form-select form-select-sm">
+                        <option value="">All Wings</option>
+                        @if (isset($wings))
+                            @foreach ($wings as $wing)
+                                <option value="{{ $wing->id }}" data-total-floors="{{ $wing->total_floors }}">{{ $wing->name }}</option>
+                            @endforeach
+                        @endif
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold text-secondary small">Floor</label>
+                    <select id="floor_filter" class="form-select form-select-sm">
+                        <option value="">All Floors</option>
+                        @if (isset($floors))
+                            @foreach ($floors as $floor)
+                                <option value="{{ $floor }}">{{ $floor }}</option>
+                            @endforeach
+                        @endif
+                    </select>
+                </div>
+
+                @can('is-admin')
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold text-secondary small">Status</label>
+                        <select id="status-filter" class="form-select form-select-sm">
+                            <option value="active">Active Flats</option>
+                            <option value="deleted">Deleted Flats</option>
+                            <option value="all">All Flats</option>
+                        </select>
+                    </div>
+                @endcan
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- Data Card -->
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-dark">Flat List</h5>
+
+            @canany(['is-gatekeeper', 'is-admin'])
+                <a href="{{ route('flats.create') }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-square me-1"></i>
+                    Create Flat
+                </a>
+            @endcanany
+        </div>
+
+        <div class="card-body">
             <div class="table-responsive">
                 <table id="flatsTable" class="table table-hover table-striped align-middle w-100 app-datatable">
                     <thead class="table-light">
@@ -90,6 +118,8 @@
                 data: function(d) {
                     d.society_id = $('#society_filter').val();
                     d.filter = $('#status-filter').val();
+                    d.wing_id = $('#wing_filter').val();
+                    d.floor = $('#floor_filter').val();
                 }
             },
             layout: {
@@ -149,7 +179,61 @@
             ]
         });
 
-        $(document).on('change', '#status-filter, #society_filter', function() {
+        const defaultFloors = @json($floors);
+
+        $('#society_filter, #wing_filter, #floor_filter, #status-filter').select2({
+            theme: 'bootstrap-5',
+            width: '100%'
+        });
+
+        $(document).on('change', '#status-filter, #society_filter, #wing_filter, #floor_filter', function() {
+            rd();
+        });
+
+        $('#society_filter').change(function() {
+            let societyId = $(this).val();
+            let $wingSelect = $('#wing_filter');
+            $wingSelect.html('<option value="">All Wings</option>');
+            
+            let $floorSelect = $('#floor_filter');
+            $floorSelect.html('<option value="">All Floors</option>');
+            defaultFloors.forEach(floor => {
+                $floorSelect.append(`<option value="${floor}">${floor}</option>`);
+            });
+            $floorSelect.val('').trigger('change.select2');
+
+            if (societyId) {
+                $.get(`/societies/${societyId}/wings`, function(wings) {
+                    wings.forEach(wing => {
+                        $wingSelect.append(`<option value="${wing.id}" data-total-floors="${wing.total_floors}">${wing.name}</option>`);
+                    });
+                    $wingSelect.trigger('change.select2');
+                });
+            } else {
+                $wingSelect.trigger('change.select2');
+            }
+        });
+
+        $('#wing_filter').change(function() {
+            let totalFloors = $('#wing_filter option:selected').data('total-floors');
+            let $floorSelect = $('#floor_filter');
+            $floorSelect.html('<option value="">All Floors</option>');
+            
+            if (totalFloors) {
+                for (let i = 1; i <= totalFloors; i++) {
+                    $floorSelect.append(`<option value="${i}">${i}</option>`);
+                }
+            } else {
+                defaultFloors.forEach(floor => {
+                    $floorSelect.append(`<option value="${floor}">${floor}</option>`);
+                });
+            }
+            $floorSelect.val('').trigger('change.select2');
+        });
+
+        $('#btnResetFilters').click(function() {
+            $('#society_filter, #wing_filter, #floor_filter').val('').trigger('change.select2');
+            $('#status-filter').val('active').trigger('change.select2');
             rd();
         });
     </script>

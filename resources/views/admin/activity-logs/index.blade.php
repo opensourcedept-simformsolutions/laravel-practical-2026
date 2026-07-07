@@ -4,16 +4,20 @@
 
 @section('content')
 
-    <div class="card shadow-sm border-0 rounded-3">
-
+    <!-- Filter Card -->
+    <div class="card shadow-sm border-0 rounded-3 mb-4">
         <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold text-dark">Activity Logs</h5>
+            <h6 class="mb-0 fw-bold text-dark">
+                <i class="bi bi-funnel me-2 text-primary"></i>Filters
+            </h6>
+            <button type="button" id="reset_filters" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+            </button>
         </div>
-
         <div class="card-body">
-            <div class="row g-3 mb-4">
+            <div class="row g-3">
                 @if (auth()->user()->isSuperAdmin())
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label class="form-label fw-semibold text-secondary small">Society</label>
                         <select id="society_filter" class="form-select">
                             <option value="">All Societies</option>
@@ -22,7 +26,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label class="form-label fw-semibold text-secondary small">Action</label>
                         <select id="action_filter" class="form-select">
                             <option value="">All Actions</option>
@@ -44,7 +48,7 @@
                         <input type="text" id="date_range" class="form-control bg-white" placeholder="Select Date Range" readonly style="cursor: pointer;">
                     </div>
                 @else
-                    <div class="col-md-5">
+                    <div class="col-md-6">
                         <label class="form-label fw-semibold text-secondary small">Action</label>
                         <select id="action_filter" class="form-select">
                             <option value="">All Actions</option>
@@ -61,19 +65,23 @@
                             <option value="cancel">Pass Cancelled</option>
                         </select>
                     </div>
-                    <div class="col-md-5">
+                    <div class="col-md-6">
                         <label class="form-label fw-semibold text-secondary small">Date Range</label>
                         <input type="text" id="date_range" class="form-control bg-white" placeholder="Select Date Range" readonly style="cursor: pointer;">
                     </div>
                 @endif
-
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="button" id="reset_filters" class="btn btn-outline-secondary w-100">
-                        <i class="bi bi-arrow-clockwise"></i> Reset
-                    </button>
-                </div>
             </div>
+            
+        </div>
+    </div>
 
+    <!-- Data Card -->
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-dark">Activity Logs</h5>
+        </div>
+
+        <div class="card-body">
             <div class="table-responsive">
                 <table id="activityLogsTable" class="table table-hover table-striped align-middle w-100 app-datatable">
                     <thead class="table-light">

@@ -7,21 +7,14 @@
 
     <div class="card shadow-sm border-0 rounded-3">
         <div class="card-header bg-white border-bottom py-3">
-            <div class="row align-items-center">
-                <div class="col">
-                    <h5 class="mb-0 fw-bold text-dark">Edit Wing</h5>
-                </div>
-                <div class="col-auto">
-                    <a href="{{ route('wings.index') }}" class="btn btn-secondary">Back</a>
-                </div>
-            </div>
+            <h5 class="mb-0 fw-bold text-dark">Edit Wing</h5>
         </div>
 
-        <div class="card-body">
-            <form method="POST" action="{{ route('wings.update', $wing) }}">
-                @csrf
-                @method('PUT')
+        <form method="POST" action="{{ route('wings.update', $wing) }}">
+            @csrf
+            @method('PUT')
 
+            <div class="card-body">
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Wing Name</label>
@@ -46,26 +39,27 @@
                         @if(auth()->user()->isSuperAdmin())
                             <select name="society_id" class="form-select @error('society_id') is-invalid @enderror">
                                 <option value="">Select Society</option>
-                                @foreach ($societies as $s)
-                                    <option value="{{ $s->id }}" @selected(old('society_id', $wing->society_id) == $s->id)>{{ $s->name }}</option>
+                                @foreach ($societies as $society)
+                                    <option value="{{ $society->id }}" {{ old('society_id', $wing->society_id) == $society->id ? 'selected' : '' }}>{{ $society->name }}</option>
                                 @endforeach
                             </select>
                         @else
-                            @php $s = $societies->first(); @endphp
+                            @php $adminSociety = $societies->first(); @endphp
                             <select class="form-select" disabled>
-                                <option>{{ $s->name ?? 'N/A' }}</option>
+                                <option>{{ $adminSociety->name ?? 'N/A' }}</option>
                             </select>
-                            <input type="hidden" name="society_id" value="{{ $s->id ?? '' }}" />
+                            <input type="hidden" name="society_id" value="{{ $adminSociety->id ?? '' }}" />
                         @endif
                         @error('society_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                 </div>
+            </div>
 
-                <div class="mt-4">
-                    <button class="btn btn-primary">Update Wing</button>
-                </div>
-            </form>
-        </div>
+            <div class="card-footer bg-white border-top py-3 d-flex justify-content-end gap-2">
+                <a href="{{ route('wings.index') }}" class="btn btn-light">Cancel</a>
+                <button type="submit" class="btn btn-primary">Update Wing</button>
+            </div>
+        </form>
     </div>
 
 @endsection
