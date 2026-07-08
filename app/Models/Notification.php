@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\DatabaseNotificationCollection;
 
 class Notification extends Model
 {
@@ -27,8 +28,6 @@ class Notification extends Model
         'scheduled_at' => 'datetime',
     ];
 
-
-
     public function markAsRead()
     {
         if (is_null($this->read_at)) {
@@ -45,7 +44,7 @@ class Notification extends Model
 
     public function newCollection(array $models = [])
     {
-        return new \Illuminate\Notifications\DatabaseNotificationCollection($models);
+        return new DatabaseNotificationCollection($models);
     }
 
     public function user()

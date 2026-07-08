@@ -2,20 +2,20 @@
 
 namespace App\Jobs;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Queue\Queueable;
 use App\Models\BulkImport;
-use App\Models\User;
 use App\Models\Resident;
 use App\Models\Role;
-use App\Notifications\ResidentWelcomeNotification;
+use App\Models\User;
 use App\Notifications\BulkImportStatusNotification;
+use App\Notifications\ResidentWelcomeNotification;
 use App\Services\ActivityLogger;
+use Exception;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Exception;
 
 class ProcessBulkImport implements ShouldQueue
 {
@@ -38,12 +38,13 @@ class ProcessBulkImport implements ShouldQueue
     public function handle(): void
     {
         $bulkImport = BulkImport::findOrFail($this->bulkImportId);
-        $jsonFilename = 'validated_' . $bulkImport->id . '.json';
-        $jsonPath = 'temp_bulk_uploads/' . $jsonFilename;
+        $jsonFilename = 'validated_'.$bulkImport->id.'.json';
+        $jsonPath = 'temp_bulk_uploads/'.$jsonFilename;
 
-        if (!Storage::exists($jsonPath)) {
+        if (! Storage::exists($jsonPath)) {
             Log::error("Bulk import data file not found during background processing: {$jsonPath}");
-            $this->notifyFailure($bulkImport, "Validated data file not found.");
+            $this->notifyFailure($bulkImport, 'Validated data file not found.');
+
             return;
         }
 
@@ -52,7 +53,7 @@ class ProcessBulkImport implements ShouldQueue
         $residentRoleId = Role::where('name', 'resident')->value('id');
 
         $operator = User::findOrFail($this->operatorId);
-        $superAdmins = User::whereHas('role', function($q) {
+        $superAdmins = User::whereHas('role', function ($q) {
             $q->where('name', 'super_admin');
         })->get();
 
@@ -109,13 +110,13 @@ class ProcessBulkImport implements ShouldQueue
                 try {
                     $u->notify(new ResidentWelcomeNotification($u));
                 } catch (\Throwable $e) {
-                    Log::error("Failed to notify imported resident user {$u->id}: " . $e->getMessage());
+                    Log::error("Failed to notify imported resident user {$u->id}: ".$e->getMessage());
                 }
             }
 
             // Cleanup temp files
             Storage::delete($jsonPath);
-            Storage::delete('temp_bulk_uploads/' . $bulkImport->filename);
+            Storage::delete('temp_bulk_uploads/'.$bulkImport->filename);
 
             // Notify Operator and SuperAdmins of Success
             $notification = new BulkImportStatusNotification(
@@ -131,7 +132,7 @@ class ProcessBulkImport implements ShouldQueue
             }
 
         } catch (\Throwable $e) {
-            Log::error('Background bulk import error: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Background bulk import error: '.$e->getMessage(), ['exception' => $e]);
 
             $this->notifyFailure($bulkImport, $e->getMessage());
         }
@@ -145,7 +146,7 @@ class ProcessBulkImport implements ShouldQueue
         $bulkImport->update(['status' => 'failed']);
 
         $operator = User::find($this->operatorId);
-        $superAdmins = User::whereHas('role', function($q) {
+        $superAdmins = User::whereHas('role', function ($q) {
             $q->where('name', 'super_admin');
         })->get();
 

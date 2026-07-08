@@ -14,6 +14,7 @@ class Flat extends Model
     protected $fillable = [
         'society_id',
         'wing_id',
+        'wing',
         'floor',
         'flat_number',
     ];
@@ -45,6 +46,25 @@ class Flat extends Model
 
     protected static function booted()
     {
+        static::saving(function ($flat) {
+            if ($flat->wing_id) {
+                $wing = Wing::find($flat->wing_id);
+                if ($wing) {
+                    $flat->wing = $wing->name;
+                }
+            } elseif ($flat->wing && $flat->society_id) {
+                $wing = Wing::firstOrCreate([
+                    'society_id' => $flat->society_id,
+                    'name' => strtoupper($flat->wing),
+                ], [
+                    'total_floors' => 15,
+                    'flats_per_floor' => 10,
+                ]);
+                $flat->wing_id = $wing->id;
+                $flat->wing = $wing->name;
+            }
+        });
+
         static::deleting(function ($flat) {
             $flat->residents()->delete();
         });

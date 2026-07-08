@@ -20,7 +20,7 @@ class ResidentSeeder extends Seeder
             for ($i = 1; $i <= $count; $i++) {
                 $user = User::create([
                     'name' => fake()->name(),
-                    'email' => "resident_f{$flat->id}_{$i}@societyms.test",
+                    'email' => "resident{$flat->id}_{$i}@societyms.test",
                     'phone' => fake()->numerify('9#########'),
                     'password' => Hash::make('1'),
                     'role_id' => $residentRole->id,

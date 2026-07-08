@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\VisitorStatus;
+use App\Models\VisitorLog;
 use Illuminate\Console\Command;
 
 class ExpireVisitorPasses extends Command
@@ -25,16 +27,16 @@ class ExpireVisitorPasses extends Command
      */
     public function handle()
     {
-        $count = \App\Models\VisitorLog::whereIn('status', [
-            \App\Enums\VisitorStatus::ACCEPTED->value,
-            \App\Enums\VisitorStatus::PENDING->value,
-            \App\Enums\VisitorStatus::PENDING_APPROVAL->value,
-            \App\Enums\VisitorStatus::APPROVED->value,
+        $count = VisitorLog::whereIn('status', [
+            VisitorStatus::ACCEPTED->value,
+            VisitorStatus::PENDING->value,
+            VisitorStatus::PENDING_APPROVAL->value,
+            VisitorStatus::APPROVED->value,
         ])
-        ->whereDate('visit_date', '<', today())
-        ->update([
-            'status' => \App\Enums\VisitorStatus::EXPIRED->value,
-        ]);
+            ->whereDate('visit_date', '<', today())
+            ->update([
+                'status' => VisitorStatus::EXPIRED->value,
+            ]);
 
         $this->info("Expired {$count} visitor passes.");
     }

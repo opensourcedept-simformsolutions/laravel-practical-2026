@@ -10,9 +10,8 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    
     {
-        if (Schema::hasTable('flats') && !Schema::hasColumn('flats', 'society_id')) {
+        if (Schema::hasTable('flats') && ! Schema::hasColumn('flats', 'society_id')) {
             Schema::table('flats', function (Blueprint $table) {
                 $table->foreignId('society_id')
                     ->constrained('societies')
@@ -26,7 +25,7 @@ return new class extends Migration
                     'flats_society_wing_floor_flat_unique'
                 );
             });
-    
+
         }
     }
 

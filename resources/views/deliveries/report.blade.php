@@ -11,9 +11,8 @@
                     <button type="button" id="filters-toggle-btn" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
                         <i class="bi bi-funnel"></i> <span id="filters-btn-text">Filters</span> <i class="bi bi-chevron-down ms-1 collapse-icon"></i>
                     </button>
-                    
-                    <!-- Floating Filter Panel -->
-                    <div id="filters-dropdown-panel" class="card shadow-lg border position-absolute end-0 mt-2 p-3 d-none" style="width: 450px; max-width: 90vw; z-index: 1050;">
+
+                    <div id="filters-dropdown-panel" class="card shadow-lg border position-absolute end-0 mt-2 p-3 d-none" style="width: 560px; max-width: 90vw; z-index: 1050;">
                         <div class="row g-3">
                             <div class="col-md-12">
                                 <label class="form-label fw-semibold">Status</label>
@@ -64,34 +63,10 @@
                     </div>
                 </div>
 
-                <!-- Export Dropdown -->
-                <div class="dropdown">
-                    <button class="btn btn-success btn-sm dropdown-toggle d-flex align-items-center gap-1" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-download"></i> Export
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdown">
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0)" id="export-btn">
-                                <i class="bi bi-filetype-csv me-2 text-success"></i>CSV
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0)" onclick="alert('Export to Excel functionality is under development.')">
-                                <i class="bi bi-file-earmark-spreadsheet me-2 text-primary"></i>Excel
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0)" onclick="alert('Export to PDF functionality is under development.')">
-                                <i class="bi bi-file-pdf me-2 text-danger"></i>PDF
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0)" onclick="window.print()">
-                                <i class="bi bi-printer me-2 text-secondary"></i>Print
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+                <a id="export-btn" class="btn btn-success btn-sm">
+                    <i class="bi bi-download"></i>
+                    Export CSV
+                </a>
             </div>
         </div>
         <div class="card-body">
@@ -145,16 +120,12 @@
                 $(this).val(
                     fromDate + ' - ' + toDate
                 ).trigger('change');
-
-                table.draw();
             });
 
             $('#date-range').on('cancel.daterangepicker', function() {
                 fromDate = '';
                 toDate = '';
                 $(this).val('').trigger('change');
-
-                table.draw();
             });
 
             table = $('#deliveries-table').DataTable({
@@ -225,7 +196,7 @@
             $(document).click(function(e) {
                 let panel = $('#filters-dropdown-panel');
                 let toggleBtn = $('#filters-toggle-btn');
-                
+
                 if (!panel.is(e.target) && panel.has(e.target).length === 0 &&
                     !toggleBtn.is(e.target) && toggleBtn.has(e.target).length === 0 &&
                     $(e.target).closest('.select2-container').length === 0 &&
@@ -256,21 +227,15 @@
                 width: '100%'
             });
 
-            $('#status-filter, #vendor-filter, #flat-filter').on('change', function() {
-                table.draw();
-            });
-
-            $('#status-filter, #vendor-filter, #flat-filter, #date-range').on('change', function() {
-                updateFilterBadges();
-            });
-
             $('#apply-filters').click(function() {
                 table.draw();
+                updateFilterBadges();
                 $('#filters-dropdown-panel').addClass('d-none');
                 $('#filters-toggle-btn').attr('aria-expanded', 'false');
             });
 
             $('#export-btn').click(function () {
+
                 let params = table.ajax.params();
 
                 params.status = $('#status-filter').val();
@@ -292,6 +257,7 @@
                 toDate = '';
 
                 table.draw();
+                updateFilterBadges();
             });
 
             function updateFilterBadges() {
@@ -367,8 +333,9 @@
                     $('#date-range').val('').trigger('change');
                     fromDate = '';
                     toDate = '';
-                    table.draw();
                 }
+                table.draw();
+                updateFilterBadges();
             });
 
             $('#clear-all-filters').on('click', function() {
@@ -379,6 +346,7 @@
                 fromDate = '';
                 toDate = '';
                 table.draw();
+                updateFilterBadges();
             });
 
             // Initial active filter badges update

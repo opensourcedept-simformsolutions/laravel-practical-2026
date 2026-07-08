@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Resident;
 
+use App\Enums\ResidentType;
+use App\Models\Resident;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -15,9 +17,9 @@ class UpdateResidentRequest extends FormRequest
     public function rules(): array
     {
         $resident = $this->route('resident');
-        $userId = $resident instanceof \App\Models\Resident 
-            ? $resident->user_id 
-            : \App\Models\Resident::findOrFail($resident)->user_id;
+        $userId = $resident instanceof Resident
+            ? $resident->user_id
+            : Resident::findOrFail($resident)->user_id;
 
         return [
             'name' => [
@@ -52,7 +54,7 @@ class UpdateResidentRequest extends FormRequest
 
             'resident_type' => [
                 'required',
-                Rule::in([\App\Enums\ResidentType::OWNER->value, \App\Enums\ResidentType::TENANT->value]),
+                Rule::in([ResidentType::OWNER->value, ResidentType::TENANT->value]),
             ],
             'society_id' => [
                 auth()->user()->isSuperAdmin() ? 'required' : 'nullable',

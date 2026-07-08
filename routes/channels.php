@@ -13,4 +13,3 @@ Broadcast::channel('flat.{flatId}', function ($user, $flatId) {
 Broadcast::channel('society.{societyId}', function ($user, $societyId) {
     return ($user->isGatekeeper() || $user->isAdmin()) && (int) $user->society_id === (int) $societyId;
 });
-

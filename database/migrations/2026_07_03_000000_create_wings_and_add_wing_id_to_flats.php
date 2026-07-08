@@ -8,9 +8,8 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     public function up(): void
-    
     {
-        if (!Schema::hasTable('wings')) {
+        if (! Schema::hasTable('wings')) {
             Schema::create('wings', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('society_id')->constrained()->cascadeOnDelete();
@@ -67,7 +66,7 @@ return new class extends Migration
                 // keep existing unique key for backward compat; add new unique for wing_id
                 $table->unique(['wing_id', 'floor', 'flat_number'], 'flats_wing_floor_flat_unique');
             });
-    
+
         }
     }
 

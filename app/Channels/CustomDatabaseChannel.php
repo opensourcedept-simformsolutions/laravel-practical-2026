@@ -3,14 +3,13 @@
 namespace App\Channels;
 
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Str;
 
 class CustomDatabaseChannel
 {
     public function send($notifiable, Notification $notification)
     {
         $data = method_exists($notification, 'toArray') ? $notification->toArray($notifiable) : [];
-        
+
         $title = 'System Notification';
         if (method_exists($notification, 'toTitle')) {
             $title = $notification->toTitle($notifiable);

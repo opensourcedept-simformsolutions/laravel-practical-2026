@@ -10,9 +10,8 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    
     {
-        if (!Schema::hasTable('visitor_logs')) {
+        if (! Schema::hasTable('visitor_logs')) {
             Schema::create('visitor_logs', function (Blueprint $table) {
                 $table->id();
 
@@ -46,7 +45,7 @@ return new class extends Migration
                 $table->timestamps();
                 $table->softDeletes();
             });
-    
+
         }
     }
 

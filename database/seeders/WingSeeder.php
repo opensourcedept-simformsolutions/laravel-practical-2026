@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Wing;
 use App\Models\Society;
+use App\Models\Wing;
 use Illuminate\Database\Seeder;
 
 class WingSeeder extends Seeder

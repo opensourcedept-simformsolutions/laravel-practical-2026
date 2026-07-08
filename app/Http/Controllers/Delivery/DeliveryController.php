@@ -346,8 +346,8 @@ class DeliveryController extends Controller
         $user = auth()->user();
         $flats = collect();
 
-        if (!$user->isResident()) {
-            if (!$user->isSuperAdmin()) {
+        if (! $user->isResident()) {
+            if (! $user->isSuperAdmin()) {
                 $flats = Flat::where('society_id', $user->society_id)
                     ->orderBy('wing')
                     ->orderBy('floor')

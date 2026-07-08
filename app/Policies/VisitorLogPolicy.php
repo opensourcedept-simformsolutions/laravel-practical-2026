@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Enums\VisitorStatus;
 use App\Models\User;
 use App\Models\VisitorLog;
+use Carbon\Carbon;
 
 class VisitorLogPolicy
 {
@@ -41,7 +42,7 @@ class VisitorLogPolicy
 
     public function update(User $user, VisitorLog $visitorLog): bool
     {
-        if ($visitorLog->visit_date && \Carbon\Carbon::parse($visitorLog->visit_date)->isBefore(today())) {
+        if ($visitorLog->visit_date && Carbon::parse($visitorLog->visit_date)->isBefore(today())) {
             return false;
         }
 
@@ -51,7 +52,8 @@ class VisitorLogPolicy
 
         if ($user->isResident() && $user->resident && $visitorLog->flat_id === $user->resident->flat_id && in_array($visitorLog->status, [VisitorStatus::PENDING->value, VisitorStatus::PENDING_APPROVAL->value])) {
             $isCreatedByGatekeeper = $visitorLog->creator && $visitorLog->creator->isGatekeeper();
-            return !$isCreatedByGatekeeper;
+
+            return ! $isCreatedByGatekeeper;
         }
 
         return false;
@@ -59,7 +61,7 @@ class VisitorLogPolicy
 
     public function cancel(User $user, VisitorLog $visitorLog): bool
     {
-        if (!in_array($visitorLog->status, [VisitorStatus::PENDING->value, VisitorStatus::PENDING_APPROVAL->value])) {
+        if (! in_array($visitorLog->status, [VisitorStatus::PENDING->value, VisitorStatus::PENDING_APPROVAL->value])) {
             return false;
         }
 
@@ -69,7 +71,8 @@ class VisitorLogPolicy
 
         if ($user->isResident() && $user->resident && $visitorLog->flat_id === $user->resident->flat_id) {
             $isCreatedByGatekeeper = $visitorLog->creator && $visitorLog->creator->isGatekeeper();
-            return !$isCreatedByGatekeeper;
+
+            return ! $isCreatedByGatekeeper;
         }
 
         return false;
@@ -83,7 +86,8 @@ class VisitorLogPolicy
 
         if ($user->isResident() && $user->resident && $visitorLog->flat_id === $user->resident->flat_id && in_array($visitorLog->status, [VisitorStatus::PENDING->value, VisitorStatus::PENDING_APPROVAL->value, VisitorStatus::REJECTED->value])) {
             $isCreatedByGatekeeper = $visitorLog->creator && $visitorLog->creator->isGatekeeper();
-            return !$isCreatedByGatekeeper;
+
+            return ! $isCreatedByGatekeeper;
         }
 
         return false;

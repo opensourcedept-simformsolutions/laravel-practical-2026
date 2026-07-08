@@ -10,7 +10,6 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    
     {
         if (Schema::hasTable('users')) {
             Schema::table('users', function (Blueprint $table) {
@@ -21,7 +20,7 @@ return new class extends Migration
                     ->constrained('societies')
                     ->nullOnDelete();
             });
-    
+
         }
     }
 

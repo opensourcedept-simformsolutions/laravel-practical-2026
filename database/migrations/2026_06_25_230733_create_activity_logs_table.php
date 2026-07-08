@@ -10,9 +10,8 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    
     {
-        if (!Schema::hasTable('activity_logs')) {
+        if (! Schema::hasTable('activity_logs')) {
             Schema::create('activity_logs', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
@@ -28,7 +27,7 @@ return new class extends Migration
 
                 $table->index(['subject_type', 'subject_id']);
             });
-    
+
         }
     }
 

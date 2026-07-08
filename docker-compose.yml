@@ -86,6 +86,24 @@ services:
         volumes:
             - redis-data:/data
 
+    vite:
+      image: node:22-alpine
+      working_dir: /var/www/html
+      volumes:
+        - .:/var/www/html
+        - vite-node-modules:/var/www/html/node_modules
+      ports:
+        - "5173:5173"
+      command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+
+    mailhog:
+        image: mailhog/mailhog:v1.0.1
+        ports:
+            - "1025:1025"
+            - "8025:8025"
+        logging:
+            driver: "none"
 volumes:
     mysql-data:
     redis-data:
+    vite-node-modules:

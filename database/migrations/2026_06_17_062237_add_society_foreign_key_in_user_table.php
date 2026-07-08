@@ -10,16 +10,15 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    
     {
-        if (Schema::hasTable('users') && !Schema::hasColumn('users', 'society_id')) {
+        if (Schema::hasTable('users') && ! Schema::hasColumn('users', 'society_id')) {
             Schema::table('users', function (Blueprint $table) {
                 $table->foreignId('society_id')
                     ->constrained('societies')
                     ->cascadeOnDelete()
                     ->after('id');
             });
-    
+
         }
     }
 

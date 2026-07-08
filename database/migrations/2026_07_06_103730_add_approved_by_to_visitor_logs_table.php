@@ -10,9 +10,8 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    
     {
-        if (Schema::hasTable('visitor_logs') && !Schema::hasColumn('visitor_logs', 'approved_by')) {
+        if (Schema::hasTable('visitor_logs') && ! Schema::hasColumn('visitor_logs', 'approved_by')) {
             Schema::table('visitor_logs', function (Blueprint $table) {
                 $table->foreignId('approved_by')
                     ->nullable()
@@ -20,7 +19,7 @@ return new class extends Migration
                     ->constrained('users')
                     ->nullOnDelete();
             });
-    
+
         }
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Channels\CustomDatabaseChannel;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -35,17 +36,17 @@ class ResidentWelcomeNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return [\App\Channels\CustomDatabaseChannel::class, 'mail'];
+        return [CustomDatabaseChannel::class, 'mail'];
     }
 
     public function toTitle(object $notifiable): string
     {
-        return "Welcome to SocietyMS";
+        return 'Welcome to SocietyMS';
     }
 
     public function toMessage(object $notifiable): string
     {
-        return "Welcome to SocietyMS! Your resident account has been set up successfully.";
+        return 'Welcome to SocietyMS! Your resident account has been set up successfully.';
     }
 
     /**

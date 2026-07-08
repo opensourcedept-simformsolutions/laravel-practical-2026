@@ -10,13 +10,12 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    
     {
-        if (Schema::hasTable('users') && !Schema::hasColumn('users', 'phone')) {
+        if (Schema::hasTable('users') && ! Schema::hasColumn('users', 'phone')) {
             Schema::table('users', function (Blueprint $table) {
                 $table->string('phone', 15);
             });
-    
+
         }
     }
 

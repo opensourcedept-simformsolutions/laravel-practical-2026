@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (Schema::hasTable('visitor_logs') && !Schema::hasColumn('visitor_logs', 'updated_by')) {
+        if (Schema::hasTable('visitor_logs') && ! Schema::hasColumn('visitor_logs', 'updated_by')) {
             Schema::table('visitor_logs', function (Blueprint $table) {
                 $table->unsignedBigInteger('updated_by')->nullable()->after('approved_by');
                 $table->foreign('updated_by')->references('id')->on('users')->nullOnDelete();

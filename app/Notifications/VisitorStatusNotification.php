@@ -42,7 +42,7 @@ class VisitorStatusNotification extends Notification
             return "Visitor {$visitorName} has exited the society for flat {$flatName}.";
         }
 
-        return "Visitor {$visitorName} status is " . str_replace('_', ' ', $status) . " for flat {$flatName}.";
+        return "Visitor {$visitorName} status is ".str_replace('_', ' ', $status)." for flat {$flatName}.";
     }
 
     public function toArray(object $notifiable): array

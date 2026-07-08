@@ -10,9 +10,8 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    
     {
-        if (!Schema::hasTable('jobs')) {
+        if (! Schema::hasTable('jobs')) {
             Schema::create('jobs', function (Blueprint $table) {
                 $table->id();
                 $table->string('queue')->index();
@@ -45,7 +44,7 @@ return new class extends Migration
                 $table->longText('exception');
                 $table->timestamp('failed_at')->useCurrent();
             });
-    
+
         }
     }
 

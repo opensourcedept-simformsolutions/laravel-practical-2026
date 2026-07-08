@@ -130,7 +130,7 @@ class FlatController extends Controller
                 : Wing::where('society_id', auth()->user()->society_id)->orderBy('name')->get();
 
             $query = Flat::query();
-            if (!auth()->user()->isSuperAdmin()) {
+            if (! auth()->user()->isSuperAdmin()) {
                 $query->where('society_id', auth()->user()->society_id);
             }
             $floors = $query->orderBy('floor')->pluck('floor')->unique()->values();

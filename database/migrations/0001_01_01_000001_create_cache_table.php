@@ -10,9 +10,8 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    
     {
-        if (!Schema::hasTable('cache')) {
+        if (! Schema::hasTable('cache')) {
             Schema::create('cache', function (Blueprint $table) {
                 $table->string('key')->primary();
                 $table->mediumText('value');
@@ -24,7 +23,7 @@ return new class extends Migration
                 $table->string('owner');
                 $table->integer('expiration')->index();
             });
-    
+
         }
     }
 

@@ -6,7 +6,6 @@ use App\Enums\VisitorStatus;
 use App\Events\VisitorApprovalRecalled;
 use App\Events\VisitorApprovalRequested;
 use App\Events\VisitorApprovalStatusUpdated;
-use App\Events\VisitorEntered;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\VisitorPass\StoreVisitorPassRequest;
 use App\Http\Requests\VisitorPass\UpdateVisitorPassRequest;
@@ -37,8 +36,8 @@ class VisitorPassController extends Controller
             $user = auth()->user();
             $flats = collect();
 
-            if (!$user->isResident()) {
-                if (!$user->isSuperAdmin()) {
+            if (! $user->isResident()) {
+                if (! $user->isSuperAdmin()) {
                     $flats = Flat::where('society_id', $user->society_id)
                         ->orderBy('wing')
                         ->orderBy('floor')
@@ -331,11 +330,11 @@ class VisitorPassController extends Controller
                         $img = str_replace(' ', '+', $img);
                         $data = base64_decode($img);
 
-                        if (!\Storage::disk('public')->exists('visitor_photos')) {
+                        if (! \Storage::disk('public')->exists('visitor_photos')) {
                             \Storage::disk('public')->makeDirectory('visitor_photos');
                         }
 
-                        $filename = 'visitor_photos/' . uniqid() . '.jpg';
+                        $filename = 'visitor_photos/'.uniqid().'.jpg';
                         \Storage::disk('public')->put($filename, $data);
                         $visitorLog->photo_path = $filename;
                     }
@@ -432,7 +431,7 @@ class VisitorPassController extends Controller
             $oldFlatId = (int) $visitorLog->flat_id;
 
             DB::transaction(function () use ($validated, $visitorLog, $user) {
-                $visitor = \App\Models\Visitor::updateOrCreate(
+                $visitor = Visitor::updateOrCreate(
                     [
                         'phone' => $validated['phone'],
                     ],

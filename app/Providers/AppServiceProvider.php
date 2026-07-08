@@ -6,6 +6,8 @@ use App\Events\VisitorEntered;
 use App\Events\VisitorExited;
 use App\Listeners\SendVisitorEntryMail;
 use App\Listeners\SendVisitorExitMail;
+use App\Models\Wing;
+use App\Policies\WingPolicy;
 use App\Services\ActivityLogger;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
@@ -43,7 +45,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // register Wing policy
-        Gate::policy(\App\Models\Wing::class, \App\Policies\WingPolicy::class);
+        Gate::policy(Wing::class, WingPolicy::class);
 
         Event::listen(VisitorEntered::class, SendVisitorEntryMail::class);
 

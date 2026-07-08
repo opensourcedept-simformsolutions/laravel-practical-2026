@@ -2,13 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Jobs\ProcessBulkImport;
 use App\Models\BulkImport;
 use App\Models\Flat;
 use App\Models\Role;
 use App\Models\Society;
 use App\Models\User;
 use App\Models\Wing;
-use App\Jobs\ProcessBulkImport;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -21,20 +21,23 @@ class BulkImportTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected Society $society;
+
     protected Wing $wing;
+
     protected Flat $flat;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Seed roles
         $this->seed(RoleSeeder::class);
 
         // Setup databases
         $this->society = Society::factory()->create(['name' => 'Paradise Haven']);
-        
+
         $adminRole = Role::where('name', 'admin')->first();
         $this->admin = User::factory()->create([
             'society_id' => $this->society->id,
@@ -61,7 +64,7 @@ class BulkImportTest extends TestCase
     public function test_admin_can_access_import_form(): void
     {
         $response = $this->actingAs($this->admin)->get(route('residents.import.form'));
-        
+
         $response->assertStatus(200);
         $response->assertViewIs('residents.import');
     }
@@ -70,9 +73,9 @@ class BulkImportTest extends TestCase
     {
         Storage::fake('local');
 
-        $csvContent = "Name,Email,Phone,Wing Name,Flat Number,Resident Type\n" .
+        $csvContent = "Name,Email,Phone,Wing Name,Flat Number,Resident Type\n".
                       "Alice Johnson,alice.johnson@example.com,9988776655,A,101,owner\n";
-        
+
         $file = UploadedFile::fake()->createWithContent('residents.csv', $csvContent);
 
         $response = $this->actingAs($this->admin)->post(route('residents.import.upload'), [
@@ -103,11 +106,11 @@ class BulkImportTest extends TestCase
             'status' => 'pending',
         ]);
 
-        $csvContent = "Name,Email,Phone,Wing Name,Flat Number,Resident Type\n" .
-                      "Alice Johnson,alice.johnson@example.com,9988776655,A,101,owner\n" .
+        $csvContent = "Name,Email,Phone,Wing Name,Flat Number,Resident Type\n".
+                      "Alice Johnson,alice.johnson@example.com,9988776655,A,101,owner\n".
                       "Invalid Guy,invalid.email,9988776644,Z,999,tenant\n";
 
-        Storage::put('temp_bulk_uploads/' . $filename, $csvContent);
+        Storage::put('temp_bulk_uploads/'.$filename, $csvContent);
 
         $response = $this->actingAs($this->admin)->post(route('residents.import.map'), [
             'import_id' => $bulkImport->id,
@@ -156,7 +159,7 @@ class BulkImportTest extends TestCase
                 'flat_id' => $this->flat->id,
                 'resident_type' => 'owner',
                 'valid' => true,
-                'errors' => []
+                'errors' => [],
             ],
             [
                 'row_number' => 3,
@@ -168,11 +171,11 @@ class BulkImportTest extends TestCase
                 'flat_id' => null,
                 'resident_type' => 'tenant',
                 'valid' => false,
-                'errors' => ['Email format is invalid.', 'Wing Z does not exist.']
-            ]
+                'errors' => ['Email format is invalid.', 'Wing Z does not exist.'],
+            ],
         ];
 
-        Storage::put('temp_bulk_uploads/validated_' . $bulkImport->id . '.json', json_encode($validatedRows));
+        Storage::put('temp_bulk_uploads/validated_'.$bulkImport->id.'.json', json_encode($validatedRows));
 
         $response = $this->actingAs($this->admin)->get(route('residents.import.errors', $bulkImport->id));
 
@@ -204,11 +207,11 @@ class BulkImportTest extends TestCase
                 'flat_id' => $this->flat->id,
                 'resident_type' => 'owner',
                 'valid' => true,
-                'errors' => []
-            ]
+                'errors' => [],
+            ],
         ];
 
-        Storage::put('temp_bulk_uploads/validated_' . $bulkImport->id . '.json', json_encode($validatedRows));
+        Storage::put('temp_bulk_uploads/validated_'.$bulkImport->id.'.json', json_encode($validatedRows));
 
         $response = $this->actingAs($this->admin)->post(route('residents.import.process'), [
             'import_id' => $bulkImport->id,

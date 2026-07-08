@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Resident\StoreResidentRequest;
 use App\Http\Requests\Resident\UpdateResidentRequest;
+use App\Jobs\ProcessBulkImport;
+use App\Models\BulkImport;
 use App\Models\Flat;
 use App\Models\Resident;
 use App\Models\Role;
 use App\Models\Society;
 use App\Models\User;
+use App\Models\Wing;
 use App\Notifications\ResidentWelcomeNotification;
 use App\Services\ActivityLogger;
 use Exception;
@@ -17,11 +20,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Throwable;
-use App\Models\BulkImport;
-use App\Models\Wing;
-use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 
 class ResidentController extends Controller
@@ -430,6 +431,7 @@ class ResidentController extends Controller
     public function showImportForm(Request $request)
     {
         $this->authorize('create', Resident::class);
+
         return view('residents.import');
     }
 
@@ -444,7 +446,7 @@ class ResidentController extends Controller
             ['Robert Brown', 'robert.brown@example.com', '', 'A', '102', ''],
         ];
 
-        $callback = function() use ($headers, $sampleRows) {
+        $callback = function () use ($headers, $sampleRows) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $headers);
             foreach ($sampleRows as $row) {
@@ -468,7 +470,7 @@ class ResidentController extends Controller
         ]);
 
         $file = $request->file('csv_file');
-        $filename = time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
+        $filename = time().'_'.Str::random(10).'.'.$file->getClientOriginalExtension();
         $path = $file->storeAs('temp_bulk_uploads', $filename);
 
         $bulkImport = BulkImport::create([
@@ -483,14 +485,14 @@ class ResidentController extends Controller
             $headers = fgetcsv($handle);
             fclose($handle);
         } else {
-            return back()->with(['message' => 'Unable to read the uploaded file at: ' . $filePath, 'status' => 'error']);
+            return back()->with(['message' => 'Unable to read the uploaded file at: '.$filePath, 'status' => 'error']);
         }
 
         if (empty($headers)) {
             return back()->with(['message' => 'The uploaded file is empty.', 'status' => 'error']);
         }
 
-        $headers = array_map(function($h) {
+        $headers = array_map(function ($h) {
             return trim(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $h));
         }, $headers);
 
@@ -518,10 +520,10 @@ class ResidentController extends Controller
         ]);
 
         $bulkImport = BulkImport::findOrFail($request->import_id);
-        $filePath = Storage::path('temp_bulk_uploads/' . $bulkImport->filename);
+        $filePath = Storage::path('temp_bulk_uploads/'.$bulkImport->filename);
 
-        if (!file_exists($filePath)) {
-            return redirect()->route('residents.import.form')->with(['message' => 'Uploaded file not found at: ' . $filePath, 'status' => 'error']);
+        if (! file_exists($filePath)) {
+            return redirect()->route('residents.import.form')->with(['message' => 'Uploaded file not found at: '.$filePath, 'status' => 'error']);
         }
 
         $societyId = auth()->user()->isSuperAdmin() ? $request->society_id : auth()->user()->society_id;
@@ -550,7 +552,7 @@ class ResidentController extends Controller
         } else {
             if (($handle = fopen($filePath, 'r')) !== false) {
                 $headers = fgetcsv($handle);
-                $headers = array_map(function($h) {
+                $headers = array_map(function ($h) {
                     return trim(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $h));
                 }, $headers);
 
@@ -592,27 +594,27 @@ class ResidentController extends Controller
             $rawWingName = isset($row[$map['wing']]) ? trim($row[$map['wing']]) : '';
             $rawType = ($map['resident_type'] && isset($row[$map['resident_type']])) ? strtolower(trim($row[$map['resident_type']])) : '';
 
-            if (empty($rawType) || !in_array($rawType, ['owner', 'tenant'])) {
+            if (empty($rawType) || ! in_array($rawType, ['owner', 'tenant'])) {
                 $rawType = $request->default_resident_type;
             }
 
             if (empty($rawName)) {
-                $errors[] = "Name is required.";
+                $errors[] = 'Name is required.';
             } elseif (strlen($rawName) < 2 || strlen($rawName) > 100) {
-                $errors[] = "Name must be between 2 and 100 characters.";
-            } elseif (!preg_match("/^[A-Za-z\s\.\'-]+$/", $rawName)) {
-                $errors[] = "Name format is invalid (letters and basic symbols only).";
+                $errors[] = 'Name must be between 2 and 100 characters.';
+            } elseif (! preg_match("/^[A-Za-z\s\.\'-]+$/", $rawName)) {
+                $errors[] = 'Name format is invalid (letters and basic symbols only).';
             }
 
             if (empty($rawEmail)) {
                 if ($request->fallback_email_action === 'generate') {
                     $slug = Str::slug($rawName ?: 'resident');
-                    $rawEmail = $slug . '_' . rand(100, 999) . '@dummy.societyms.test';
+                    $rawEmail = $slug.'_'.rand(100, 999).'@dummy.societyms.test';
                 } else {
-                    $errors[] = "Email is required.";
+                    $errors[] = 'Email is required.';
                 }
-            } elseif (!filter_var($rawEmail, FILTER_VALIDATE_EMAIL)) {
-                $errors[] = "Invalid email format.";
+            } elseif (! filter_var($rawEmail, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = 'Invalid email format.';
             } elseif (User::where('email', $rawEmail)->exists()) {
                 $errors[] = "Email '{$rawEmail}' is already registered in the system.";
             } elseif (in_array($rawEmail, $csvEmails)) {
@@ -623,32 +625,32 @@ class ResidentController extends Controller
 
             if (empty($rawPhone)) {
                 if ($request->fallback_phone_action === 'generate') {
-                    $rawPhone = '99' . rand(10000000, 99999999);
+                    $rawPhone = '99'.rand(10000000, 99999999);
                 } else {
-                    $errors[] = "Phone is required.";
+                    $errors[] = 'Phone is required.';
                 }
             } elseif (strlen($rawPhone) < 7 || strlen($rawPhone) > 20) {
-                $errors[] = "Phone number must be between 7 and 20 digits.";
-            } elseif (!preg_match("/^[0-9+\-\s()]+$/", $rawPhone)) {
-                $errors[] = "Phone format is invalid.";
+                $errors[] = 'Phone number must be between 7 and 20 digits.';
+            } elseif (! preg_match("/^[0-9+\-\s()]+$/", $rawPhone)) {
+                $errors[] = 'Phone format is invalid.';
             }
 
             $flatId = null;
             if (empty($rawFlatNumber) || empty($rawWingName)) {
-                $errors[] = "Wing and Flat Number are required to map to a flat.";
+                $errors[] = 'Wing and Flat Number are required to map to a flat.';
             } else {
                 $wing = Wing::where('society_id', $societyId)
                     ->where('name', $rawWingName)
                     ->first();
 
-                if (!$wing) {
+                if (! $wing) {
                     $errors[] = "Wing '{$rawWingName}' does not exist in the selected society.";
                 } else {
                     $flat = Flat::where('wing_id', $wing->id)
                         ->where('flat_number', $rawFlatNumber)
                         ->first();
 
-                    if (!$flat) {
+                    if (! $flat) {
                         $errors[] = "Flat '{$rawFlatNumber}' does not exist inside Wing '{$rawWingName}'.";
                     } else {
                         $flatId = $flat->id;
@@ -678,8 +680,8 @@ class ResidentController extends Controller
             ];
         }
 
-        $validatedFilename = 'validated_' . $bulkImport->id . '.json';
-        Storage::put('temp_bulk_uploads/' . $validatedFilename, json_encode($validatedRows));
+        $validatedFilename = 'validated_'.$bulkImport->id.'.json';
+        Storage::put('temp_bulk_uploads/'.$validatedFilename, json_encode($validatedRows));
 
         $bulkImport->update([
             'total_rows' => $totalRows,
@@ -701,10 +703,10 @@ class ResidentController extends Controller
         ]);
 
         $bulkImport = BulkImport::findOrFail($request->import_id);
-        $jsonFilename = 'validated_' . $bulkImport->id . '.json';
-        $jsonPath = 'temp_bulk_uploads/' . $jsonFilename;
+        $jsonFilename = 'validated_'.$bulkImport->id.'.json';
+        $jsonPath = 'temp_bulk_uploads/'.$jsonFilename;
 
-        if (!Storage::exists($jsonPath)) {
+        if (! Storage::exists($jsonPath)) {
             return redirect()->route('residents.import.form')->with(['message' => 'Validated data file not found.', 'status' => 'error']);
         }
 
@@ -715,7 +717,7 @@ class ResidentController extends Controller
         }
 
         // Dispatch background job
-        \App\Jobs\ProcessBulkImport::dispatch(
+        ProcessBulkImport::dispatch(
             $bulkImport->id,
             $request->society_id,
             auth()->id()
@@ -734,23 +736,23 @@ class ResidentController extends Controller
         $this->authorize('create', Resident::class);
 
         $bulkImport = BulkImport::findOrFail($importId);
-        $jsonFilename = 'validated_' . $bulkImport->id . '.json';
-        $jsonPath = 'temp_bulk_uploads/' . $jsonFilename;
+        $jsonFilename = 'validated_'.$bulkImport->id.'.json';
+        $jsonPath = 'temp_bulk_uploads/'.$jsonFilename;
 
-        if (!Storage::exists($jsonPath)) {
+        if (! Storage::exists($jsonPath)) {
             return redirect()->route('residents.import.form')->with(['message' => 'Validation error history not found.', 'status' => 'error']);
         }
 
         $validatedRows = json_decode(Storage::get($jsonPath), true);
-        
+
         $headers = ['Row Number', 'Name', 'Email', 'Phone', 'Wing Name', 'Flat Number', 'Resident Type', 'Validation Errors'];
-        
-        $callback = function() use ($headers, $validatedRows) {
+
+        $callback = function () use ($headers, $validatedRows) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $headers);
-            
+
             foreach ($validatedRows as $row) {
-                if (!$row['valid']) {
+                if (! $row['valid']) {
                     fputcsv($file, [
                         $row['row_number'],
                         $row['name'],
@@ -759,18 +761,18 @@ class ResidentController extends Controller
                         $row['wing'],
                         $row['flat_number'],
                         $row['resident_type'],
-                        implode('; ', $row['errors'])
+                        implode('; ', $row['errors']),
                     ]);
                 }
             }
             fclose($file);
         };
 
-        $exportName = 'error_report_' . str_replace('.csv', '', $bulkImport->original_filename) . '.csv';
+        $exportName = 'error_report_'.str_replace('.csv', '', $bulkImport->original_filename).'.csv';
 
         return response()->streamDownload($callback, $exportName, [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $exportName . '"',
+            'Content-Disposition' => 'attachment; filename="'.$exportName.'"',
         ]);
     }
 }

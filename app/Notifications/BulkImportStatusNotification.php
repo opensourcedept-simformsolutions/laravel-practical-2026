@@ -2,9 +2,9 @@
 
 namespace App\Notifications;
 
+use App\Channels\CustomDatabaseChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use App\Channels\CustomDatabaseChannel;
 
 class BulkImportStatusNotification extends Notification
 {
@@ -33,8 +33,9 @@ class BulkImportStatusNotification extends Notification
         if ($this->status === 'completed') {
             return "The bulk import for file '{$this->filename}' completed successfully. Imported {$this->importedRows} out of {$this->totalRows} residents.";
         }
-        
-        $errSuffix = $this->errorMessage ? " Error: {$this->errorMessage}" : "";
+
+        $errSuffix = $this->errorMessage ? " Error: {$this->errorMessage}" : '';
+
         return "The bulk import for file '{$this->filename}' failed.{$errSuffix}";
     }
 

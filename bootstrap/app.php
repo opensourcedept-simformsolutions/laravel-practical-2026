@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\NormalizeInput;
+use App\Http\Middleware\RequestLoggerMiddleware;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -19,7 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
         ]);
         $middleware->append(NormalizeInput::class);
-        $middleware->append(\App\Http\Middleware\RequestLoggerMiddleware::class);
+        $middleware->append(RequestLoggerMiddleware::class);
         $middleware->encryptCookies(except: [
             'sidebar-collapsed',
         ]);

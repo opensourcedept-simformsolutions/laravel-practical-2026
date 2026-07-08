@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Resident;
 
+use App\Enums\ResidentType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -45,7 +46,7 @@ class StoreResidentRequest extends FormRequest
 
             'resident_type' => [
                 'required',
-                Rule::in([\App\Enums\ResidentType::OWNER->value, \App\Enums\ResidentType::TENANT->value]),
+                Rule::in([ResidentType::OWNER->value, ResidentType::TENANT->value]),
             ],
             'society_id' => [
                 auth()->user()->isSuperAdmin() ? 'required' : 'nullable',

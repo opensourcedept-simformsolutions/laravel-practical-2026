@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Gatekeeper;
 
+use App\Enums\VisitorStatus;
 use App\Events\VisitorEntered;
 use App\Events\VisitorExited;
 use App\Http\Controllers\Controller;
 use App\Models\VisitorLog;
-use App\Enums\VisitorStatus;
 use App\Services\ActivityLogger;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
@@ -47,7 +48,7 @@ class VisitorLogController extends Controller
                 ], 422);
             }
 
-            if (!in_array($visitorLog->status, ['pending', 'approved'])) {
+            if (! in_array($visitorLog->status, ['pending', 'approved'])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Visitor already entered or pass not valid.',
@@ -63,6 +64,8 @@ class VisitorLogController extends Controller
                 'status' => $visitorLog->status,
                 'flat' => $visitorLog->flat->wing.'-'.$visitorLog->flat->flat_number,
             ]);
+        } catch (AuthorizationException $e) {
+            throw $e;
         } catch (Exception $e) {
             return response()->json([
                 'error' => $e->getMessage(),
@@ -261,7 +264,7 @@ class VisitorLogController extends Controller
                 'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
             ]);
 
-            if (!in_array($visitorLog->status, [VisitorStatus::PENDING->value, VisitorStatus::APPROVED->value])) {
+            if (! in_array($visitorLog->status, [VisitorStatus::PENDING->value, VisitorStatus::APPROVED->value])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Only Pending or Approved Passes Can Be Entered!',

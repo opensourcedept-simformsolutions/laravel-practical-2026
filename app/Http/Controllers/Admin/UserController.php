@@ -102,13 +102,13 @@ class UserController extends Controller
 
                     $html = '<div class="text-center d-flex justify-content-center gap-2">';
 
-                    if (!$row->trashed()) {
+                    if (! $row->trashed()) {
                         $html .= '
                             <a href="'.$editUrl.'" class="btn btn-primary btn-sm text-white" title="Edit User">
                                 <i class="bi bi-pencil-fill"></i>
                             </a>
                         ';
-                        
+
                         $html .= '
                             <form action="'.$impersonateUrl.'" method="POST" class="d-inline">
                                 '.csrf_field().'
@@ -145,6 +145,7 @@ class UserController extends Controller
                     }
 
                     $html .= '</div>';
+
                     return $html;
                 })
 

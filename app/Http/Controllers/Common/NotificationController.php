@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Common;
 
 use App\Http\Controllers\Controller;
+use App\Models\VisitorLog;
 use Illuminate\Http\Request;
 
 class NotificationController extends Controller
@@ -29,7 +30,7 @@ class NotificationController extends Controller
             return $n->data['visitor_log_id'] ?? null;
         })->filter()->unique();
 
-        $visitorLogs = \App\Models\VisitorLog::whereIn('id', $visitorLogIds)->get()->keyBy('id');
+        $visitorLogs = VisitorLog::whereIn('id', $visitorLogIds)->get()->keyBy('id');
 
         if ($request->ajax()) {
             return response()->json([

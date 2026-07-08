@@ -25,7 +25,7 @@ class WingController extends Controller
                 $query = Wing::query()->select(['wings.*', 'societies.name as society_name'])
                     ->leftJoin('societies', 'societies.id', '=', 'wings.society_id');
 
-                if (!auth()->user()->isSuperAdmin()) {
+                if (! auth()->user()->isSuperAdmin()) {
                     $query->where('wings.society_id', auth()->user()->society_id);
                 } elseif ($request->filled('society_id')) {
                     $query->where('wings.society_id', $request->society_id);
@@ -159,7 +159,7 @@ class WingController extends Controller
                             'wing_id' => $wing->id,
                             'wing' => $wing->name,
                             'floor' => $f,
-                            'flat_number' => $flatNumber
+                            'flat_number' => $flatNumber,
                         ]);
                     }
                 }
