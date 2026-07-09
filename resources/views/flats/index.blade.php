@@ -4,84 +4,90 @@
 
 @section('content')
 
-    @if (auth()->user()->isSuperAdmin() || auth()->user()->isAdmin())
-    <!-- Filter Card -->
-    <div class="card shadow-sm border-0 rounded-3 mb-4">
-        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-bold text-dark">
-                <i class="bi bi-funnel me-2 text-primary"></i>Filters
-            </h6>
-            <button type="button" id="btnResetFilters" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
-            </button>
-        </div>
-        <div class="card-body">
-            <div class="row g-3">
-                @if (auth()->user()->isSuperAdmin())
-                    <div class="col-md-3">
-                        <label class="form-label fw-semibold text-secondary small">Society</label>
-                        <select id="society_filter" name="society_id" class="form-select form-select-sm">
-                            <option value="">Select Society</option>
-                            @foreach ($societies as $society)
-                                <option value="{{ $society->id }}"
-                                    {{ old('society_id') == $society->id ? 'selected' : '' }}>
-                                    {{ $society->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                @endif
-
-                <div class="col-md-3">
-                    <label class="form-label fw-semibold text-secondary small">Wing</label>
-                    <select id="wing_filter" class="form-select form-select-sm">
-                        <option value="">All Wings</option>
-                        @if (isset($wings))
-                            @foreach ($wings as $wing)
-                                <option value="{{ $wing->id }}" data-total-floors="{{ $wing->total_floors }}">{{ $wing->name }}</option>
-                            @endforeach
-                        @endif
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label fw-semibold text-secondary small">Floor</label>
-                    <select id="floor_filter" class="form-select form-select-sm">
-                        <option value="">All Floors</option>
-                        @if (isset($floors))
-                            @foreach ($floors as $floor)
-                                <option value="{{ $floor }}">{{ $floor }}</option>
-                            @endforeach
-                        @endif
-                    </select>
-                </div>
-
-                @can('is-admin')
-                    <div class="col-md-3">
-                        <label class="form-label fw-semibold text-secondary small">Status</label>
-                        <select id="status-filter" class="form-select form-select-sm">
-                            <option value="active">Active Flats</option>
-                            <option value="deleted">Deleted Flats</option>
-                            <option value="all">All Flats</option>
-                        </select>
-                    </div>
-                @endcan
-            </div>
-        </div>
-    </div>
-    @endif
-
     <!-- Data Card -->
     <div class="card shadow-sm border-0 rounded-3">
         <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
             <h5 class="mb-0 fw-bold text-dark">Flat List</h5>
 
-            @canany(['is-gatekeeper', 'is-admin'])
-                <a href="{{ route('flats.create') }}" class="btn btn-primary btn-sm">
-                    <i class="bi bi-plus-square me-1"></i>
-                    Create Flat
-                </a>
-            @endcanany
+            <div class="d-flex gap-2 align-items-center">
+                @if (auth()->user()->isSuperAdmin() || auth()->user()->isAdmin())
+                <!-- Filters Dropdown Container -->
+                <div class="position-relative">
+                    <button type="button" id="filters-toggle-btn" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
+                        <i class="bi bi-funnel"></i> <span id="filters-btn-text">Filters</span> <i class="bi bi-chevron-down ms-1 collapse-icon"></i>
+                    </button>
+
+                    <div id="filters-dropdown-panel" class="card shadow-lg border position-absolute end-0 mt-2 p-3 d-none" style="width: 560px; max-width: 90vw; z-index: 1050;">
+                        <div class="row g-3">
+                            @if (auth()->user()->isSuperAdmin())
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-secondary small">Society</label>
+                                    <select id="society_filter" name="society_id" class="form-select form-select-sm">
+                                        <option value="">Select Society</option>
+                                        @foreach ($societies as $society)
+                                            <option value="{{ $society->id }}"
+                                                {{ old('society_id') == $society->id ? 'selected' : '' }}>
+                                                {{ $society->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endif
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary small">Wing</label>
+                                <select id="wing_filter" class="form-select form-select-sm">
+                                    <option value="">All Wings</option>
+                                    @if (isset($wings))
+                                        @foreach ($wings as $wing)
+                                            <option value="{{ $wing->id }}" data-total-floors="{{ $wing->total_floors }}">{{ $wing->name }}</option>
+                                        @endforeach
+                                    @endif
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary small">Floor</label>
+                                <select id="floor_filter" class="form-select form-select-sm">
+                                    <option value="">All Floors</option>
+                                    @if (isset($floors))
+                                        @foreach ($floors as $floor)
+                                            <option value="{{ $floor }}">{{ $floor }}</option>
+                                        @endforeach
+                                    @endif
+                                </select>
+                            </div>
+
+                            @can('is-admin')
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-secondary small">Status</label>
+                                    <select id="status-filter" class="form-select form-select-sm">
+                                        <option value="active">Active Flats</option>
+                                        <option value="deleted">Deleted Flats</option>
+                                        <option value="all">All Flats</option>
+                                    </select>
+                                </div>
+                            @endcan
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 mt-3 border-top pt-3">
+                            <button type="button" id="btnResetFilters" class="btn btn-secondary btn-sm">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+                            </button>
+                            <button type="button" id="apply-filters" class="btn btn-primary btn-sm">
+                                Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                @canany(['is-gatekeeper', 'is-admin'])
+                    <a href="{{ route('flats.create') }}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-square me-1"></i>
+                        Create Flat
+                    </a>
+                @endcanany
+            </div>
         </div>
 
         <div class="card-body">
@@ -124,28 +130,38 @@
             },
             layout: {
                 topStart: {
-                    buttons: [{
-                        text: 'CSV',
-                        action: function (e, dt) {
-
-                            let search = dt.search();
-                            let society = $('#society_filter').val();
-
-                            let url = "{{ route('flats.export') }}";
-
-                            url += '?search=' + encodeURIComponent(search);
-
-                            if (society) {
-                                url += '&society_id=' + society;
+                    buttons: [
+                        {
+                            text: 'CSV',
+                            action: function (e, dt) {
+                                let search = dt.search();
+                                let society = $('#society_filter').val();
+                                let url = "{{ route('flats.export') }}";
+                                url += '?search=' + encodeURIComponent(search) + '&format=csv';
+                                if (society) {
+                                    url += '&society_id=' + society;
+                                }
+                                window.location = url;
                             }
-
-                            window.location = url;
+                        },
+                        {
+                            text: 'Excel',
+                            action: function (e, dt) {
+                                let search = dt.search();
+                                let society = $('#society_filter').val();
+                                let url = "{{ route('flats.export') }}";
+                                url += '?search=' + encodeURIComponent(search) + '&format=excel';
+                                if (society) {
+                                    url += '&society_id=' + society;
+                                }
+                                window.location = url;
+                            }
                         }
-                    }]
+                    ],
+                    pageLength: true
                 },
                 topEnd: {
-                    search: true,
-                    pageLength: true
+                    search: true
                 }
             },
             columns: [{
@@ -186,8 +202,31 @@
             width: '100%'
         });
 
-        $(document).on('change', '#status-filter, #society_filter, #wing_filter, #floor_filter', function() {
+        // Toggle custom floating filter panel
+        $('#filters-toggle-btn').click(function(e) {
+            e.stopPropagation();
+            $('#filters-dropdown-panel').toggleClass('d-none');
+            $(this).attr('aria-expanded', !$('#filters-dropdown-panel').hasClass('d-none'));
+        });
+
+        // Close floating filter panel when clicking outside, excluding Select2 and Daterangepicker elements
+        $(document).click(function(e) {
+            let panel = $('#filters-dropdown-panel');
+            let toggleBtn = $('#filters-toggle-btn');
+
+            if (!panel.is(e.target) && panel.has(e.target).length === 0 &&
+                !toggleBtn.is(e.target) && toggleBtn.has(e.target).length === 0 &&
+                $(e.target).closest('.select2-container').length === 0 &&
+                $(e.target).closest('.daterangepicker').length === 0) {
+                panel.addClass('d-none');
+                toggleBtn.attr('aria-expanded', 'false');
+            }
+        });
+
+        $('#apply-filters').click(function() {
             rd();
+            $('#filters-dropdown-panel').addClass('d-none');
+            $('#filters-toggle-btn').attr('aria-expanded', 'false');
         });
 
         $('#society_filter').change(function() {
@@ -235,6 +274,8 @@
             $('#society_filter, #wing_filter, #floor_filter').val('').trigger('change.select2');
             $('#status-filter').val('active').trigger('change.select2');
             rd();
+            $('#filters-dropdown-panel').addClass('d-none');
+            $('#filters-toggle-btn').attr('aria-expanded', 'false');
         });
     </script>
 @endpush

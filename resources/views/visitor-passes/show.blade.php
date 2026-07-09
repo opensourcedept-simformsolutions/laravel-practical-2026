@@ -17,7 +17,7 @@
                 <p class="mb-0 text-white-50 small">
                     <i class="bi bi-building me-1"></i>{{ $visitorLog->flat?->society?->name ?? 'Society Management System' }}
                 </p>
-                <div class="position-absolute top-50 end-0 translate-middle-y me-3">
+                <div class="position-absolute top-50 end-0 translate-middle-y me-3 ticket-header-badge">
                     @php
                         $statusColors = [
                             'pending' => 'bg-warning text-dark',

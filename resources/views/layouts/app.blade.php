@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title> @yield('title', 'Dashboard') </title>
 
@@ -87,9 +88,11 @@
             background: #fff3cd;
             color: #664d03;
             border: 1px solid #ffecb5;
-            border-radius: 8px;
-            padding: 6px 12px;
+            border-radius: 12px;
+            padding: 6px 16px;
             font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         }
 
         .impersonation-exit-btn {
@@ -100,6 +103,7 @@
             text-decoration: underline;
             font-weight: 600;
             cursor: pointer;
+            margin-left: 8px;
         }
 
         .impersonation-exit-btn:hover {
@@ -130,7 +134,17 @@
 <body class="bg-light">
 
     <div class="app-layout">
-        <div class="sidebar-container bg-dark min-vh-100 p-0 {{ request()->cookie('sidebar-collapsed') === 'true' ? 'collapsed' : '' }}" id="sidebarContainer">
+        <div class="sidebar-container bg-dark min-vh-100 p-0" id="sidebarContainer">
+            <script>
+                if (window.innerWidth < 992) {
+                    document.getElementById('sidebarContainer').classList.add('collapsed');
+                } else {
+                    var match = document.cookie.match(new RegExp('(^| )sidebar-collapsed=([^;]+)'));
+                    if (match && match[2] === 'true') {
+                        document.getElementById('sidebarContainer').classList.add('collapsed');
+                    }
+                }
+            </script>
             @include('partials.sidebar')
         </div>
         <div class="sidebar-backdrop d-lg-none" id="sidebarBackdrop"></div>
@@ -207,9 +221,9 @@
       if ($.fn.select2) {
         $.fn.select2.defaults.set("theme", "bootstrap-5");
         $.fn.select2.defaults.set("width", "100%");
-        
+
         // Auto-initialize on all standard select inputs
-        $('select').not('.dataTables_length select, .dt-input, .swal2-select, [data-select2-ignore], .select2-hidden-accessible').select2();
+        $('select').not('.dataTables_length select, .dt-length select, select[name$="_length"], .dt-input, .swal2-select, [data-select2-ignore], .select2-hidden-accessible').select2();
       }
     });
     </script>

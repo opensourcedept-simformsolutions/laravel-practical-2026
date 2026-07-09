@@ -72,19 +72,7 @@
                 </button>
             </div>
         </div>
-    </div>
-
-    <!-- Data Card -->
-    <div class="card shadow-sm border-0 rounded-3">
-        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold text-dark">Visitor Report</h5>
-
-            <a id="export-btn" class="btn btn-success btn-sm">
-                <i class="bi bi-download me-1"></i>
-                Export CSV
-            </a>
-        </div>
-
+    
         <div class="card-body">
             <div class="table-responsive">
                 <table id="reportTable" class="table table-hover align-middle mb-0">

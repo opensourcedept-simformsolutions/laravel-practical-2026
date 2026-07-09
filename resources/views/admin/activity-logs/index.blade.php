@@ -4,81 +4,86 @@
 
 @section('content')
 
-    <!-- Filter Card -->
-    <div class="card shadow-sm border-0 rounded-3 mb-4">
-        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-bold text-dark">
-                <i class="bi bi-funnel me-2 text-primary"></i>Filters
-            </h6>
-            <button type="button" id="reset_filters" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
-            </button>
-        </div>
-        <div class="card-body">
-            <div class="row g-3">
-                @if (auth()->user()->isSuperAdmin())
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold text-secondary small">Society</label>
-                        <select id="society_filter" class="form-select">
-                            <option value="">All Societies</option>
-                            @foreach ($societies as $society)
-                                <option value="{{ $society->id }}">{{ $society->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold text-secondary small">Action</label>
-                        <select id="action_filter" class="form-select">
-                            <option value="">All Actions</option>
-                            <option value="create">Create</option>
-                            <option value="update">Update</option>
-                            <option value="delete">Delete</option>
-                            <option value="login">Login</option>
-                            <option value="logout">Logout</option>
-                            <option value="impersonate_start">Impersonation Start</option>
-                            <option value="impersonate_stop">Impersonation Stop</option>
-                            <option value="mark_entry">Visitor Entry</option>
-                            <option value="mark_exit">Visitor Exit</option>
-                            <option value="deliver">Package Delivered</option>
-                            <option value="cancel">Pass Cancelled</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold text-secondary small">Date Range</label>
-                        <input type="text" id="date_range" class="form-control bg-white" placeholder="Select Date Range" readonly style="cursor: pointer;">
-                    </div>
-                @else
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold text-secondary small">Action</label>
-                        <select id="action_filter" class="form-select">
-                            <option value="">All Actions</option>
-                            <option value="create">Create</option>
-                            <option value="update">Update</option>
-                            <option value="delete">Delete</option>
-                            <option value="login">Login</option>
-                            <option value="logout">Logout</option>
-                            <option value="impersonate_start">Impersonation Start</option>
-                            <option value="impersonate_stop">Impersonation Stop</option>
-                            <option value="mark_entry">Visitor Entry</option>
-                            <option value="mark_exit">Visitor Exit</option>
-                            <option value="deliver">Package Delivered</option>
-                            <option value="cancel">Pass Cancelled</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold text-secondary small">Date Range</label>
-                        <input type="text" id="date_range" class="form-control bg-white" placeholder="Select Date Range" readonly style="cursor: pointer;">
-                    </div>
-                @endif
-            </div>
-            
-        </div>
-    </div>
-
     <!-- Data Card -->
     <div class="card shadow-sm border-0 rounded-3">
         <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
             <h5 class="mb-0 fw-bold text-dark">Activity Logs</h5>
+
+            <div class="d-flex gap-2 align-items-center">
+                <!-- Filters Dropdown Container -->
+                <div class="position-relative">
+                    <button type="button" id="filters-toggle-btn" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
+                        <i class="bi bi-funnel"></i> <span id="filters-btn-text">Filters</span> <i class="bi bi-chevron-down ms-1 collapse-icon"></i>
+                    </button>
+
+                    <div id="filters-dropdown-panel" class="card shadow-lg border position-absolute end-0 mt-2 p-3 d-none" style="width: 560px; max-width: 90vw; z-index: 1050;">
+                        <div class="row g-3">
+                            @if (auth()->user()->isSuperAdmin())
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-secondary small">Society</label>
+                                    <select id="society_filter" class="form-select">
+                                        <option value="">All Societies</option>
+                                        @foreach ($societies as $society)
+                                            <option value="{{ $society->id }}">{{ $society->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-secondary small">Action</label>
+                                    <select id="action_filter" class="form-select">
+                                        <option value="">All Actions</option>
+                                        <option value="create">Create</option>
+                                        <option value="update">Update</option>
+                                        <option value="delete">Delete</option>
+                                        <option value="login">Login</option>
+                                        <option value="logout">Logout</option>
+                                        <option value="impersonate_start">Impersonation Start</option>
+                                        <option value="impersonate_stop">Impersonation Stop</option>
+                                        <option value="mark_entry">Visitor Entry</option>
+                                        <option value="mark_exit">Visitor Exit</option>
+                                        <option value="deliver">Package Delivered</option>
+                                        <option value="cancel">Pass Cancelled</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-secondary small">Date Range</label>
+                                    <input type="text" id="date_range" class="form-control bg-white" placeholder="Select Date Range" readonly style="cursor: pointer;">
+                                </div>
+                            @else
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-secondary small">Action</label>
+                                    <select id="action_filter" class="form-select">
+                                        <option value="">All Actions</option>
+                                        <option value="create">Create</option>
+                                        <option value="update">Update</option>
+                                        <option value="delete">Delete</option>
+                                        <option value="login">Login</option>
+                                        <option value="logout">Logout</option>
+                                        <option value="impersonate_start">Impersonation Start</option>
+                                        <option value="impersonate_stop">Impersonation Stop</option>
+                                        <option value="mark_entry">Visitor Entry</option>
+                                        <option value="mark_exit">Visitor Exit</option>
+                                        <option value="deliver">Package Delivered</option>
+                                        <option value="cancel">Pass Cancelled</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-secondary small">Date Range</label>
+                                    <input type="text" id="date_range" class="form-control bg-white" placeholder="Select Date Range" readonly style="cursor: pointer;">
+                                </div>
+                            @endif
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 mt-3 border-top pt-3">
+                            <button type="button" id="reset_filters" class="btn btn-secondary btn-sm">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+                            </button>
+                            <button type="button" id="apply-filters" class="btn btn-primary btn-sm">
+                                Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="card-body">
@@ -188,14 +193,12 @@
                 fromDate = picker.startDate.format('YYYY-MM-DD');
                 toDate = picker.endDate.format('YYYY-MM-DD');
                 $(this).val(fromDate + ' - ' + toDate);
-                table.draw();
             });
 
             $('#date_range').on('cancel.daterangepicker', function() {
                 fromDate = '';
                 toDate = '';
                 $(this).val('');
-                table.draw();
             });
 
             $('#action_filter').select2({
@@ -214,8 +217,31 @@
                 });
             }
 
-            $('#society_filter, #action_filter').on('change', function() {
+            // Toggle custom floating filter panel
+            $('#filters-toggle-btn').click(function(e) {
+                e.stopPropagation();
+                $('#filters-dropdown-panel').toggleClass('d-none');
+                $(this).attr('aria-expanded', !$('#filters-dropdown-panel').hasClass('d-none'));
+            });
+
+            // Close floating filter panel when clicking outside, excluding Select2 and Daterangepicker elements
+            $(document).click(function(e) {
+                let panel = $('#filters-dropdown-panel');
+                let toggleBtn = $('#filters-toggle-btn');
+
+                if (!panel.is(e.target) && panel.has(e.target).length === 0 &&
+                    !toggleBtn.is(e.target) && toggleBtn.has(e.target).length === 0 &&
+                    $(e.target).closest('.select2-container').length === 0 &&
+                    $(e.target).closest('.daterangepicker').length === 0) {
+                    panel.addClass('d-none');
+                    toggleBtn.attr('aria-expanded', 'false');
+                }
+            });
+
+            $('#apply-filters').click(function() {
                 table.draw();
+                $('#filters-dropdown-panel').addClass('d-none');
+                $('#filters-toggle-btn').attr('aria-expanded', 'false');
             });
 
             $('#reset_filters').on('click', function() {
@@ -227,6 +253,8 @@
                 fromDate = '';
                 toDate = '';
                 table.draw();
+                $('#filters-dropdown-panel').addClass('d-none');
+                $('#filters-toggle-btn').attr('aria-expanded', 'false');
             });
 
             $(document).on('click', '.view-properties-btn', function() {

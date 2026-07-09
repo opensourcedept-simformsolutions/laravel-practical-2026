@@ -7,6 +7,10 @@
     overflow: hidden;
     z-index: 1050;
     box-shadow: 4px 0 10px rgba(0, 0, 0, 0.05);
+    transition: none;
+}
+
+.sidebar-container.ready {
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -254,12 +258,21 @@
         width: 260px;
         height: 100vh;
         z-index: 1050;
+        transform: translateX(-100%);
+        transition: none;
+    }
+
+    .sidebar-container.ready {
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .sidebar-container.collapsed {
         transform: translateX(-100%);
         width: 260px;
+    }
+
+    .sidebar-container:not(.collapsed) {
+        transform: translateX(0);
     }
 }
 

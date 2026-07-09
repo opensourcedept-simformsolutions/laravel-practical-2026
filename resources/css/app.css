@@ -4,6 +4,7 @@
 @import './sidebar.css';
 @import './ui.css';
 @import './card.css';
+@import './responsive.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

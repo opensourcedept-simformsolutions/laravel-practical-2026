@@ -1,0 +1,352 @@
+/* Responsive adjustments for Mobile & Tablet view */
+
+/* 1. General Layout and Padding */
+@media (max-width: 991.98px) {
+    .content-wrapper {
+        padding: 16px !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .content-wrapper {
+        padding: 12px !important;
+    }
+
+    .container-fluid {
+        padding-left: 4px !important;
+        padding-right: 4px !important;
+    }
+}
+
+/* 2. Navbar Responsiveness */
+@media (max-width: 575.98px) {
+    .app-navbar {
+        padding: 0 12px !important;
+    }
+
+    .nav-user-btn .user-info {
+        display: none !important; /* Hide user name and role to prevent overflow */
+    }
+
+    .nav-user-btn {
+        padding: 6px 10px !important;
+        border-radius: 50px !important; /* Rounded pill shape */
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        width: auto !important;
+        height: auto !important;
+    }
+
+    .nav-user-btn::after {
+        display: inline-block !important; /* Ensure dropdown caret arrow is shown */
+        margin-left: 2px !important;
+        vertical-align: middle !important;
+    }
+
+    .nav-user-btn .user-icon {
+        margin: 0 !important;
+        font-size: 1.25rem !important;
+    }
+
+    .impersonation-banner {
+        padding: 4px 8px !important;
+        font-size: 12px !important;
+        margin-right: 8px !important;
+    }
+
+    .impersonation-banner span {
+        display: none !important; /* Hide 'Acting as ...' text to preserve space */
+    }
+}
+
+/* 3. Card Headers & Section Actions Responsiveness */
+@media (max-width: 575.98px) {
+    /* Stack layout elements in card headers and container rows */
+    .card-header.d-flex,
+    .card-header .d-flex.justify-content-between,
+    .card-header .row,
+    .section-actions {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+    }
+    
+    .card-header .col,
+    .card-header .col-auto {
+        width: 100% !important;
+    }
+
+    /* Stack inner flex containers */
+    .card-header .col-auto .d-flex,
+    .card-header .d-flex.align-items-center {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        width: 100% !important;
+        gap: 8px !important;
+    }
+
+    /* Make buttons and select filters full width */
+    .card-header .col-auto .d-flex > select,
+    .card-header .col-auto .d-flex > a,
+    .card-header .col-auto .d-flex > button,
+    .card-header .btn,
+    .card-header a,
+    .section-actions .btn,
+    #filters-toggle-btn {
+        width: 100% !important;
+        text-align: center;
+    }
+
+    /* Make floating filter relative container full-width */
+    .card-header .position-relative {
+        width: 100% !important;
+    }
+
+    /* Center the floating filters dropdown panel on mobile */
+    #filters-dropdown-panel {
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+        width: 90vw !important;
+        max-width: 420px !important;
+    }
+
+    /* Make filters toggle button flex row */
+    #filters-toggle-btn {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        white-space: nowrap !important;
+    }
+}
+
+/* 4. Dashboard Stats Card Responsiveness */
+@media (max-width: 575.98px) {
+    .dashboard-card {
+        padding: 1rem !important;
+        min-height: 100px !important;
+    }
+
+    .dashboard-card-value {
+        font-size: 1.5rem !important;
+    }
+
+    .dashboard-card-title {
+        font-size: 0.8rem !important;
+    }
+
+    .dashboard-card-icon {
+        width: 46px !important;
+        height: 46px !important;
+        border-radius: 10px !important;
+    }
+
+    .dashboard-card-icon i {
+        font-size: 1.2rem !important;
+    }
+}
+
+/* 5. Datatable controls responsive wrapping */
+@media (min-width: 768px) {
+    .dt-container .dt-layout-row:first-child {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        flex-wrap: wrap !important;
+        gap: 16px !important;
+        margin-bottom: 16px !important;
+    }
+
+    .dt-container .dt-layout-row:first-child .dt-layout-cell {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        flex: unset !important;
+    }
+
+    .dt-container .dt-layout-row:first-child .dt-layout-cell.dt-start {
+        justify-content: flex-start !important;
+    }
+
+    .dt-container .dt-layout-row:first-child .dt-layout-cell.dt-end {
+        justify-content: flex-end !important;
+        flex-direction: row !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .dt-container .dt-layout-row {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+    }
+
+    .dt-container .dt-layout-cell {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        width: 100% !important;
+        gap: 10px !important;
+        text-align: left !important;
+    }
+
+    .dt-container .dt-buttons {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 0 !important;
+        width: 100% !important;
+        margin-bottom: 12px !important;
+    }
+
+    .dt-container .dt-buttons .btn {
+        flex: 1 !important;
+        width: 100% !important;
+    }
+
+    .dt-container .dt-search,
+    .dt-container .dt-length {
+        width: 100% !important;
+        display: block !important;
+        text-align: left !important;
+    }
+
+    .dt-container .dt-search label,
+    .dt-container .dt-length label {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 4px !important;
+        width: 100% !important;
+    }
+
+    .dt-container .dt-search input,
+    .dt-container .dt-length select {
+        width: 100% !important;
+        display: block !important;
+        margin: 0 !important;
+    }
+}
+
+/* 6. Visitor Show Pass Details styling on Mobile */
+@media (max-width: 575.98px) {
+    .ticket-header-badge {
+        position: relative !important;
+        top: auto !important;
+        right: auto !important;
+        transform: none !important;
+        margin-top: 12px !important;
+        display: inline-block !important;
+    }
+
+    .card-footer.d-flex {
+        flex-direction: column !important;
+        gap: 12px !important;
+        text-align: center !important;
+    }
+
+    .card-footer.d-flex .btn {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .border-end-md {
+        border-right: none !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        padding-bottom: 24px !important;
+        margin-bottom: 24px !important;
+    }
+}
+
+@media (min-width: 768px) {
+    .border-end-md {
+        border-right: 1px solid #e2e8f0 !important;
+    }
+}
+
+/* 7. Notifications Tabs Responsiveness */
+#notificationTabs {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none !important; /* Firefox */
+}
+
+#notificationTabs::-webkit-scrollbar {
+    display: none !important; /* Safari and Chrome */
+}
+
+#notificationTabs .nav-item {
+    flex-shrink: 0 !important;
+}
+
+@media (max-width: 575.98px) {
+    .nav-tabs-notifications {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+
+    .nav-tabs-notifications .nav-link {
+        padding: 0.85rem 0.75rem !important; /* Slightly larger padding */
+        font-size: 0.9rem !important; /* Slightly larger font */
+    }
+
+    .nav-tabs-notifications .nav-link i {
+        display: none !important; /* Hide icons to prevent tab wrapping */
+    }
+
+    .nav-tabs-notifications .nav-link .badge {
+        padding: 0.2rem 0.45rem !important;
+        font-size: 0.75rem !important;
+        margin-left: 4px !important;
+    }
+}
+
+/* 8. Table Padding & Horizontal Scroll Containment on Mobile */
+@media (max-width: 575.98px) {
+    .card-body {
+        padding: 8px !important; /* Reduce padding around card contents */
+    }
+
+    .table td,
+    .table th {
+        padding: 8px 6px !important; /* Tighten up cell spacing */
+        font-size: 0.8rem !important; /* Slightly smaller text for readability */
+    }
+}
+
+@media (max-width: 767.98px) {
+    /* Prevent the parent container from scrolling horizontally */
+    .dt-container {
+        overflow-x: hidden !important;
+        width: 100% !important;
+    }
+    
+    /* Only allow the table element itself to scroll */
+    .dt-container .dt-layout-table,
+    .table-responsive {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        width: 100% !important;
+        display: block !important;
+    }
+}
+
+/* 9. Form Card Mobile Padding Override */
+@media (max-width: 575.98px) {
+    .card form .card-body,
+    form .card-body {
+        padding: 1.25rem !important; /* Slightly smaller padding to fit mobile viewport */
+    }
+
+    .card form .card-header,
+    .card form .card-footer,
+    form .card-header,
+    form .card-footer {
+        padding-left: 1.25rem !important;
+        padding-right: 1.25rem !important;
+    }
+}

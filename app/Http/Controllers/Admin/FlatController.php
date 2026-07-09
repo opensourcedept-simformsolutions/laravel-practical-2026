@@ -365,6 +365,43 @@ class FlatController extends Controller
                 });
             }
 
+            if ($request->get('format') === 'excel') {
+                return response()->streamDownload(function () use ($query, $user) {
+                    echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
+                    echo '<head><meta http-equiv="Content-type" content="text/html;charset=utf-8" /></head>';
+                    echo '<body>';
+                    echo '<table border="1">';
+                    echo '<thead>';
+                    echo '<tr>';
+                    echo '<th>ID</th>';
+                    if ($user->isSuperAdmin()) {
+                        echo '<th>Society</th>';
+                    }
+                    echo '<th>Wing</th>';
+                    echo '<th>Floor</th>';
+                    echo '<th>Flat Number</th>';
+                    echo '</tr>';
+                    echo '</thead>';
+                    echo '<tbody>';
+                    foreach ($query->cursor() as $flat) {
+                        echo '<tr>';
+                        echo '<td>' . $flat->id . '</td>';
+                        if ($user->isSuperAdmin()) {
+                            echo '<td>' . e($flat->society_name) . '</td>';
+                        }
+                        echo '<td>' . e($flat->wing) . '</td>';
+                        echo '<td>' . e($flat->floor) . '</td>';
+                        echo '<td>' . e($flat->flat_number) . '</td>';
+                        echo '</tr>';
+                    }
+                    echo '</tbody>';
+                    echo '</table>';
+                    echo '</body></html>';
+                }, 'flats.xls', [
+                    'Content-Type' => 'application/vnd.ms-excel',
+                ]);
+            }
+
             return response()->streamDownload(function () use ($query, $user) {
 
                 $handle = fopen('php://output', 'w');

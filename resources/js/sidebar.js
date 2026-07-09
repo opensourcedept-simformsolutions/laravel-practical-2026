@@ -63,6 +63,11 @@ $(function () {
         return;
     }
 
+    // Enable transitions after rendering is complete to prevent load flickering
+    setTimeout(() => {
+        $sidebarContainer.addClass('ready');
+    }, 150);
+
     let lastWidth = window.innerWidth;
 
     function syncSidebarState() {

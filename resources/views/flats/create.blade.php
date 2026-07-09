@@ -39,7 +39,8 @@
                         <select name="wing_id" id="wing_id" class="form-select @error('wing_id') is-invalid @enderror">
                             <option value="">Select Wing</option>
                             @foreach ($wings as $wing)
-                                <option value="{{ $wing->id }}" @selected(old('wing_id') == $wing->id)>{{ $wing->name }}</option>
+                                <option value="{{ $wing->id }}" @selected(old('wing_id') == $wing->id)>{{ $wing->name }}
+                                </option>
                             @endforeach
                         </select>
                         @error('wing_id')
@@ -90,7 +91,6 @@
         $(document).ready(function() {
             $("#flatForm").validate({
                 rules: {
-
                     wing_id: {
                         required: true
                     },
@@ -98,8 +98,8 @@
                     floor: {
                         required: true,
                         digits: true,
-                        min: 0,
-                        max: 50
+                        min: 1,
+                        max: 9999
                     },
 
                     flat_number: {
@@ -113,8 +113,8 @@
                         required: {{ auth()->user()->isSuperAdmin() ? 'true' : 'false' }}
                     }
                 },
-                messages: {
 
+                messages: {
                     wing_id: {
                         required: "Wing is required."
                     },
@@ -122,8 +122,8 @@
                     floor: {
                         required: "Floor is required.",
                         digits: "Floor must be a number.",
-                        min: "Floor must be at least 0.",
-                        max: "Floor must be less than or equal to 50."
+                        min: "Floor must be at least 1.",
+                        max: "Floor must be less than or equal to 9999."
                     },
 
                     flat_number: {
@@ -136,7 +136,7 @@
                     society_id: {
                         required: "Society is required."
                     }
-                },
+                }
 
                 errorElement: "div",
                 errorClass: "invalid-feedback",
@@ -158,7 +158,10 @@
 
             function loadWingsForSociety(societyId, selectedWingId = null) {
                 const $wing = $('#wing_id');
-                $wing.empty().append($('<option>', { value: '', text: 'Select Wing' }));
+                $wing.empty().append($('<option>', {
+                    value: '',
+                    text: 'Select Wing'
+                }));
 
                 if (!societyId) {
                     return;

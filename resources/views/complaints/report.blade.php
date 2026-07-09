@@ -9,11 +9,14 @@
             <div class="d-flex gap-2 align-items-center">
                 <!-- Filters Dropdown Container -->
                 <div class="position-relative">
-                    <button type="button" id="filters-toggle-btn" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
-                        <i class="bi bi-funnel"></i> <span id="filters-btn-text">Filters</span> <i class="bi bi-chevron-down ms-1 collapse-icon"></i>
+                    <button type="button" id="filters-toggle-btn"
+                        class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
+                        <i class="bi bi-funnel"></i> <span id="filters-btn-text">Filters</span> <i
+                            class="bi bi-chevron-down ms-1 collapse-icon"></i>
                     </button>
 
-                    <div id="filters-dropdown-panel" class="card shadow-lg border position-absolute end-0 mt-2 p-3 d-none" style="width: 560px; max-width: 90vw; z-index: 1050;">
+                    <div id="filters-dropdown-panel" class="card shadow-lg border position-absolute end-0 mt-2 p-3 d-none"
+                        style="width: 560px; max-width: 90vw; z-index: 1050;">
                         <div class="row g-3">
                             <div class="col-md-12">
                                 <label class="form-label fw-semibold">Category</label>
@@ -38,7 +41,8 @@
 
                             <div class="col-md-12">
                                 <label class="form-label fw-semibold">Date Range</label>
-                                <input type="text" id="date-range" class="form-control" placeholder="Select Date Range" readonly>
+                                <input type="text" id="date-range" class="form-control" placeholder="Select Date Range"
+                                    readonly>
                             </div>
                         </div>
                         <div class="d-flex justify-content-end gap-2 mt-3 border-top pt-3">
@@ -57,18 +61,6 @@
                 </a>
             </div>
         </div>
-    </div>
-
-    <!-- Data Card -->
-    <div class="card shadow-sm border-0 rounded-3">
-        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold text-dark">Complaints Report</h5>
-
-            <a id="export-btn" class="btn btn-success btn-sm">
-                <i class="bi bi-download me-1"></i>
-                Export CSV
-            </a>
-        </div>
 
         <div class="card-body">
             @if (session('success'))
@@ -78,10 +70,12 @@
             @endif
 
             <!-- Active Filters Badges -->
-            <div id="active-filters-container" class="align-items-center flex-wrap gap-2 mb-3 p-2 bg-light rounded-3" style="display: none !important;">
+            <div id="active-filters-container" class="align-items-center flex-wrap gap-2 mb-3 p-2 bg-light rounded-3"
+                style="display: none !important;">
                 <span class="text-muted small fw-semibold ms-1">Active Filters:</span>
                 <div id="active-filters-list" class="d-flex flex-wrap gap-2 align-items-center"></div>
-                <button type="button" id="clear-all-filters" class="btn btn-link btn-sm text-decoration-none p-0 ms-2 fw-semibold text-danger">
+                <button type="button" id="clear-all-filters"
+                    class="btn btn-link btn-sm text-decoration-none p-0 ms-2 fw-semibold text-danger">
                     Clear All
                 </button>
             </div>
@@ -164,8 +158,7 @@
                             data: 'society',
                             name: 'societies.name'
                         },
-                    @endif
-                    {
+                    @endif {
                         data: 'user_name',
                         name: 'users.name'
                     },
@@ -254,7 +247,7 @@
                 updateFilterBadges();
             });
 
-            $('#export-btn').click(function () {
+            $('#export-btn').click(function() {
                 let params = table.ajax.params();
 
                 params.category = $('#category-filter').val();
@@ -351,15 +344,19 @@
         .collapse-icon {
             transition: transform 0.2s ease-in-out;
         }
+
         [aria-expanded="true"] .collapse-icon {
             transform: rotate(180deg);
         }
+
         .select2-container {
             width: 100% !important;
         }
+
         #filters-dropdown-panel {
             visibility: visible !important;
         }
+
         .remove-filter-btn {
             display: inline-flex;
             align-items: center;
@@ -369,6 +366,7 @@
             border-radius: 50%;
             transition: background-color 0.15s ease;
         }
+
         .remove-filter-btn:hover {
             background-color: rgba(220, 53, 69, 0.1);
         }

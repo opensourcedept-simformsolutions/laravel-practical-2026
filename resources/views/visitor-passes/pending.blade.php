@@ -15,14 +15,36 @@
                 <div class="d-flex align-items-center gap-2">
 
                     @can('is-admin')
-                    <select id="status-filter" class="form-select form-select-sm w-auto">
-                        <option value="active" selected>Active Visitor Passes</option>
-                        <option value="deleted">Deleted Visitor Passes</option>
-                        <option value="all">All Visitor Passes</option>
-                    </select>
+                    <!-- Filters Dropdown Container -->
+                    <div class="position-relative">
+                        <button type="button" id="filters-toggle-btn" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
+                            <i class="bi bi-funnel"></i> <span id="filters-btn-text">Filters</span> <i class="bi bi-chevron-down ms-1 collapse-icon"></i>
+                        </button>
+
+                        <div id="filters-dropdown-panel" class="card shadow-lg border position-absolute end-0 mt-2 p-3 d-none" style="width: 560px; max-width: 90vw; z-index: 1050;">
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label class="form-label fw-semibold text-secondary small">Status</label>
+                                    <select id="status-filter" class="form-select form-select-sm">
+                                        <option value="active" selected>Active Visitor Passes</option>
+                                        <option value="deleted">Deleted Visitor Passes</option>
+                                        <option value="all">All Visitor Passes</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end gap-2 mt-3 border-top pt-3">
+                                <button type="button" id="btnResetFilters" class="btn btn-secondary btn-sm">
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+                                </button>
+                                <button type="button" id="apply-filters" class="btn btn-primary btn-sm">
+                                    Apply Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     @endcan
 
-                    <a href="{{ route('gatekeeper.visitor-logs.exited') }}" class="btn btn-info">
+                    <a href="{{ route('gatekeeper.visitor-logs.exited') }}" class="btn btn-info btn-sm text-nowrap">
                         <i class="bi bi-box-arrow-right me-1"></i>
                         Exited Visitors
                     </a>
@@ -181,9 +203,38 @@
                     }
                 ]
             });
-            $('#status-filter').on('change', function () {
-                currentFilter = $(this).val();
-                rd()
+            // Toggle custom floating filter panel
+            $('#filters-toggle-btn').click(function(e) {
+                e.stopPropagation();
+                $('#filters-dropdown-panel').toggleClass('d-none');
+                $(this).attr('aria-expanded', !$('#filters-dropdown-panel').hasClass('d-none'));
+            });
+
+            // Close floating filter panel when clicking outside
+            $(document).click(function(e) {
+                let panel = $('#filters-dropdown-panel');
+                let toggleBtn = $('#filters-toggle-btn');
+
+                if (!panel.is(e.target) && panel.has(e.target).length === 0 &&
+                    !toggleBtn.is(e.target) && toggleBtn.has(e.target).length === 0) {
+                    panel.addClass('d-none');
+                    toggleBtn.attr('aria-expanded', 'false');
+                }
+            });
+
+            $('#apply-filters').click(function() {
+                currentFilter = $('#status-filter').val();
+                rd();
+                $('#filters-dropdown-panel').addClass('d-none');
+                $('#filters-toggle-btn').attr('aria-expanded', 'false');
+            });
+
+            $('#btnResetFilters').click(function() {
+                $('#status-filter').val('active');
+                currentFilter = 'active';
+                rd();
+                $('#filters-dropdown-panel').addClass('d-none');
+                $('#filters-toggle-btn').attr('aria-expanded', 'false');
             });
 
             $(document).on('click', '.entry-btn', async function() {

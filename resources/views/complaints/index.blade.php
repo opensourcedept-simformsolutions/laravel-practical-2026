@@ -4,64 +4,6 @@
 
 @section('content')
 
-    <!-- Filter Card -->
-    <div class="card shadow-sm border-0 rounded-3 mb-4">
-        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-bold text-dark">
-                <i class="bi bi-funnel me-2 text-primary"></i>Filters
-            </h6>
-            <button type="button" id="btnResetFilters" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
-            </button>
-        </div>
-        <div class="card-body">
-            <div class="row g-3">
-                @if (auth()->user()->isSuperAdmin() || auth()->user()->isAdmin())
-                    <div class="col-md-3">
-                        <label class="form-label fw-semibold text-secondary small">Soft-Delete Status</label>
-                        <select id="complaintFilter" class="form-select form-select-sm">
-                            <option value="active" selected>Active Complaints</option>
-                            <option value="deleted">Deleted Complaints</option>
-                            <option value="all">All Complaints</option>
-                        </select>
-                    </div>
-                @endif
-
-                @if (auth()->user()->isSuperAdmin())
-                    <div class="col-md-3">
-                        <label class="form-label fw-semibold text-secondary small">Society</label>
-                        <select id="society-filter" class="form-select form-select-sm">
-                            <option value="">All Societies</option>
-                            @foreach (\App\Models\Society::orderBy('name')->get() as $soc)
-                                <option value="{{ $soc->id }}">{{ $soc->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                @endif
-
-                <div class="col-md-3">
-                    <label class="form-label fw-semibold text-secondary small">Category</label>
-                    <select id="category-filter" class="form-select form-select-sm">
-                        <option value="">All Categories</option>
-                        @foreach (\App\Enums\ComplaintCategory::cases() as $cat)
-                            <option value="{{ $cat->value }}">{{ ucfirst($cat->value) }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label fw-semibold text-secondary small">Complaint Status</label>
-                    <select id="complaint-status-filter" class="form-select form-select-sm">
-                        <option value="">All Statuses</option>
-                        <option value="open">Open</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="resolved">Resolved</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Data Card -->
     <div class="card shadow-sm border-0 rounded-3">
         <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
@@ -73,12 +15,76 @@
             <h5 class="mb-0 fw-bold text-dark">My Complaints</h5>
             @endif
 
-            @canany(['is-gatekeeper', 'is-admin'])
-            <a href="{{ route('complaints.create') }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-square me-1"></i>
-                Create Complaint
-            </a>
-            @endcanany
+            <div class="d-flex gap-2 align-items-center">
+                <!-- Filters Dropdown Container -->
+                <div class="position-relative">
+                    <button type="button" id="filters-toggle-btn" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
+                        <i class="bi bi-funnel"></i> <span id="filters-btn-text">Filters</span> <i class="bi bi-chevron-down ms-1 collapse-icon"></i>
+                    </button>
+
+                    <div id="filters-dropdown-panel" class="card shadow-lg border position-absolute end-0 mt-2 p-3 d-none" style="width: 560px; max-width: 90vw; z-index: 1050;">
+                        <div class="row g-3">
+                            @if (auth()->user()->isSuperAdmin() || auth()->user()->isAdmin())
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-secondary small">Soft-Delete Status</label>
+                                    <select id="complaintFilter" class="form-select form-select-sm">
+                                        <option value="active" selected>Active Complaints</option>
+                                        <option value="deleted">Deleted Complaints</option>
+                                        <option value="all">All Complaints</option>
+                                    </select>
+                                </div>
+                            @endif
+
+                            @if (auth()->user()->isSuperAdmin())
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-secondary small">Society</label>
+                                    <select id="society-filter" class="form-select form-select-sm">
+                                        <option value="">All Societies</option>
+                                        @foreach (\App\Models\Society::orderBy('name')->get() as $soc)
+                                            <option value="{{ $soc->id }}">{{ $soc->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endif
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary small">Category</label>
+                                <select id="category-filter" class="form-select form-select-sm">
+                                    <option value="">All Categories</option>
+                                    @foreach (\App\Enums\ComplaintCategory::cases() as $cat)
+                                        <option value="{{ $cat->value }}">{{ ucfirst($cat->value) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary small">Complaint Status</label>
+                                <select id="complaint-status-filter" class="form-select form-select-sm">
+                                    <option value="">All Statuses</option>
+                                    <option value="open">Open</option>
+                                    <option value="in_progress">In Progress</option>
+                                    <option value="resolved">Resolved</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 mt-3 border-top pt-3">
+                            <button type="button" id="btnResetFilters" class="btn btn-secondary btn-sm">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+                            </button>
+                            <button type="button" id="apply-filters" class="btn btn-primary btn-sm">
+                                Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                @canany(['is-gatekeeper', 'is-admin'])
+                <a href="{{ route('complaints.create') }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-square me-1"></i>
+                    Create Complaint
+                </a>
+                @endcanany
+            </div>
         </div>
 
         <div class="card-body">
@@ -181,14 +187,40 @@
                     });
                 }
             });
-            $('#complaintFilter, #category-filter, #complaint-status-filter, #society-filter').on('change', function () {
+
+            // Toggle custom floating filter panel
+            $('#filters-toggle-btn').click(function(e) {
+                e.stopPropagation();
+                $('#filters-dropdown-panel').toggleClass('d-none');
+                $(this).attr('aria-expanded', !$('#filters-dropdown-panel').hasClass('d-none'));
+            });
+
+            // Close floating filter panel when clicking outside, excluding Select2 and Daterangepicker elements
+            $(document).click(function(e) {
+                let panel = $('#filters-dropdown-panel');
+                let toggleBtn = $('#filters-toggle-btn');
+
+                if (!panel.is(e.target) && panel.has(e.target).length === 0 &&
+                    !toggleBtn.is(e.target) && toggleBtn.has(e.target).length === 0 &&
+                    $(e.target).closest('.select2-container').length === 0 &&
+                    $(e.target).closest('.daterangepicker').length === 0) {
+                    panel.addClass('d-none');
+                    toggleBtn.attr('aria-expanded', 'false');
+                }
+            });
+
+            $('#apply-filters').click(function() {
                 table.ajax.reload();
+                $('#filters-dropdown-panel').addClass('d-none');
+                $('#filters-toggle-btn').attr('aria-expanded', 'false');
             });
 
             $('#btnResetFilters').click(function() {
                 $('#category-filter, #complaint-status-filter, #society-filter').val('').trigger('change');
                 $('#complaintFilter').val('active').trigger('change');
                 table.ajax.reload();
+                $('#filters-dropdown-panel').addClass('d-none');
+                $('#filters-toggle-btn').attr('aria-expanded', 'false');
             });
         });
 </script>

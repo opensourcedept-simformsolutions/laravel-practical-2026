@@ -10,17 +10,17 @@ export default defineConfig({
     ],
 
     server: {
-        host: "0.0.0.0",       // listen on all interfaces inside the container
+        host: "0.0.0.0",
         port: 5173,
         strictPort: true,
         cors: {
             origin: "*",
         },
         hmr: {
-            host: "localhost",  // what the BROWSER connects to for the HMR websocket
+            host: "172.16.6.33",
         },
         watch: {
-            usePolling: true,   // needed for file-change detection through Docker bind mounts
+            usePolling: true,
         },
     },
 });
