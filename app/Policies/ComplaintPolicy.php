@@ -73,6 +73,10 @@ class ComplaintPolicy
 
     public function restore(User $user, Complaint $complaint): bool
     {
-        return $user->isSuperAdmin() || $user->isAdmin();
+        if ($user->isAdmin()) {
+            return $complaint->user->society_id === $user->society_id;
+        }
+
+        return false;
     }
 }

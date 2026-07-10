@@ -51,6 +51,17 @@
         </div>
 
         <div class="card-body">
+            <!-- Active Filters Badges -->
+            <div id="active-filters-container" class="align-items-center flex-wrap gap-2 mb-3 p-2 bg-light rounded-3"
+                style="display: none !important;">
+                <span class="text-muted small fw-semibold ms-1">Active Filters:</span>
+                <div id="active-filters-list" class="d-flex flex-wrap gap-2 align-items-center"></div>
+                <button type="button" id="clear-all-filters"
+                    class="btn btn-link btn-sm text-decoration-none p-0 ms-2 fw-semibold text-danger">
+                    Clear All
+                </button>
+            </div>
+
             <div class="table-responsive">
                 <table id="wingsTable" class="table table-hover table-striped align-middle w-100 app-datatable">
                     <thead class="table-light">
@@ -118,6 +129,7 @@
 
             $('#apply-filters').click(function() {
                 table.draw();
+                updateFilterBadges();
                 $('#filters-dropdown-panel').addClass('d-none');
                 $('#filters-toggle-btn').attr('aria-expanded', 'false');
             });
@@ -125,9 +137,56 @@
             $('#btnResetFilters').click(function() {
                 $('#societyFilter').val('').trigger('change.select2');
                 table.draw();
+                updateFilterBadges();
                 $('#filters-dropdown-panel').addClass('d-none');
                 $('#filters-toggle-btn').attr('aria-expanded', 'false');
             });
+
+            function updateFilterBadges() {
+                let list = $('#active-filters-list');
+                list.empty();
+                let count = 0;
+
+                if ($('#societyFilter').length) {
+                    let societyVal = $('#societyFilter').val();
+                    if (societyVal) {
+                        let societyText = $('#societyFilter option:selected').text().trim();
+                        list.append(`
+                            <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-1 py-1.5 px-3 rounded-pill">
+                                Society: ${societyText}
+                                <span class="ms-1 remove-filter-btn text-danger fw-bold" style="cursor: pointer; font-size: 1rem; line-height: 1;" data-filter="society">&times;</span>
+                            </span>
+                        `);
+                        count++;
+                    }
+                }
+
+                if (count > 0) {
+                    $('#filters-btn-text').text(`Filters (${count})`);
+                    $('#active-filters-container').attr('style', 'display: flex !important;');
+                } else {
+                    $('#filters-btn-text').text('Filters');
+                    $('#active-filters-container').attr('style', 'display: none !important;');
+                }
+            }
+
+            $(document).on('click', '.remove-filter-btn', function() {
+                let filterType = $(this).data('filter');
+                if (filterType === 'society') {
+                    $('#societyFilter').val('').trigger('change.select2');
+                }
+                table.draw();
+                updateFilterBadges();
+            });
+
+            $('#clear-all-filters').on('click', function() {
+                $('#societyFilter').val('').trigger('change.select2');
+                table.draw();
+                updateFilterBadges();
+            });
+
+            // Run initial update for badges
+            updateFilterBadges();
         });
     </script>
 @endpush

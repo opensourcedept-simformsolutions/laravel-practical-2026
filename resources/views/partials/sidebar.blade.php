@@ -120,6 +120,11 @@
                 <i class="bi bi-clock-history"></i>
                 <span class="sidebar-link-label">Activity Logs</span>
             </x-sidebar-link>
+
+            <x-sidebar-link :href="route('admin.auth-audit.index')" :active="request()->routeIs('admin.auth-audit.*')">
+                <i class="bi bi-shield-lock-fill"></i>
+                <span class="sidebar-link-label">Auth Audit Logs</span>
+            </x-sidebar-link>
         @endcanany
 
         {{-- Section: Analytics --}}

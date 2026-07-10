@@ -88,8 +88,18 @@
         </div>
 
         <div class="card-body">
+            <!-- Active Filters Badges -->
+            <div id="active-filters-container" class="align-items-center flex-wrap gap-2 mb-3 p-2 bg-light rounded-3"
+                style="display: none !important;">
+                <span class="text-muted small fw-semibold ms-1">Active Filters:</span>
+                <div id="active-filters-list" class="d-flex flex-wrap gap-2 align-items-center"></div>
+                <button type="button" id="clear-all-filters"
+                    class="btn btn-link btn-sm text-decoration-none p-0 ms-2 fw-semibold text-danger">
+                    Clear All
+                </button>
+            </div>
 
-        <div class="table-responsive">
+            <div class="table-responsive">
 
             <table id="complaintsTable" class="table table-hover table-striped align-middle w-100 app-datatable">
 
@@ -211,6 +221,7 @@
 
             $('#apply-filters').click(function() {
                 table.ajax.reload();
+                updateFilterBadges();
                 $('#filters-dropdown-panel').addClass('d-none');
                 $('#filters-toggle-btn').attr('aria-expanded', 'false');
             });
@@ -219,9 +230,101 @@
                 $('#category-filter, #complaint-status-filter, #society-filter').val('').trigger('change');
                 $('#complaintFilter').val('active').trigger('change');
                 table.ajax.reload();
+                updateFilterBadges();
                 $('#filters-dropdown-panel').addClass('d-none');
                 $('#filters-toggle-btn').attr('aria-expanded', 'false');
             });
+
+            function updateFilterBadges() {
+                let list = $('#active-filters-list');
+                list.empty();
+                let count = 0;
+
+                @if (auth()->user()->isSuperAdmin() || auth()->user()->isAdmin())
+                    let softDeleteVal = $('#complaintFilter').val();
+                    if (softDeleteVal) {
+                        let softDeleteText = $('#complaintFilter option:selected').text().trim();
+                        list.append(`
+                            <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-1 py-1.5 px-3 rounded-pill">
+                                Filter: ${softDeleteText}
+                                <span class="ms-1 remove-filter-btn text-danger fw-bold" style="cursor: pointer; font-size: 1rem; line-height: 1;" data-filter="soft_delete">&times;</span>
+                            </span>
+                        `);
+                        count++;
+                    }
+                @endif
+
+                @if (auth()->user()->isSuperAdmin())
+                    let societyVal = $('#society-filter').val();
+                    if (societyVal) {
+                        let societyText = $('#society-filter option:selected').text().trim();
+                        list.append(`
+                            <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-1 py-1.5 px-3 rounded-pill">
+                                Society: ${societyText}
+                                <span class="ms-1 remove-filter-btn text-danger fw-bold" style="cursor: pointer; font-size: 1rem; line-height: 1;" data-filter="society">&times;</span>
+                            </span>
+                        `);
+                        count++;
+                    }
+                @endif
+
+                let categoryVal = $('#category-filter').val();
+                if (categoryVal) {
+                    let categoryText = $('#category-filter option:selected').text().trim();
+                    list.append(`
+                        <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-1 py-1.5 px-3 rounded-pill">
+                            Category: ${categoryText}
+                            <span class="ms-1 remove-filter-btn text-danger fw-bold" style="cursor: pointer; font-size: 1rem; line-height: 1;" data-filter="category">&times;</span>
+                        </span>
+                    `);
+                    count++;
+                }
+
+                let statusVal = $('#complaint-status-filter').val();
+                if (statusVal) {
+                    let statusText = $('#complaint-status-filter option:selected').text().trim();
+                    list.append(`
+                        <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-1 py-1.5 px-3 rounded-pill">
+                            Status: ${statusText}
+                            <span class="ms-1 remove-filter-btn text-danger fw-bold" style="cursor: pointer; font-size: 1rem; line-height: 1;" data-filter="status">&times;</span>
+                        </span>
+                    `);
+                    count++;
+                }
+
+                if (count > 0) {
+                    $('#filters-btn-text').text(`Filters (${count})`);
+                    $('#active-filters-container').attr('style', 'display: flex !important;');
+                } else {
+                    $('#filters-btn-text').text('Filters');
+                    $('#active-filters-container').attr('style', 'display: none !important;');
+                }
+            }
+
+            $(document).on('click', '.remove-filter-btn', function() {
+                let filterType = $(this).data('filter');
+                if (filterType === 'soft_delete') {
+                    $('#complaintFilter').val('all').trigger('change');
+                } else if (filterType === 'society') {
+                    $('#society-filter').val('').trigger('change');
+                } else if (filterType === 'category') {
+                    $('#category-filter').val('').trigger('change');
+                } else if (filterType === 'status') {
+                    $('#complaint-status-filter').val('').trigger('change');
+                }
+                table.ajax.reload();
+                updateFilterBadges();
+            });
+
+            $('#clear-all-filters').on('click', function() {
+                $('#category-filter, #complaint-status-filter, #society-filter').val('').trigger('change');
+                $('#complaintFilter').val('active').trigger('change');
+                table.ajax.reload();
+                updateFilterBadges();
+            });
+
+            // Run initial update for badges
+            updateFilterBadges();
         });
 </script>
 @endpush

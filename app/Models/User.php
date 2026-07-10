@@ -84,6 +84,49 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Notification::class)->latest();
     }
 
+    public static $cascading = false;
+
+    protected static function booted()
+    {
+        static::deleting(function ($user) {
+            if (static::$cascading || (class_exists(Resident::class) && Resident::$cascading)) {
+                return;
+            }
+            static::$cascading = true;
+            try {
+                if ($user->isForceDeleting()) {
+                    $user->resident()?->withTrashed()->forceDelete();
+                    $user->complaints()->withTrashed()->forceDelete();
+                    $user->notifications()->withTrashed()->forceDelete();
+                } else {
+                    $user->resident()?->delete();
+                    $user->complaints()->delete();
+                    $user->notifications()->delete();
+                }
+            } finally {
+                static::$cascading = false;
+            }
+        });
+
+        static::restoring(function ($user) {
+            if (static::$cascading || (class_exists(Resident::class) && Resident::$cascading)) {
+                return;
+            }
+            static::$cascading = true;
+            try {
+                $deletedAt = $user->deleted_at;
+                if ($deletedAt) {
+                    $threshold = $deletedAt->copy()->subSeconds(5);
+                    $user->resident()?->onlyTrashed()->where('deleted_at', '>=', $threshold)->restore();
+                    $user->complaints()->onlyTrashed()->where('deleted_at', '>=', $threshold)->restore();
+                    $user->notifications()->onlyTrashed()->where('deleted_at', '>=', $threshold)->restore();
+                }
+            } finally {
+                static::$cascading = false;
+            }
+        });
+    }
+
     public function unreadNotifications()
     {
         return $this->hasMany(Notification::class)->whereNull('read_at')->latest();

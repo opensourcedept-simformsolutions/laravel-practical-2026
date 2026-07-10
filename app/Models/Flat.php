@@ -64,9 +64,26 @@ class Flat extends Model
                 $flat->wing = $wing->name;
             }
         });
-
         static::deleting(function ($flat) {
-            $flat->residents()->delete();
+            if ($flat->isForceDeleting()) {
+                $flat->residents()->withTrashed()->get()->each->forceDelete();
+                $flat->deliveries()->withTrashed()->get()->each->forceDelete();
+                $flat->visitorLogs()->withTrashed()->get()->each->forceDelete();
+            } else {
+                $flat->residents()->get()->each->delete();
+                $flat->deliveries()->get()->each->delete();
+                $flat->visitorLogs()->get()->each->delete();
+            }
+        });
+
+        static::restoring(function ($flat) {
+            $deletedAt = $flat->deleted_at;
+            if ($deletedAt) {
+                $threshold = $deletedAt->copy()->subSeconds(5);
+                $flat->residents()->onlyTrashed()->where('deleted_at', '>=', $threshold)->get()->each->restore();
+                $flat->deliveries()->onlyTrashed()->where('deleted_at', '>=', $threshold)->get()->each->restore();
+                $flat->visitorLogs()->onlyTrashed()->where('deleted_at', '>=', $threshold)->get()->each->restore();
+            }
         });
     }
 

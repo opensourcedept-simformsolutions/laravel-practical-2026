@@ -42,11 +42,13 @@
 
   <div class="modal fade" id="deleteSocietyModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl">
-      <div class="modal-content border-0 shadow">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
 
-        <div class="modal-header bg-danger text-white">
-          <h5 class="modal-title">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <div class="modal-header bg-dark text-white border-0 py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+          <h5 class="modal-title fw-bold d-flex align-items-center">
+            <span class="badge bg-danger-subtle text-danger p-2 me-2" style="border-radius: 8px;">
+              <i class="bi bi-exclamation-triangle-fill fs-6"></i>
+            </span>
             Delete Society
           </h5>
 
@@ -54,40 +56,26 @@
           </button>
         </div>
 
-        <div class="modal-body p-4">
-
-          <div class="alert alert-warning d-flex align-items-center mb-4">
-            <i class="bi bi-info-circle-fill fs-4 me-3"></i>
-
-            <div>
-              Review the records below before deleting this society.
-              <strong>Permanent delete cannot be undone.</strong>
-            </div>
-          </div>
-
+        <div class="modal-body p-4 bg-white">
           <div id="deletePreview">
             <div class="text-center py-5">
-              <div class="spinner-border text-primary"></div>
-
-              <div class="mt-3 text-muted">
-                Loading deletion summary...
-              </div>
+              <div class="spinner-border text-dark mb-3"></div>
+              <div class="text-muted small">Generating deletion impact assessment...</div>
             </div>
           </div>
-
         </div>
 
-        <div class="modal-footer bg-light">
-          <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+        <div class="modal-footer bg-light border-0 py-3" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+          <button class="btn btn-link text-secondary text-decoration-none fw-semibold px-4" data-bs-dismiss="modal">
             Cancel
           </button>
 
-          <button class="btn btn-warning" id="softDeleteBtn">
+          <button class="btn btn-dark px-4 fw-semibold" id="softDeleteBtn">
             <i class="bi bi-trash me-1"></i>
             Soft Delete
           </button>
 
-          <button class="btn btn-danger" id="forceDeleteBtn">
+          <button class="btn btn-danger px-4 fw-semibold" id="forceDeleteBtn">
             <i class="bi bi-trash-fill me-1"></i>
             Permanent Delete
           </button>
@@ -115,7 +103,8 @@
     function loadDeletePreview(id) {
       $('#deletePreview').html(`
             <div class="text-center py-5">
-                <div class="spinner-border"></div>
+                <div class="spinner-border text-dark mb-3"></div>
+                <div class="text-muted small">Generating deletion impact assessment...</div>
             </div>
         `);
 
@@ -130,87 +119,168 @@
 
     function renderDeletePreview(data) {
       $('#deletePreview').html(`
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <div class="card border-danger h-100">
-                        <div class="card-body text-center">
-                            <h2 class="text-danger mb-0">${data.total_records}</h2>
-                            <small class="text-muted">Total Records Deleted</small>
+            <div class="row g-4">
+                <!-- Left Column: Total Impact Summary Card -->
+                <div class="col-lg-4">
+                    <div class="card border-0 text-white h-100 position-relative overflow-hidden shadow-sm" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 16px; min-height: 320px;">
+                        <div class="position-absolute" style="width: 250px; height: 250px; background: rgba(255,255,255,0.02); border-radius: 50%; top: -60px; right: -60px;"></div>
+                        <div class="card-body p-4 d-flex flex-column justify-content-between position-relative" style="z-index: 1;">
+                            <div>
+                                <span class="badge bg-danger text-white px-3 py-1.5 rounded-pill mb-3 fw-bold small text-uppercase">Impact Report</span>
+                                <h4 class="fw-bold text-white mb-2">Cascade Assessment</h4>
+                                <p class="text-light opacity-75 small">Deleting this society will recursively delete all elements connected to its infrastructure.</p>
+                            </div>
+                            
+                            <div class="my-4 text-center">
+                                <div class="display-3 fw-bold text-white mb-1">${data.total_records}</div>
+                                <div class="text-uppercase text-light opacity-50 tracking-wider small fw-bold">Total Records Affected</div>
+                            </div>
+
+                            <div class="mt-auto">
+                                <div class="d-flex align-items-start gap-2 bg-white bg-opacity-10 p-3 rounded-3 border border-white border-opacity-10 small">
+                                    <i class="bi bi-shield-exclamation text-warning fs-5 mt-0.5"></i>
+                                    <div class="text-light">
+                                        <strong>Caution:</strong> Permanent deletes cannot be undone. Soft deletes can be restored by the super admin.
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-8">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <table class="table table-sm align-middle mb-0">
-                                <tbody>
-                                    <tr>
-                                        <th>Society</th>
-                                        <td>${data.society}</td>
-                                    </tr>
+                <!-- Right Column: Breakdown Cards Grid -->
+                <div class="col-lg-8">
+                    <div class="row g-3">
+                        <!-- Society Card -->
+                        <div class="col-sm-6 col-md-4">
+                            <div class="card border-0 bg-light rounded-3 p-3 h-100 d-flex flex-row align-items-center gap-3">
+                                <div class="p-2.5 bg-white rounded-3 border text-dark">
+                                    <i class="bi bi-building fs-4"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small fw-semibold">Societies</div>
+                                    <div class="fs-4 fw-bold text-dark">${data.society}</div>
+                                </div>
+                            </div>
+                        </div>
 
-                                    <tr>
-                                        <th>Admins</th>
-                                        <td><span class="badge bg-primary rounded-pill">${data.admins}</span></td>
-                                    </tr>
+                        <!-- Admins Card -->
+                        <div class="col-sm-6 col-md-4">
+                            <div class="card border-0 bg-light rounded-3 p-3 h-100 d-flex flex-row align-items-center gap-3">
+                                <div class="p-2.5 bg-white rounded-3 border text-primary">
+                                    <i class="bi bi-person-workspace fs-4"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small fw-semibold">Admins</div>
+                                    <div class="fs-4 fw-bold text-dark">${data.admins}</div>
+                                </div>
+                            </div>
+                        </div>
 
-                                    <tr>
-                                        <th>Gatekeepers</th>
-                                        <td>${data.gatekeepers}</td>
-                                    </tr>
+                        <!-- Gatekeepers Card -->
+                        <div class="col-sm-6 col-md-4">
+                            <div class="card border-0 bg-light rounded-3 p-3 h-100 d-flex flex-row align-items-center gap-3">
+                                <div class="p-2.5 bg-white rounded-3 border text-info">
+                                    <i class="bi bi-shield-shaded fs-4"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small fw-semibold">Gatekeepers</div>
+                                    <div class="fs-4 fw-bold text-dark">${data.gatekeepers}</div>
+                                </div>
+                            </div>
+                        </div>
 
-                                    <tr>
-                                        <th>Wings</th>
-                                        <td>${data.wings ?? 0}</td>
-                                    </tr>
+                        <!-- Wings Card -->
+                        <div class="col-sm-6 col-md-4">
+                            <div class="card border-0 bg-light rounded-3 p-3 h-100 d-flex flex-row align-items-center gap-3">
+                                <div class="p-2.5 bg-white rounded-3 border text-success">
+                                    <i class="bi bi-grid-3x3-gap-fill fs-4"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small fw-semibold">Wings</div>
+                                    <div class="fs-4 fw-bold text-dark">${data.wings ?? 0}</div>
+                                </div>
+                            </div>
+                        </div>
 
-                                    <tr>
-                                        <th>Flats</th>
-                                        <td><span class="badge bg-success rounded-pill">${data.flats}</span></td>
-                                    </tr>
+                        <!-- Flats Card -->
+                        <div class="col-sm-6 col-md-4">
+                            <div class="card border-0 bg-light rounded-3 p-3 h-100 d-flex flex-row align-items-center gap-3">
+                                <div class="p-2.5 bg-white rounded-3 border text-success">
+                                    <i class="bi bi-door-closed-fill fs-4"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small fw-semibold">Flats</div>
+                                    <div class="fs-4 fw-bold text-dark">${data.flats}</div>
+                                </div>
+                            </div>
+                        </div>
 
-                                    <tr>
-                                        <th>Residents</th>
-                                        <td>${data.residents}</td>
-                                    </tr>
+                        <!-- Residents Card -->
+                        <div class="col-sm-6 col-md-4">
+                            <div class="card border-0 bg-light rounded-3 p-3 h-100 d-flex flex-row align-items-center gap-3">
+                                <div class="p-2.5 bg-white rounded-3 border text-primary">
+                                    <i class="bi bi-people-fill fs-4"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small fw-semibold">Residents</div>
+                                    <div class="fs-4 fw-bold text-dark">${data.residents}</div>
+                                </div>
+                            </div>
+                        </div>
 
-                                    <tr>
-                                        <th>Resident Users</th>
-                                        <td>${data.resident_users}</td>
-                                    </tr>
+                        <!-- Complaints Card -->
+                        <div class="col-sm-6 col-md-4">
+                            <div class="card border-0 bg-light rounded-3 p-3 h-100 d-flex flex-row align-items-center gap-3">
+                                <div class="p-2.5 bg-white rounded-3 border text-danger">
+                                    <i class="bi bi-exclamation-octagon fs-4"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small fw-semibold">Complaints</div>
+                                    <div class="fs-4 fw-bold text-dark">${data.complaints}</div>
+                                </div>
+                            </div>
+                        </div>
 
-                                    <tr>
-                                        <th>Complaints</th>
-                                        <td>${data.complaints}</td>
-                                    </tr>
+                        <!-- Deliveries Card -->
+                        <div class="col-sm-6 col-md-4">
+                            <div class="card border-0 bg-light rounded-3 p-3 h-100 d-flex flex-row align-items-center gap-3">
+                                <div class="p-2.5 bg-white rounded-3 border text-warning">
+                                    <i class="bi bi-box-seam-fill fs-4"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small fw-semibold">Deliveries</div>
+                                    <div class="fs-4 fw-bold text-dark">${data.deliveries}</div>
+                                </div>
+                            </div>
+                        </div>
 
-                                    <tr>
-                                        <th>Deliveries</th>
-                                        <td>${data.deliveries}</td>
-                                    </tr>
+                        <!-- Visitor Logs Card -->
+                        <div class="col-sm-6 col-md-4">
+                            <div class="card border-0 bg-light rounded-3 p-3 h-100 d-flex flex-row align-items-center gap-3">
+                                <div class="p-2.5 bg-white rounded-3 border text-dark">
+                                    <i class="bi bi-journal-text fs-4"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small fw-semibold">Visitor Logs</div>
+                                    <div class="fs-4 fw-bold text-dark">${data.visitor_logs}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                                    <tr>
-                                        <th>Visitor Logs</th>
-                                        <td>${data.visitor_logs}</td>
-                                    </tr>
-
-                                    <tr class="table-danger">
-                                        <th>Visitors Deleted</th>
-                                        <td><span class="badge bg-danger rounded-pill">${data.visitors_to_delete}</span></td>
-                                    </tr>
-
-                                    <tr class="table-warning">
-                                        <th>Visitors Retained</th>
-                                        <td><span class="badge bg-warning rounded-pill">${data.visitors_to_keep}</span></td>
-                                    </tr>
-
-                                    <tr class="table-info">
-                                        <th>Activity Logs Retained</th>
-                                        <td>${data.activity_logs_kept}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                    <div class="card border-0 bg-light rounded-3 p-3 mt-3">
+                        <h6 class="fw-bold mb-2 small text-dark"><i class="bi bi-person-badge-fill me-1"></i> Visitors & Audit Logs Detail:</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle py-1.5 px-3 rounded-pill fw-semibold">
+                                <i class="bi bi-trash-fill me-1"></i> ${data.visitors_to_delete} Visitors to delete
+                            </span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle py-1.5 px-3 rounded-pill fw-semibold">
+                                <i class="bi bi-check-circle-fill me-1"></i> ${data.visitors_to_keep} Visitors to keep
+                            </span>
+                            <span class="badge bg-info-subtle text-info border border-info-subtle py-1.5 px-3 rounded-pill fw-semibold">
+                                <i class="bi bi-file-earmark-text-fill me-1"></i> ${data.activity_logs_kept} Activity Logs retained
+                            </span>
                         </div>
                     </div>
                 </div>

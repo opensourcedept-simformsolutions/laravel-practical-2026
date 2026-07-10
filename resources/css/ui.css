@@ -195,3 +195,17 @@ button.btn-light:hover {
     border-color: #cbd5e1 !important;
     transform: translateY(-0.5px);
 }
+
+.remove-filter-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    transition: background-color 0.15s ease;
+}
+
+.remove-filter-btn:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+}

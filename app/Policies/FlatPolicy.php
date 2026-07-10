@@ -39,4 +39,9 @@ class FlatPolicy
     {
         return $user->isAdmin() && $flat->society_id === $user->society_id;
     }
+
+    public function restore(User $user, Flat $flat): bool
+    {
+        return $user->isAdmin() && $flat->society_id === $user->society_id;
+    }
 }

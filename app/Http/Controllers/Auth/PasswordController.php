@@ -29,7 +29,7 @@ class PasswordController extends Controller
                 'password' => Hash::make($validated['password']),
             ]);
 
-            ActivityLogger::log('update', $user, 'Changed account password.');
+            ActivityLogger::log('password_change', $user, 'Changed account password.');
 
             return back()->with('status', 'password-updated');
         } catch (Exception $e) {

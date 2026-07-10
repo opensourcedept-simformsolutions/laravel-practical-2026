@@ -9,8 +9,10 @@ use App\Listeners\SendVisitorExitMail;
 use App\Models\Wing;
 use App\Policies\WingPolicy;
 use App\Services\ActivityLogger;
+use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -58,6 +60,20 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Logout::class, function ($event) {
             if ($event->user) {
                 ActivityLogger::log('logout', $event->user, "User {$event->user->name} logged out.");
+            }
+        });
+
+        Event::listen(PasswordReset::class, function ($event) {
+            ActivityLogger::log('password_reset', $event->user, 'Reset password using reset link.');
+        });
+
+        Event::listen(Failed::class, function ($event) {
+            $user = $event->user;
+            $email = $event->credentials['email'] ?? 'unknown';
+            if ($user) {
+                ActivityLogger::log('login_failed', $user, "Failed login attempt for user {$user->name}.");
+            } else {
+                ActivityLogger::log('login_failed', null, "Failed login attempt for email: {$email}.");
             }
         });
     }

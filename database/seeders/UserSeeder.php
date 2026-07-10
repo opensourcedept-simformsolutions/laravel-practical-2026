@@ -25,7 +25,7 @@ class UserSeeder extends Seeder
             'phone' => '9999999999',
             'password' => Hash::make('1'),
             'role_id' => $superAdminRole->id,
-            'society_id' => Society::first()->id,
+            'society_id' => null,
             'email_verified_at' => now(),
         ]);
 

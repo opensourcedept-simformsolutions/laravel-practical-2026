@@ -203,7 +203,13 @@ class WingController extends Controller
 
         try {
             // prevent deletion if any flats have related records
-            $problem = $wing->flats()->whereHas('residents')->orWhereHas('deliveries')->orWhereHas('visitorLogs')->exists();
+            $problem = Flat::where('wing_id', $wing->id)
+                ->where(function ($query) {
+                    $query->whereHas('residents')
+                        ->orWhereHas('deliveries')
+                        ->orWhereHas('visitorLogs');
+                })
+                ->exists();
             if ($problem) {
                 return response()->json(['success' => false, 'message' => 'Cannot delete wing with occupied flats.'], 422);
             }

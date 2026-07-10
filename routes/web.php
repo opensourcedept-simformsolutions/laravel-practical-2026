@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ActivityLogController;
+use App\Http\Controllers\Admin\AuthAuditController;
 use App\Http\Controllers\Admin\FlatController;
 use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\ResidentController;
@@ -71,6 +72,14 @@ Route::middleware('auth')->group(function () {
                         Route::controller(ActivityLogController::class)
                             ->prefix('activity-logs')
                             ->name('activity-logs.')
+                            ->group(function () {
+                                Route::get('/', 'index')->name('index');
+                                Route::get('data', 'data')->name('data');
+                            });
+
+                        Route::controller(AuthAuditController::class)
+                            ->prefix('auth-audit')
+                            ->name('auth-audit.')
                             ->group(function () {
                                 Route::get('/', 'index')->name('index');
                                 Route::get('data', 'data')->name('data');

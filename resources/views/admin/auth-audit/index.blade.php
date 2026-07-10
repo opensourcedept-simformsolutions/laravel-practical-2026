@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Activity Logs')
+@section('title', 'Auth Audit Logs')
 
 @section('content')
 
     <!-- Data Card -->
     <div class="card shadow-sm border-0 rounded-3">
         <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold text-dark">Activity Logs</h5>
+            <h5 class="mb-0 fw-bold text-dark">Auth Audit Logs</h5>
 
             <div class="d-flex gap-2 align-items-center">
                 <!-- Filters Dropdown Container -->
@@ -32,17 +32,14 @@
                                     <label class="form-label fw-semibold text-secondary small">Action</label>
                                     <select id="action_filter" class="form-select">
                                         <option value="">All Actions</option>
-                                        <option value="create">Create</option>
-                                        <option value="update">Update</option>
-                                        <option value="delete">Delete</option>
                                         <option value="login">Login</option>
                                         <option value="logout">Logout</option>
+                                        <option value="login_failed">Login Failed</option>
+                                        <option value="forgot_password_request">Forgot Password Request</option>
+                                        <option value="password_reset">Password Reset</option>
+                                        <option value="password_change">Password Change</option>
                                         <option value="impersonate_start">Impersonation Start</option>
                                         <option value="impersonate_stop">Impersonation Stop</option>
-                                        <option value="mark_entry">Visitor Entry</option>
-                                        <option value="mark_exit">Visitor Exit</option>
-                                        <option value="deliver">Package Delivered</option>
-                                        <option value="cancel">Pass Cancelled</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
@@ -54,17 +51,14 @@
                                     <label class="form-label fw-semibold text-secondary small">Action</label>
                                     <select id="action_filter" class="form-select">
                                         <option value="">All Actions</option>
-                                        <option value="create">Create</option>
-                                        <option value="update">Update</option>
-                                        <option value="delete">Delete</option>
                                         <option value="login">Login</option>
                                         <option value="logout">Logout</option>
+                                        <option value="login_failed">Login Failed</option>
+                                        <option value="forgot_password_request">Forgot Password Request</option>
+                                        <option value="password_reset">Password Reset</option>
+                                        <option value="password_change">Password Change</option>
                                         <option value="impersonate_start">Impersonation Start</option>
                                         <option value="impersonate_stop">Impersonation Stop</option>
-                                        <option value="mark_entry">Visitor Entry</option>
-                                        <option value="mark_exit">Visitor Exit</option>
-                                        <option value="deliver">Package Delivered</option>
-                                        <option value="cancel">Pass Cancelled</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
@@ -99,7 +93,7 @@
             </div>
 
             <div class="table-responsive">
-                <table id="activityLogsTable" class="table table-hover table-striped align-middle w-100 app-datatable">
+                <table id="authAuditTable" class="table table-hover table-striped align-middle w-100 app-datatable">
                     <thead class="table-light">
                         <tr>
                             <th>ID</th>
@@ -110,6 +104,7 @@
                             <th>Operator</th>
                             <th>Action</th>
                             <th>Description</th>
+                            <th>IP Address</th>
                             <th class="text-center">Details</th>
                         </tr>
                     </thead>
@@ -125,12 +120,12 @@
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header bg-light border-bottom py-3">
                     <h5 class="modal-title fw-bold text-dark" id="detailsModalLabel">
-                        <i class="bi bi-info-circle text-primary me-2"></i> Activity Properties
+                        <i class="bi bi-info-circle text-primary me-2"></i> Audit Details
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <p class="text-secondary small mb-3">Below are the raw data changes and parameters captured for this activity:</p>
+                    <p class="text-secondary small mb-3">Below are the raw data changes and parameters captured for this authentication activity:</p>
                     <div class="bg-dark text-light p-3 rounded-3 overflow-auto" style="max-height: 400px;">
                         <pre class="mb-0 text-success" id="propertiesContent" style="font-family: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: 13px;"></pre>
                     </div>
@@ -165,15 +160,16 @@
                 { data: 'operator', name: 'users.name' },
                 { data: 'action', name: 'activity_logs.action' },
                 { data: 'description', name: 'activity_logs.description' },
+                { data: 'ip_address', name: 'activity_logs.ip_address' },
                 { data: 'actions', name: 'actions', orderable: false, searchable: false, class: 'text-center' }
             );
 
-            const table = $('#activityLogsTable').DataTable({
+            const table = $('#authAuditTable').DataTable({
                 processing: true,
                 serverSide: true,
                 responsive: true,
                 ajax: {
-                    url: "{{ route('admin.activity-logs.data') }}",
+                    url: "{{ route('admin.auth-audit.data') }}",
                     data: function(d) {
                         d.society_id = $('#society_filter').val();
                         d.action = $('#action_filter').val();

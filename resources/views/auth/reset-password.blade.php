@@ -65,7 +65,7 @@
 
                                 <label>New Password</label>
 
-                                <input type="password" name="password" class="form-control form-control-lg">
+                                <input type="password" name="password" autocomplete="new-password" class="form-control form-control-lg">
 
                                 <x-form.error name="password" />
 
@@ -75,7 +75,7 @@
 
                                 <label>Confirm Password</label>
 
-                                <input type="password" name="password_confirmation" class="form-control form-control-lg">
+                                <input type="password" name="password_confirmation" autocomplete="new-password" class="form-control form-control-lg">
 
                             </div>
 

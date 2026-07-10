@@ -30,8 +30,19 @@ class Wing extends Model
     protected static function booted()
     {
         static::deleting(function ($wing) {
-            // When a wing is deleted, soft-delete its flats
-            $wing->flats()->delete();
+            if ($wing->isForceDeleting()) {
+                $wing->flats()->withTrashed()->get()->each->forceDelete();
+            } else {
+                $wing->flats()->get()->each->delete();
+            }
+        });
+
+        static::restoring(function ($wing) {
+            $deletedAt = $wing->deleted_at;
+            if ($deletedAt) {
+                $threshold = $deletedAt->copy()->subSeconds(5);
+                $wing->flats()->onlyTrashed()->where('deleted_at', '>=', $threshold)->get()->each->restore();
+            }
         });
     }
 

@@ -56,7 +56,10 @@ class UserPolicy
      */
     public function restore(User $user, User $model): bool
     {
-        return false;
+        return $user->isAdmin()
+            && $user->society_id === $model->society_id
+            && $model->role->name !== 'super_admin'
+            && $user->id !== $model->id;
     }
 
     /**

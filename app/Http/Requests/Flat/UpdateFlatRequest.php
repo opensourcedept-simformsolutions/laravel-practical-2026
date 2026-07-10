@@ -44,7 +44,7 @@ class UpdateFlatRequest extends FormRequest
                 'required',
                 'integer',
                 'min:1',
-                "max:{$flatMax}",
+                'max:99999',
                 Rule::unique('flats')
                     ->where(function ($query) {
                         return $query->where('wing_id', request('wing_id'))->where('floor', request('floor'));

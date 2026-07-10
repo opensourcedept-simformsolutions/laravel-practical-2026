@@ -34,7 +34,7 @@ class ResidentPolicy
 
     public function restore(User $user, Resident $resident): bool
     {
-        return false;
+        return $user->isAdmin() && $resident->user->society_id === $user->society_id;
     }
 
     public function forceDelete(User $user, Resident $resident): bool

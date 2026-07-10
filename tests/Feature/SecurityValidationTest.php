@@ -10,6 +10,7 @@ use App\Models\Society;
 use App\Models\User;
 use App\Models\Visitor;
 use App\Models\VisitorLog;
+use App\Models\Wing;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -107,10 +108,26 @@ class SecurityValidationTest extends TestCase
         $societyA = Society::factory()->create();
         $societyB = Society::factory()->create();
 
+        // Create Wing A in Society A
+        $wingA = Wing::create([
+            'society_id' => $societyA->id,
+            'name' => 'A',
+            'total_floors' => 5,
+            'flats_per_floor' => 200,
+        ]);
+
+        // Create Wing A in Society B
+        $wingB = Wing::create([
+            'society_id' => $societyB->id,
+            'name' => 'A',
+            'total_floors' => 5,
+            'flats_per_floor' => 200,
+        ]);
+
         // Create Flat in Society A
         Flat::create([
             'society_id' => $societyA->id,
-            'wing' => 'A',
+            'wing_id' => $wingA->id,
             'floor' => 1,
             'flat_number' => '101',
         ]);
@@ -118,7 +135,7 @@ class SecurityValidationTest extends TestCase
         // Trying to create the same flat in Society A should fail
         $responseFail = $this->actingAs($superAdmin)->post(route('flats.store'), [
             'society_id' => $societyA->id,
-            'wing' => 'A',
+            'wing_id' => $wingA->id,
             'floor' => 1,
             'flat_number' => '101',
         ]);
@@ -128,7 +145,7 @@ class SecurityValidationTest extends TestCase
         // Creating the same flat in Society B should succeed
         $responseSuccess = $this->actingAs($superAdmin)->post(route('flats.store'), [
             'society_id' => $societyB->id,
-            'wing' => 'a', // Testing lowercase conversion
+            'wing_id' => $wingB->id,
             'floor' => 1,
             'flat_number' => '101',
         ]);
@@ -136,7 +153,7 @@ class SecurityValidationTest extends TestCase
         $responseSuccess->assertRedirect(route('flats.index'));
         $this->assertDatabaseHas('flats', [
             'society_id' => $societyB->id,
-            'wing' => 'A', // Uppercased by attribute mutator
+            'wing_id' => $wingB->id,
             'floor' => 1,
             'flat_number' => '101',
         ]);

@@ -71,7 +71,7 @@
                                     Password
                                 </label>
 
-                                <input type="password" name="password"
+                                <input type="password" name="password" autocomplete="off"
                                     class="form-control form-control-lg @error('password') is-invalid @enderror">
 
                                 <x-form.error name="password" />

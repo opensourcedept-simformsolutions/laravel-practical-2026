@@ -385,13 +385,13 @@ class FlatController extends Controller
                     echo '<tbody>';
                     foreach ($query->cursor() as $flat) {
                         echo '<tr>';
-                        echo '<td>' . $flat->id . '</td>';
+                        echo '<td>'.$flat->id.'</td>';
                         if ($user->isSuperAdmin()) {
-                            echo '<td>' . e($flat->society_name) . '</td>';
+                            echo '<td>'.e($flat->society_name).'</td>';
                         }
-                        echo '<td>' . e($flat->wing) . '</td>';
-                        echo '<td>' . e($flat->floor) . '</td>';
-                        echo '<td>' . e($flat->flat_number) . '</td>';
+                        echo '<td>'.e($flat->wing).'</td>';
+                        echo '<td>'.e($flat->floor).'</td>';
+                        echo '<td>'.e($flat->flat_number).'</td>';
                         echo '</tr>';
                     }
                     echo '</tbody>';

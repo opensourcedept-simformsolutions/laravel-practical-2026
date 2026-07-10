@@ -75,7 +75,7 @@
                     <!-- New Password -->
                     <div class="col-md-6">
                         <label for="password" class="form-label">New Password</label>
-                        <input type="password" id="password" name="password"
+                        <input type="password" id="password" name="password" autocomplete="off"
                             class="form-control @error('password') is-invalid @enderror"
                             placeholder="Leave empty to keep current password">
                         <x-form.error name="password" />
@@ -84,7 +84,7 @@
                     <!-- Confirm Password -->
                     <div class="col-md-6">
                         <label for="password_confirmation" class="form-label">Confirm New Password</label>
-                        <input type="password" id="password_confirmation" name="password_confirmation" class="form-control">
+                        <input type="password" id="password_confirmation" name="password_confirmation" autocomplete="off" class="form-control">
                     </div>
 
                 </div>

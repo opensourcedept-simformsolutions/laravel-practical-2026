@@ -27,7 +27,7 @@
                                 @if($type === 'App\Notifications\VisitorStatusNotification')
                                     Visitor Entry Request: {{ ucwords(str_replace('_', ' ', $visitorLog ? $visitorLog->status : $data['status'])) }}
                                 @else
-                                    System Notification
+                                    {{ $notification->title ?? 'System Notification' }}
                                 @endif
                                 @if($isUnread)
                                     <span class="notification-dot"></span>
@@ -56,6 +56,8 @@
                                 @endif
                             @elseif($type === 'App\Notifications\ResidentWelcomeNotification')
                                 Welcome to SocietyMS! Your resident account has been set up successfully.
+                            @elseif($notification->message)
+                                {!! e($notification->message) !!}
                             @else
                                 {{ json_encode($data) }}
                             @endif

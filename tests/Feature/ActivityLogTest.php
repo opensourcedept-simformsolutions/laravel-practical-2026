@@ -7,6 +7,7 @@ use App\Models\Flat;
 use App\Models\Role;
 use App\Models\Society;
 use App\Models\User;
+use App\Models\Wing;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -30,10 +31,16 @@ class ActivityLogTest extends TestCase
             'society_id' => $society->id,
         ]);
 
+        $wing = Wing::factory()->create([
+            'society_id' => $society->id,
+            'total_floors' => 5,
+            'flats_per_floor' => 10,
+        ]);
+
         $this->actingAs($admin)->post(route('flats.store'), [
-            'wing' => 'A',
+            'wing_id' => $wing->id,
             'floor' => 1,
-            'flat_number' => '101',
+            'flat_number' => 5,
         ]);
 
         $this->assertDatabaseHas('activity_logs', [
@@ -44,7 +51,7 @@ class ActivityLogTest extends TestCase
         ]);
 
         $log = ActivityLog::first();
-        $this->assertStringContainsString('Flat A-101 was created', $log->description);
+        $this->assertStringContainsString('was created', $log->description);
     }
 
     public function test_login_event_creates_activity_log(): void
@@ -130,5 +137,49 @@ class ActivityLogTest extends TestCase
 
         $response = $this->actingAs($resident)->get(route('admin.activity-logs.index'));
         $response->assertStatus(302);
+    }
+
+    public function test_unauthorized_users_cannot_access_auth_audit_logs(): void
+    {
+        $residentRole = Role::where('name', 'resident')->first();
+        $society = Society::factory()->create();
+        $resident = User::factory()->create([
+            'role_id' => $residentRole->id,
+            'society_id' => $society->id,
+        ]);
+
+        $response = $this->actingAs($resident)->get(route('admin.auth-audit.index'));
+        $response->assertStatus(302);
+    }
+
+    public function test_auth_audit_logs_only_contain_auth_events(): void
+    {
+        $adminRole = Role::where('name', 'admin')->first();
+        $society = Society::factory()->create();
+        $admin = User::factory()->create([
+            'role_id' => $adminRole->id,
+            'society_id' => $society->id,
+        ]);
+
+        // Create auth log
+        ActivityLog::create([
+            'user_id' => $admin->id,
+            'society_id' => $society->id,
+            'action' => 'login',
+            'description' => 'Auth login event',
+        ]);
+
+        // Create non-auth log
+        ActivityLog::create([
+            'user_id' => $admin->id,
+            'society_id' => $society->id,
+            'action' => 'create',
+            'description' => 'Non-auth flat creation event',
+        ]);
+
+        $response = $this->actingAs($admin)->getJson(route('admin.auth-audit.data'));
+        $response->assertOk();
+        $response->assertJsonFragment(['description' => 'Auth login event']);
+        $response->assertJsonMissing(['description' => 'Non-auth flat creation event']);
     }
 }

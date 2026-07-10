@@ -47,7 +47,109 @@ class StoreSocietyRequest extends FormRequest
                 'required',
                 'regex:/^[1-9][0-9]{5}$/',
             ],
+
+            'wings' => [
+                'nullable',
+                'array',
+            ],
+
+            'wings.*.name' => [
+                'required',
+                'string',
+                'distinct',
+                'max:50',
+            ],
+
+            'wings.*.total_floors' => [
+                'required',
+                'integer',
+                'min:1',
+                'max:200',
+            ],
+
+            'wings.*.flats_per_floor' => [
+                'required',
+                'integer',
+                'min:1',
+                'max:50',
+            ],
+
+            'residents' => [
+                'nullable',
+                'array',
+            ],
+
+            'residents.*.name' => [
+                'required',
+                'string',
+                'min:2',
+                'max:100',
+                'regex:/^[A-Za-z\s\.\'-]+$/u',
+            ],
+
+            'residents.*.email' => [
+                'required',
+                'email',
+                'distinct',
+                'unique:users,email',
+            ],
+
+            'residents.*.phone' => [
+                'required',
+                'string',
+                'min:7',
+                'max:20',
+                'regex:/^[0-9+\-\s()]+$/',
+            ],
+
+            'residents.*.wing' => [
+                'required',
+                'string',
+            ],
+
+            'residents.*.flat_number' => [
+                'required',
+                'integer',
+            ],
+
+            'residents.*.resident_type' => [
+                'required',
+                'in:owner,tenant',
+            ],
         ];
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $wings = $this->input('wings', []);
+            $residents = $this->input('residents', []);
+
+            $wingsMap = [];
+            foreach ($wings as $wing) {
+                if (isset($wing['name'])) {
+                    $wingsMap[$wing['name']] = $wing;
+                }
+            }
+
+            foreach ($residents as $index => $resident) {
+                $wingName = $resident['wing'] ?? '';
+                $flatNumber = $resident['flat_number'] ?? '';
+
+                if (! isset($wingsMap[$wingName])) {
+                    $validator->errors()->add("residents.{$index}.wing", "Wing '{$wingName}' does not exist in the configured wings.");
+
+                    continue;
+                }
+
+                $wing = $wingsMap[$wingName];
+                $floor = (int) ($flatNumber / 100);
+
+                if ($floor < 1 || $floor > $wing['total_floors']) {
+                    $validator->errors()->add("residents.{$index}.flat_number", "Flat '{$flatNumber}' is on floor {$floor}, which is invalid for Wing '{$wingName}' (configured with {$wing['total_floors']} floors).");
+                }
+            }
+        });
     }
 
     public function messages(): array

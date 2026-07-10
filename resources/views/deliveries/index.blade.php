@@ -90,6 +90,17 @@
             </div>
         </div>
         <div class="card-body">
+            <!-- Active Filters Badges -->
+            <div id="active-filters-container" class="align-items-center flex-wrap gap-2 mb-3 p-2 bg-light rounded-3"
+                style="display: none !important;">
+                <span class="text-muted small fw-semibold ms-1">Active Filters:</span>
+                <div id="active-filters-list" class="d-flex flex-wrap gap-2 align-items-center"></div>
+                <button type="button" id="clear-all-filters"
+                    class="btn btn-link btn-sm text-decoration-none p-0 ms-2 fw-semibold text-danger">
+                    Clear All
+                </button>
+            </div>
+
             <div class="table-responsive">
                 <table id="deliveries-table" class='table table-hover table-striped align-middle mb-0'>
                     <thead>
@@ -207,6 +218,7 @@
 
             $('#apply-filters').click(function() {
                 rd();
+                updateFilterBadges();
                 $('#filters-dropdown-panel').addClass('d-none');
                 $('#filters-toggle-btn').attr('aria-expanded', 'false');
             });
@@ -215,6 +227,7 @@
                 let societyId = $(this).val();
                 if (!societyId) {
                     $('#flat-filter').html('<option value="">All Flats</option>').trigger('change');
+                    updateFilterBadges();
                     return;
                 }
 
@@ -228,9 +241,11 @@
                             options += `<option value="${flat.id}">${flat.wing}-${flat.flat_number}</option>`;
                         });
                         $('#flat-filter').html(options).trigger('change');
+                        updateFilterBadges();
                     },
                     error: function() {
                         $('#flat-filter').html('<option value="">Error loading flats</option>').trigger('change');
+                        updateFilterBadges();
                     }
                 });
             });
@@ -240,9 +255,117 @@
                 $('#status-filter').val('active').trigger('change');
                 $('#vendor-filter').val('');
                 rd();
+                updateFilterBadges();
                 $('#filters-dropdown-panel').addClass('d-none');
                 $('#filters-toggle-btn').attr('aria-expanded', 'false');
             });
+
+            function updateFilterBadges() {
+                let list = $('#active-filters-list');
+                list.empty();
+                let count = 0;
+
+                @if (auth()->user()->isSuperAdmin() || auth()->user()->isAdmin())
+                    let softDeleteVal = $('#status-filter').val();
+                    if (softDeleteVal) {
+                        let softDeleteText = $('#status-filter option:selected').text().trim();
+                        list.append(`
+                            <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-1 py-1.5 px-3 rounded-pill">
+                                Filter: ${softDeleteText}
+                                <span class="ms-1 remove-filter-btn text-danger fw-bold" style="cursor: pointer; font-size: 1rem; line-height: 1;" data-filter="soft_delete">&times;</span>
+                            </span>
+                        `);
+                        count++;
+                    }
+                @endif
+
+                @if (auth()->user()->isSuperAdmin())
+                    let societyVal = $('#society-filter').val();
+                    if (societyVal) {
+                        let societyText = $('#society-filter option:selected').text().trim();
+                        list.append(`
+                            <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-1 py-1.5 px-3 rounded-pill">
+                                Society: ${societyText}
+                                <span class="ms-1 remove-filter-btn text-danger fw-bold" style="cursor: pointer; font-size: 1rem; line-height: 1;" data-filter="society">&times;</span>
+                            </span>
+                        `);
+                        count++;
+                    }
+                @endif
+
+                let deliveryStatusVal = $('#delivery-status-filter').val();
+                if (deliveryStatusVal) {
+                    let deliveryStatusText = $('#delivery-status-filter option:selected').text().trim();
+                    list.append(`
+                        <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-1 py-1.5 px-3 rounded-pill">
+                            Status: ${deliveryStatusText}
+                            <span class="ms-1 remove-filter-btn text-danger fw-bold" style="cursor: pointer; font-size: 1rem; line-height: 1;" data-filter="delivery_status">&times;</span>
+                        </span>
+                    `);
+                    count++;
+                }
+
+                let vendorVal = $('#vendor-filter').val().trim();
+                if (vendorVal) {
+                    list.append(`
+                        <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-1 py-1.5 px-3 rounded-pill">
+                            Vendor: ${vendorVal}
+                            <span class="ms-1 remove-filter-btn text-danger fw-bold" style="cursor: pointer; font-size: 1rem; line-height: 1;" data-filter="vendor">&times;</span>
+                        </span>
+                    `);
+                    count++;
+                }
+
+                @if (!auth()->user()->isResident())
+                    let flatVal = $('#flat-filter').val();
+                    if (flatVal) {
+                        let flatText = $('#flat-filter option:selected').text().trim();
+                        list.append(`
+                            <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-1 py-1.5 px-3 rounded-pill">
+                                Flat: ${flatText}
+                                <span class="ms-1 remove-filter-btn text-danger fw-bold" style="cursor: pointer; font-size: 1rem; line-height: 1;" data-filter="flat">&times;</span>
+                            </span>
+                        `);
+                        count++;
+                    }
+                @endif
+
+                if (count > 0) {
+                    $('#filters-btn-text').text(`Filters (${count})`);
+                    $('#active-filters-container').attr('style', 'display: flex !important;');
+                } else {
+                    $('#filters-btn-text').text('Filters');
+                    $('#active-filters-container').attr('style', 'display: none !important;');
+                }
+            }
+
+            $(document).on('click', '.remove-filter-btn', function() {
+                let filterType = $(this).data('filter');
+                if (filterType === 'soft_delete') {
+                    $('#status-filter').val('all').trigger('change');
+                } else if (filterType === 'society') {
+                    $('#society-filter').val('').trigger('change');
+                } else if (filterType === 'delivery_status') {
+                    $('#delivery-status-filter').val('').trigger('change');
+                } else if (filterType === 'vendor') {
+                    $('#vendor-filter').val('');
+                } else if (filterType === 'flat') {
+                    $('#flat-filter').val('').trigger('change');
+                }
+                rd();
+                updateFilterBadges();
+            });
+
+            $('#clear-all-filters').on('click', function() {
+                $('#society-filter, #delivery-status-filter, #flat-filter').val('').trigger('change');
+                $('#status-filter').val('active').trigger('change');
+                $('#vendor-filter').val('');
+                rd();
+                updateFilterBadges();
+            });
+
+            // Run initial update for badges
+            updateFilterBadges();
         });
     </script>
 @endpush

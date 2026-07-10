@@ -91,6 +91,17 @@
         </div>
 
         <div class="card-body">
+            <!-- Active Filters Badges -->
+            <div id="active-filters-container" class="align-items-center flex-wrap gap-2 mb-3 p-2 bg-light rounded-3"
+                style="display: none !important;">
+                <span class="text-muted small fw-semibold ms-1">Active Filters:</span>
+                <div id="active-filters-list" class="d-flex flex-wrap gap-2 align-items-center"></div>
+                <button type="button" id="clear-all-filters"
+                    class="btn btn-link btn-sm text-decoration-none p-0 ms-2 fw-semibold text-danger">
+                    Clear All
+                </button>
+            </div>
+
             <div class="table-responsive">
                 <table id="flatsTable" class="table table-hover table-striped align-middle w-100 app-datatable">
                     <thead class="table-light">
@@ -225,6 +236,7 @@
 
         $('#apply-filters').click(function() {
             rd();
+            updateFilterBadges();
             $('#filters-dropdown-panel').addClass('d-none');
             $('#filters-toggle-btn').attr('aria-expanded', 'false');
         });
@@ -247,9 +259,11 @@
                         $wingSelect.append(`<option value="${wing.id}" data-total-floors="${wing.total_floors}">${wing.name}</option>`);
                     });
                     $wingSelect.trigger('change.select2');
+                    updateFilterBadges();
                 });
             } else {
                 $wingSelect.trigger('change.select2');
+                updateFilterBadges();
             }
         });
 
@@ -268,14 +282,115 @@
                 });
             }
             $floorSelect.val('').trigger('change.select2');
+            updateFilterBadges();
+        });
+
+        $('#floor_filter').change(function() {
+            updateFilterBadges();
+        });
+
+        $('#status-filter').change(function() {
+            updateFilterBadges();
         });
 
         $('#btnResetFilters').click(function() {
             $('#society_filter, #wing_filter, #floor_filter').val('').trigger('change.select2');
             $('#status-filter').val('active').trigger('change.select2');
             rd();
+            updateFilterBadges();
             $('#filters-dropdown-panel').addClass('d-none');
             $('#filters-toggle-btn').attr('aria-expanded', 'false');
         });
+
+        function updateFilterBadges() {
+            let list = $('#active-filters-list');
+            list.empty();
+            let count = 0;
+
+            @if (auth()->user()->isSuperAdmin())
+                let societyVal = $('#society_filter').val();
+                if (societyVal) {
+                    let societyText = $('#society_filter option:selected').text().trim();
+                    list.append(`
+                        <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-1 py-1.5 px-3 rounded-pill">
+                            Society: ${societyText}
+                            <span class="ms-1 remove-filter-btn text-danger fw-bold" style="cursor: pointer; font-size: 1rem; line-height: 1;" data-filter="society">&times;</span>
+                        </span>
+                    `);
+                    count++;
+                }
+            @endif
+
+            let wingVal = $('#wing_filter').val();
+            if (wingVal) {
+                let wingText = $('#wing_filter option:selected').text().trim();
+                list.append(`
+                    <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-1 py-1.5 px-3 rounded-pill">
+                        Wing: ${wingText}
+                        <span class="ms-1 remove-filter-btn text-danger fw-bold" style="cursor: pointer; font-size: 1rem; line-height: 1;" data-filter="wing">&times;</span>
+                    </span>
+                `);
+                count++;
+            }
+
+            let floorVal = $('#floor_filter').val();
+            if (floorVal) {
+                let floorText = $('#floor_filter option:selected').text().trim();
+                list.append(`
+                    <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-1 py-1.5 px-3 rounded-pill">
+                        Floor: ${floorText}
+                        <span class="ms-1 remove-filter-btn text-danger fw-bold" style="cursor: pointer; font-size: 1rem; line-height: 1;" data-filter="floor">&times;</span>
+                    </span>
+                `);
+                count++;
+            }
+
+            @can('is-admin')
+                let statusVal = $('#status-filter').val();
+                if (statusVal) {
+                    let statusText = $('#status-filter option:selected').text().trim();
+                    list.append(`
+                        <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-1 py-1.5 px-3 rounded-pill">
+                            Status: ${statusText}
+                            <span class="ms-1 remove-filter-btn text-danger fw-bold" style="cursor: pointer; font-size: 1rem; line-height: 1;" data-filter="status">&times;</span>
+                        </span>
+                    `);
+                    count++;
+                }
+            @endcan
+
+            if (count > 0) {
+                $('#filters-btn-text').text(`Filters (${count})`);
+                $('#active-filters-container').attr('style', 'display: flex !important;');
+            } else {
+                $('#filters-btn-text').text('Filters');
+                $('#active-filters-container').attr('style', 'display: none !important;');
+            }
+        }
+
+        $(document).on('click', '.remove-filter-btn', function() {
+            let filterType = $(this).data('filter');
+            if (filterType === 'society') {
+                $('#society_filter').val('').trigger('change.select2');
+            } else if (filterType === 'wing') {
+                $('#wing_filter').val('').trigger('change.select2');
+            } else if (filterType === 'floor') {
+                $('#floor_filter').val('').trigger('change.select2');
+            } else if (filterType === 'status') {
+                $('#status-filter').val('all').trigger('change.select2');
+            }
+            rd();
+            updateFilterBadges();
+        });
+
+        $('#clear-all-filters').on('click', function() {
+            $('#society_filter, #wing_filter, #floor_filter').val('').trigger('change.select2');
+            $('#status-filter').val('active').trigger('change.select2');
+            rd();
+            updateFilterBadges();
+        });
+
+        // Run initial update for badges
+        updateFilterBadges();
     </script>
 @endpush

@@ -6,12 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Society\StoreSocietyRequest;
 use App\Http\Requests\Society\UpdateSocietyRequest;
 use App\Models\Flat;
+use App\Models\Resident;
+use App\Models\Role;
 use App\Models\Society;
+use App\Models\User;
+use App\Models\Wing;
+use App\Notifications\ResidentWelcomeNotification;
 use App\Services\ActivityLogger;
 use App\Services\SocietyDeletionService;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Throwable;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -123,26 +130,114 @@ class SocietyController extends Controller
     {
         $this->authorize('create', Society::class);
 
+        DB::beginTransaction();
         try {
+            $society = Society::create($request->safe()->only(['name', 'address', 'city', 'state', 'pincode']));
 
-            $society = Society::create($request->validated());
+            $createdWings = [];
+            $createdFlats = [];
 
-            ActivityLogger::log('create', $society, "Society {$society->name} was created.");
+            $wingsData = $request->input('wings', []);
+            foreach ($wingsData as $wData) {
+                $wing = Wing::create([
+                    'society_id' => $society->id,
+                    'name' => $wData['name'],
+                    'total_floors' => $wData['total_floors'],
+                    'flats_per_floor' => $wData['flats_per_floor'],
+                ]);
+                $createdWings[$wing->name] = $wing;
+
+                $inserts = [];
+                for ($f = 1; $f <= $wing->total_floors; $f++) {
+                    for ($n = 1; $n <= $wing->flats_per_floor; $n++) {
+                        $flatNumber = ($f * 100) + $n;
+                        $inserts[] = [
+                            'society_id' => $society->id,
+                            'wing_id' => $wing->id,
+                            'wing' => $wing->name,
+                            'floor' => $f,
+                            'flat_number' => $flatNumber,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+                }
+
+                if (! empty($inserts)) {
+                    Flat::insert($inserts);
+                }
+
+                $flats = Flat::where('wing_id', $wing->id)->get();
+                foreach ($flats as $flat) {
+                    $createdFlats["{$wing->name}-{$flat->flat_number}"] = $flat;
+                }
+            }
+
+            $residentsData = $request->input('residents', []);
+            $residentRoleId = Role::where('name', 'resident')->value('id');
+
+            foreach ($residentsData as $rData) {
+                $flatKey = "{$rData['wing']}-{$rData['flat_number']}";
+                $flat = $createdFlats[$flatKey] ?? null;
+
+                if ($flat) {
+                    $user = User::create([
+                        'name' => $rData['name'],
+                        'email' => $rData['email'],
+                        'phone' => $rData['phone'],
+                        'password' => Str::password(32),
+                        'role_id' => $residentRoleId,
+                        'society_id' => $society->id,
+                    ]);
+
+                    Resident::create([
+                        'user_id' => $user->id,
+                        'flat_id' => $flat->id,
+                        'resident_type' => $rData['resident_type'],
+                    ]);
+
+                    try {
+                        $user->notify(new ResidentWelcomeNotification($user));
+                    } catch (Throwable $e) {
+                        Log::error("Failed to notify imported resident user {$user->id} during society creation: ".$e->getMessage());
+                    }
+                }
+            }
+
+            ActivityLogger::log('create', $society, "Society {$society->name} was created via wizard.");
+
+            DB::commit();
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'redirect' => route('societies.index'),
+                    'message' => 'Society, wings, flats, and residents created successfully.',
+                ]);
+            }
 
             return redirect()
                 ->route('societies.index')
                 ->with([
                     'status' => 'success',
-                    'message' => 'Society created successfully.',
+                    'message' => 'Society, wings, flats, and residents created successfully.',
                 ]);
         } catch (Exception $e) {
+            DB::rollBack();
             Log::error($e->getMessage());
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Something went wrong: '.$e->getMessage(),
+                ], 500);
+            }
 
             return back()
                 ->withInput()
                 ->with([
                     'status' => 'error',
-                    'message' => 'Something went wrong.',
+                    'message' => 'Something went wrong: '.$e->getMessage(),
                 ]);
         }
     }
@@ -246,8 +341,8 @@ class SocietyController extends Controller
         $this->authorize('restore', $society);
 
         try {
-
-            $society->restore();
+            $service = app(SocietyDeletionService::class);
+            $service->restore($society);
 
             ActivityLogger::log('restore', $society, "Society {$society->name} was restored.");
 

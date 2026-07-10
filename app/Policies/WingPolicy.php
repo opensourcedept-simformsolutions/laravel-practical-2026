@@ -43,4 +43,9 @@ class WingPolicy
 
         return $user->isAdmin() && $wing->society_id === $user->society_id;
     }
+
+    public function restore(User $user, Wing $wing): bool
+    {
+        return $user->isAdmin() && $wing->society_id === $user->society_id;
+    }
 }
