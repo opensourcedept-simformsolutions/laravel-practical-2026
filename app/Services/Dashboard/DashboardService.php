@@ -6,9 +6,6 @@ use Illuminate\View\View;
 
 class DashboardService
 {
-    /**
-     * Create a new class instance.
-     */
     public function __construct(
         private SuperAdminDashboardService $superAdmin,
         private AdminDashboardService $admin,

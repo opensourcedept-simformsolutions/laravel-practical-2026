@@ -6,9 +6,6 @@ use App\Repositories\Dashboard\SuperAdminDashboardRepository;
 
 class SuperAdminDashboardService
 {
-    /**
-     * Create a new class instance.
-     */
     public function __construct(
         private SuperAdminDashboardRepository $repository
     ) {}

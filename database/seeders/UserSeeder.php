@@ -16,9 +16,6 @@ class UserSeeder extends Seeder
         $adminRole = Role::where('name', 'admin')->firstOrFail();
         $gatekeeperRole = Role::where('name', 'gatekeeper')->firstOrFail();
 
-        /*
-         * Super Admin
-         */
         User::create([
             'name' => 'Super Admin',
             'email' => 'superadmin@societyms.test',
@@ -31,9 +28,6 @@ class UserSeeder extends Seeder
 
         foreach (Society::all() as $society) {
 
-            /*
-             * Society Admin
-             */
             User::create([
                 'name' => "{$society->name} Admin",
                 'email' => "admin{$society->id}@societyms.test",
@@ -44,9 +38,6 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
             ]);
 
-            /*
-             * Gatekeepers
-             */
             foreach (range(1, 2) as $i) {
                 User::create([
                     'name' => fake()->name(),

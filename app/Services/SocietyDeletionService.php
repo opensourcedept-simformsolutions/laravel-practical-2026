@@ -140,16 +140,13 @@ class SocietyDeletionService
                 return;
             }
 
-            // Margin of 5 seconds to handle batch deletion timestamps
             $threshold = $deletedAt->copy()->subSeconds(5);
 
-            // 1. Restore Wings
             Wing::onlyTrashed()
                 ->where('society_id', $society->id)
                 ->where('deleted_at', '>=', $threshold)
                 ->restore();
 
-            // 2. Restore Flats
             $flatIds = Flat::onlyTrashed()
                 ->where('society_id', $society->id)
                 ->where('deleted_at', '>=', $threshold)
@@ -159,7 +156,6 @@ class SocietyDeletionService
                 ->whereIn('id', $flatIds)
                 ->restore();
 
-            // 3. Restore Users (Admins, Gatekeepers, Residents)
             $userIds = User::onlyTrashed()
                 ->where('society_id', $society->id)
                 ->where('deleted_at', '>=', $threshold)
@@ -169,7 +165,6 @@ class SocietyDeletionService
                 ->whereIn('id', $userIds)
                 ->restore();
 
-            // 4. Restore Residents
             $residents = Resident::onlyTrashed()
                 ->whereIn('flat_id', $flatIds)
                 ->whereIn('user_id', $userIds)
@@ -182,19 +177,16 @@ class SocietyDeletionService
                 ->whereIn('id', $residentIds)
                 ->restore();
 
-            // 5. Restore Complaints
             Complaint::onlyTrashed()
                 ->whereIn('user_id', $userIds)
                 ->where('deleted_at', '>=', $threshold)
                 ->restore();
 
-            // 6. Restore Deliveries
             Delivery::onlyTrashed()
                 ->whereIn('resident_id', $residentIds)
                 ->where('deleted_at', '>=', $threshold)
                 ->restore();
 
-            // 7. Restore Visitor Logs & Visitors
             $visitorLogs = VisitorLog::onlyTrashed()
                 ->whereIn('flat_id', $flatIds)
                 ->where('deleted_at', '>=', $threshold)
@@ -212,7 +204,6 @@ class SocietyDeletionService
                 ->where('deleted_at', '>=', $threshold)
                 ->restore();
 
-            // Finally restore the society itself
             $society->restore();
         });
     }

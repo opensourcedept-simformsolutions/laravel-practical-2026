@@ -6,9 +6,6 @@ use App\Repositories\Dashboard\GatekeeperDashboardRepository;
 
 class GatekeeperDashboardService
 {
-    /**
-     * Create a new class instance.
-     */
     public function __construct(
         private GatekeeperDashboardRepository $repository
     ) {}

@@ -244,7 +244,7 @@ class VisitorLogController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Something went wrong while loading visitor logs.',
+                    'message' => 'Something went wrong while loading visitor logs. Please try again.',
                 ], 500);
             }
 
@@ -306,7 +306,7 @@ class VisitorLogController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Something Went Wrong While Mark Entry',
+                'message' => 'Something went wrong while marking entry. Please try again.',
             ], 500);
         }
     }
@@ -355,7 +355,7 @@ class VisitorLogController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Something Went Wrong While Mark Exit',
+                'message' => 'Something went wrong while marking exit. Please try again.',
             ], 500);
         }
     }
@@ -438,7 +438,7 @@ class VisitorLogController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Something went wrong while loading visitor logs.',
+                    'message' => 'Something went wrong while loading visitor logs. Please try again.',
                 ], 500);
             }
 

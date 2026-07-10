@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Session;
 use Symfony\Component\HttpFoundation\Response;
 
 class RoleMiddleware
@@ -22,11 +21,10 @@ class RoleMiddleware
         }
 
         if (! in_array(auth()->user()->role->name, $roles)) {
-            Session::flash('message', 'You do not have access for this page.');
-            Session::flash('status', 'error');
-
-            return redirect()->back();
-
+            return redirect()->back()->with([
+                'message' => 'You do not have access for this page.',
+                'status' => 'error',
+            ]);
         }
 
         return $next($request);

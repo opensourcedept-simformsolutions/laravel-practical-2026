@@ -11,7 +11,6 @@ use App\Models\Wing;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Session;
 use Yajra\DataTables\Facades\DataTables;
 
 class WingController extends Controller
@@ -56,7 +55,7 @@ class WingController extends Controller
         } catch (\Throwable $e) {
             Log::error('Wing listing error: '.$e->getMessage(), ['exception' => $e]);
 
-            return redirect()->back()->with(['message' => 'Something went wrong.', 'status' => 'error']);
+            return redirect()->back()->with(['message' => 'Something went wrong. Please try again.', 'status' => 'error']);
         }
     }
 
@@ -112,15 +111,15 @@ class WingController extends Controller
 
             DB::commit();
 
-            Session::flash('message', 'Wing created and flats generated.');
-            Session::flash('status', 'success');
-
-            return redirect()->route('wings.index');
+            return redirect()->route('wings.index')->with([
+                'message' => 'Wing created and flats generated.',
+                'status' => 'success',
+            ]);
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('Wing store error: '.$e->getMessage(), ['exception' => $e]);
 
-            return redirect()->back()->withInput()->with(['message' => 'Something went wrong.', 'status' => 'error']);
+            return redirect()->back()->withInput()->with(['message' => 'Something went wrong. Please try again.', 'status' => 'error']);
         }
     }
 
@@ -144,10 +143,8 @@ class WingController extends Controller
 
             $wing->update($data);
 
-            // Update wing name on all associated flats for backward-compatibility
             Flat::where('wing_id', $wing->id)->update(['wing' => $wing->name]);
 
-            // synchronize flats: create missing, prevent deletion if related records exist
             $desired = [];
             for ($f = 1; $f <= $wing->total_floors; $f++) {
                 for ($n = 1; $n <= $wing->flats_per_floor; $n++) {
@@ -165,7 +162,6 @@ class WingController extends Controller
                 }
             }
 
-            // find existing flats that are outside desired range
             $toDelete = Flat::where('wing_id', $wing->id)
                 ->where(function ($q) use ($wing) {
                     $q->where('floor', '>', $wing->total_floors)
@@ -173,7 +169,7 @@ class WingController extends Controller
                 })->get();
 
             foreach ($toDelete as $flat) {
-                // prevent deletion if residents or deliveries exist
+
                 if ($flat->residents()->exists() || $flat->deliveries()->exists() || $flat->visitorLogs()->exists()) {
                     DB::rollBack();
 
@@ -185,15 +181,15 @@ class WingController extends Controller
 
             DB::commit();
 
-            Session::flash('message', 'Wing updated and flats synchronized.');
-            Session::flash('status', 'success');
-
-            return redirect()->route('wings.index');
+            return redirect()->route('wings.index')->with([
+                'message' => 'Wing updated and flats synchronized.',
+                'status' => 'success',
+            ]);
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('Wing update error: '.$e->getMessage(), ['exception' => $e]);
 
-            return redirect()->back()->withInput()->with(['message' => 'Something went wrong.', 'status' => 'error']);
+            return redirect()->back()->withInput()->with(['message' => 'Something went wrong. Please try again.', 'status' => 'error']);
         }
     }
 
@@ -202,7 +198,7 @@ class WingController extends Controller
         $this->authorize('delete', $wing);
 
         try {
-            // prevent deletion if any flats have related records
+
             $problem = Flat::where('wing_id', $wing->id)
                 ->where(function ($query) {
                     $query->whereHas('residents')

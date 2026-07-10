@@ -12,7 +12,6 @@ use App\Services\ActivityLogger;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Session;
 use Yajra\DataTables\Facades\DataTables;
 
 class UserController extends Controller
@@ -191,7 +190,7 @@ class UserController extends Controller
         } catch (Exception $e) {
             Log::error('User create page error: '.$e->getMessage(), ['exception' => $e]);
 
-            return redirect()->back()->with(['message' => 'Something went wrong.', 'status' => 'error']);
+            return redirect()->back()->with(['message' => 'Something went wrong. Please try again.', 'status' => 'error']);
         }
     }
 
@@ -210,17 +209,17 @@ class UserController extends Controller
 
             ActivityLogger::log('create', $user, "User {$user->name} (".($user->role?->name ?? 'unknown').') was created.');
 
-            Session::flash('message', 'User created successfully.');
-            Session::flash('status', 'success');
-
-            return redirect()->route('admin.users.index');
+            return redirect()->route('admin.users.index')->with([
+                'message' => 'User created successfully.',
+                'status' => 'success',
+            ]);
         } catch (Exception $e) {
             Log::error('User store error: '.$e->getMessage(), ['exception' => $e]);
 
-            Session::flash('message', 'Something went wrong.');
-            Session::flash('status', 'error');
-
-            return redirect()->back()->withInput();
+            return redirect()->back()->withInput()->with([
+                'message' => 'Something went wrong. Please try again.',
+                'status' => 'error',
+            ]);
         }
     }
 
@@ -242,7 +241,7 @@ class UserController extends Controller
         } catch (Exception $e) {
             Log::error('User edit page error: '.$e->getMessage(), ['exception' => $e]);
 
-            return redirect()->back()->with(['message' => 'Something went wrong.', 'status' => 'error']);
+            return redirect()->back()->with(['message' => 'Something went wrong. Please try again.', 'status' => 'error']);
         }
     }
 
@@ -265,17 +264,17 @@ class UserController extends Controller
 
             ActivityLogger::log('update', $user, "User {$user->name} was updated.");
 
-            Session::flash('message', 'User updated successfully.');
-            Session::flash('status', 'success');
-
-            return redirect()->route('admin.users.index');
+            return redirect()->route('admin.users.index')->with([
+                'message' => 'User updated successfully.',
+                'status' => 'success',
+            ]);
         } catch (Exception $e) {
             Log::error('User update error: '.$e->getMessage(), ['exception' => $e]);
 
-            Session::flash('message', 'Something went wrong.');
-            Session::flash('status', 'error');
-
-            return redirect()->back()->withInput();
+            return redirect()->back()->withInput()->with([
+                'message' => 'Something went wrong. Please try again.',
+                'status' => 'error',
+            ]);
         }
     }
 
@@ -294,24 +293,24 @@ class UserController extends Controller
                 ]);
             }
 
-            Session::flash('message', 'User deleted successfully.');
-            Session::flash('status', 'success');
-
-            return redirect()->route('admin.users.index');
+            return redirect()->route('admin.users.index')->with([
+                'message' => 'User deleted successfully.',
+                'status' => 'success',
+            ]);
         } catch (Exception $e) {
             Log::error('User delete error: '.$e->getMessage(), ['exception' => $e]);
 
             if (request()->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to delete user.',
+                    'message' => 'Failed to delete user. Please try again.',
                 ], 500);
             }
 
-            Session::flash('message', 'Something went wrong.');
-            Session::flash('status', 'error');
-
-            return redirect()->back();
+            return redirect()->back()->with([
+                'message' => 'Something went wrong. Please try again.',
+                'status' => 'error',
+            ]);
         }
     }
 

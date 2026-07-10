@@ -5,21 +5,8 @@ namespace App\Services;
 use App\Models\Delivery;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Handle delivery-related notification and error logging.
- *
- * Currently acts as a notification stub by writing delivery
- * events and failures to the delivery log channel.
- */
 class DeliveryNotificationService
 {
-    /**
-     * Log a delivery event.
-     *
-     * @param  Delivery  $delivery  The delivery associated with the event.
-     * @param  string  $event  The event description.
-     * @param  array<string, mixed>  $context  Additional event context.
-     */
     public function notify(Delivery $delivery, string $event, array $context = []): void
     {
         Log::channel('delivery')->info("Delivery notification stub: {$event}",
@@ -35,13 +22,6 @@ class DeliveryNotificationService
         );
     }
 
-    /**
-     * Log a failed delivery operation.
-     *
-     * @param  string  $action  The action being performed.
-     * @param  \Throwable  $exception  The exception that occurred.
-     * @param  array<string, mixed>  $context  Additional failure context.
-     */
     public function failed(string $action, \Throwable $exception, array $context = []): void
     {
         Log::channel('delivery')->error(

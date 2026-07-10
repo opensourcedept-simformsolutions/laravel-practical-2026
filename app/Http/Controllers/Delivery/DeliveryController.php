@@ -13,39 +13,16 @@ use App\Services\ActivityLogger;
 use App\Services\DeliveryNotificationService;
 use App\Traits\AppliesDataTableFilters;
 use Exception;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Yajra\DataTables\Facades\DataTables;
 
-/**
- * Manage delivery operations including CRUD actions,
- * reporting, exports, and delivery status updates.
- */
 class DeliveryController extends Controller
 {
     use AppliesDataTableFilters;
 
-    /**
-     * Create a new controller instance.
-     */
     public function __construct(private DeliveryNotificationService $notificationService) {}
 
-    /**
-     * Return delivery data for DataTables listing.
-     *
-     * Applies role-based filtering:
-     * - Super Admin: all deliveries
-     * - Society Admin/Gatekeeper: deliveries within their society
-     * - Resident: deliveries for their flat only
-     *
-     * @return JsonResponse
-     */
     public function data(Request $request)
     {
         try {
@@ -157,13 +134,6 @@ class DeliveryController extends Controller
         }
     }
 
-    /**
-     * Return filtered delivery report data for DataTables.
-     *
-     * Supports filtering by status, flat, vendor, and date range.
-     *
-     * @return JsonResponse
-     */
     public function reportData(Request $request)
     {
         try {
@@ -217,11 +187,6 @@ class DeliveryController extends Controller
         }
     }
 
-    /**
-     * Export filtered delivery report as CSV.
-     *
-     * @return StreamedResponse
-     */
     public function export(Request $request)
     {
         try {
@@ -289,11 +254,6 @@ class DeliveryController extends Controller
         }
     }
 
-    /**
-     * Display delivery reporting filters and report page.
-     *
-     * @return View
-     */
     public function report()
     {
         $user = auth()->user();
@@ -334,11 +294,6 @@ class DeliveryController extends Controller
         ));
     }
 
-    /**
-     * Display the delivery listing page.
-     *
-     * @return View
-     */
     public function index()
     {
         $this->authorize('viewAny', Delivery::class);
@@ -359,11 +314,6 @@ class DeliveryController extends Controller
         return view('deliveries.index', compact('flats'));
     }
 
-    /**
-     * Show the delivery creation form.
-     *
-     * @return View
-     */
     public function create()
     {
         $this->authorize('create', Delivery::class);
@@ -371,14 +321,6 @@ class DeliveryController extends Controller
         return view('deliveries.create', ['residentOptions' => $this->getResidentOptions()]);
     }
 
-    /**
-     * Store a newly received delivery.
-     *
-     * Creates a delivery record with RECEIVED status and
-     * notifies the delivery notification service.
-     *
-     * @return RedirectResponse
-     */
     public function store(StoreDeliveryRequest $request)
     {
         $this->authorize('create', Delivery::class);
@@ -415,11 +357,6 @@ class DeliveryController extends Controller
         }
     }
 
-    /**
-     * Display a delivery record.
-     *
-     * @return View
-     */
     public function show(Delivery $delivery)
     {
         $this->authorize('view', $delivery);
@@ -429,13 +366,6 @@ class DeliveryController extends Controller
         return view('deliveries.show', ['delivery' => $delivery]);
     }
 
-    /**
-     * Mark a delivery as delivered.
-     *
-     * Updates status and delivery timestamp.
-     *
-     * @return RedirectResponse
-     */
     public function markDelivered(Delivery $delivery)
     {
         $this->authorize('markDelivered', $delivery);
@@ -467,11 +397,6 @@ class DeliveryController extends Controller
         }
     }
 
-    /**
-     * Show the delivery edit form.
-     *
-     * @return View
-     */
     public function edit(Delivery $delivery)
     {
         $this->authorize('update', $delivery);
@@ -482,11 +407,6 @@ class DeliveryController extends Controller
         ]);
     }
 
-    /**
-     * Update an existing delivery record.
-     *
-     * @return RedirectResponse
-     */
     public function update(UpdateDeliveryRequest $request, Delivery $delivery)
     {
         $this->authorize('update', $delivery);
@@ -543,11 +463,6 @@ class DeliveryController extends Controller
         }
     }
 
-    /**
-     * Delete a delivery record.
-     *
-     * @return JsonResponse
-     */
     public function destroy(Delivery $delivery)
     {
         $this->authorize('delete', $delivery);
@@ -571,11 +486,6 @@ class DeliveryController extends Controller
         }
     }
 
-    /**
-     * Restores soft deleted delivery record.
-     *
-     * @return RedirectResponse
-     */
     public function restore(Delivery $delivery)
     {
         $this->authorize('restore', $delivery);
@@ -601,14 +511,6 @@ class DeliveryController extends Controller
         }
     }
 
-    /**
-     * Get resident dropdown options available to the current user.
-     *
-     * All Role are restricted by society unless the current
-     * user is a super administrator.
-     *
-     * @return Collection<int, string>
-     */
     private function getResidentOptions()
     {
         $user = auth()->user();
@@ -628,14 +530,6 @@ class DeliveryController extends Controller
             });
     }
 
-    /**
-     * Build the base query used by report and export features.
-     *
-     * Applies role-based access restrictions and optional
-     * report filters from the request.
-     *
-     * @return Builder
-     */
     private function getReportQuery(Request $request)
     {
         $query = Delivery::query()

@@ -62,7 +62,7 @@ class ComplaintController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with(['message' => 'Something went wrong while submitting the complaint', 'status' => 'error']);
+                ->with(['message' => 'Something went wrong while submitting the complaint. Please try again.', 'status' => 'error']);
         }
     }
 
@@ -260,7 +260,7 @@ class ComplaintController extends Controller
             return redirect()
                 ->back()
                 ->with([
-                    'message' => 'Something went wrong while loading complaints.',
+                    'message' => 'Something went wrong while loading complaints. Please try again.',
                     'status' => 'error',
                 ]);
         }

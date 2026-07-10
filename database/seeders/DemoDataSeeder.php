@@ -36,7 +36,6 @@ class DemoDataSeeder extends Seeder
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        // Roles
         $roles = [
             'super_admin' => Role::create(['name' => 'super_admin']),
             'admin' => Role::create(['name' => 'admin']),
@@ -44,7 +43,6 @@ class DemoDataSeeder extends Seeder
             'gatekeeper' => Role::create(['name' => 'gatekeeper']),
         ];
 
-        // Admin users (fixed small count)
         $superAdmin = User::create([
             'name' => 'Super Admin',
             'email' => 'superadmin@example.com',
@@ -54,7 +52,6 @@ class DemoDataSeeder extends Seeder
             'society_id' => null,
         ]);
 
-        // Society
         $societies = [];
 
         for ($s = 1; $s <= 3; $s++) {
@@ -81,7 +78,6 @@ class DemoDataSeeder extends Seeder
             ]);
             $this->command->info("✔ Admin created for Society {$society->id}");
 
-            // Gatekeeper
             $gatekeeper = User::create([
                 'name' => "Gatekeeper {$society->id}",
                 'email' => "gate{$society->id}@example.com",
@@ -92,7 +88,6 @@ class DemoDataSeeder extends Seeder
             ]);
             $this->command->info("✔ Gate Keeper created for Society {$society->id}");
 
-            // Flats
             $flats = [];
 
             $wings = ['A', 'B', 'C', 'D'];
@@ -115,7 +110,6 @@ class DemoDataSeeder extends Seeder
             }
             $this->command->info("✔ Flats created for Society {$society->id}");
 
-            // Residents Users
             $residentUsers = [];
 
             for ($i = 1; $i <= 40; $i++) {
@@ -129,7 +123,6 @@ class DemoDataSeeder extends Seeder
                 ]);
             }
 
-            // Residents mapping (40)
             $residents = [];
 
             foreach ($residentUsers as $i => $user) {
@@ -141,7 +134,6 @@ class DemoDataSeeder extends Seeder
             }
             $this->command->info("✔ Residents created for Society {$society->id}");
 
-            // Visitors (40)
             $visitors = [];
 
             for ($i = 1; $i <= 40; $i++) {
@@ -153,7 +145,6 @@ class DemoDataSeeder extends Seeder
             }
             $this->command->info("✔ Visitors created for Society {$society->id}");
 
-            // Visitor Logs (100)
             for ($i = 0; $i < 100; $i++) {
 
                 $entryTime = Carbon::instance(
@@ -190,7 +181,6 @@ class DemoDataSeeder extends Seeder
             }
             $this->command->info("✔ Visitor Logs done for Society {$society->id}");
 
-            // Deliveries (40)
             for ($i = 0; $i < 40; $i++) {
 
                 $receivedAt = fake()->dateTimeBetween($today->copy()->subDays(30), $today);
@@ -216,7 +206,6 @@ class DemoDataSeeder extends Seeder
                 ]);
             }
 
-            // Complaints (40)
             $categories = [
                 'security',
                 'cleaning',

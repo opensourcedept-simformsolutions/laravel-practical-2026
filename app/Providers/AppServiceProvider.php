@@ -19,10 +19,7 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    public function register(): void
-    {
-        //
-    }
+    public function register(): void {}
 
     public function boot(): void
     {
@@ -46,7 +43,6 @@ class AppServiceProvider extends ServiceProvider
             return $user->isResident();
         });
 
-        // register Wing policy
         Gate::policy(Wing::class, WingPolicy::class);
 
         Event::listen(VisitorEntered::class, SendVisitorEntryMail::class);

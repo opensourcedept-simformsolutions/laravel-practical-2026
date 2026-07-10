@@ -18,22 +18,10 @@ class ResidentWelcomeNotification extends Notification implements ShouldQueue
 
     public $tries = 3;
 
-    // here backoff is used to provide a wait between all 3 attempts 1,5,10 minutes respectively
     public $backoff = [60];
 
-    /**
-     * Create a new notification instance.
-     */
-    public function __construct(public User $resident)
-    {
-        //
-    }
+    public function __construct(public User $resident) {}
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
     public function via(object $notifiable): array
     {
         return [CustomDatabaseChannel::class, 'mail'];
@@ -49,9 +37,6 @@ class ResidentWelcomeNotification extends Notification implements ShouldQueue
         return 'Welcome to SocietyMS! Your resident account has been set up successfully.';
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
     public function toMail(object $notifiable): MailMessage
     {
         $token = Password::createToken($notifiable);
@@ -88,15 +73,10 @@ class ResidentWelcomeNotification extends Notification implements ShouldQueue
         );
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(object $notifiable): array
     {
         return [
-            //
+
         ];
     }
 }

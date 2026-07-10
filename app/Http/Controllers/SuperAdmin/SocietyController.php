@@ -113,7 +113,7 @@ class SocietyController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Something went wrong while loading visitor logs.',
+                    'message' => 'Something went wrong while loading societies. Please try again.',
                 ], 500);
             }
         }
@@ -229,7 +229,7 @@ class SocietyController extends Controller
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Something went wrong: '.$e->getMessage(),
+                    'message' => 'Something went wrong. Please try again.',
                 ], 500);
             }
 
@@ -237,7 +237,7 @@ class SocietyController extends Controller
                 ->withInput()
                 ->with([
                     'status' => 'error',
-                    'message' => 'Something went wrong: '.$e->getMessage(),
+                    'message' => 'Something went wrong. Please try again.',
                 ]);
         }
     }
@@ -258,7 +258,7 @@ class SocietyController extends Controller
 
             return back()->with([
                 'status' => 'error',
-                'message' => 'Something went wrong.',
+                'message' => 'Something went wrong. Please try again.',
             ]);
         }
     }
@@ -296,7 +296,7 @@ class SocietyController extends Controller
                 ->withInput()
                 ->with([
                     'status' => 'error',
-                    'message' => 'Something went wrong.',
+                    'message' => 'Something went wrong. Please try again.',
                 ]);
         }
     }
@@ -356,7 +356,7 @@ class SocietyController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Something went wrong.',
+                'message' => 'Something went wrong. Please try again.',
             ], 500);
         }
     }

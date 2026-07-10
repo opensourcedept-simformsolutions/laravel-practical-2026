@@ -21,7 +21,6 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Session;
 use Yajra\DataTables\Facades\DataTables;
 
 class VisitorPassController extends Controller
@@ -51,7 +50,7 @@ class VisitorPassController extends Controller
             Log::error('Visitor pass index page error: '.$e->getMessage(), ['exception' => $e]);
 
             return redirect()->back()->with([
-                'message' => 'Something went wrong.',
+                'message' => 'Something went wrong. Please try again.',
                 'status' => 'error',
             ]);
         }
@@ -270,7 +269,7 @@ class VisitorPassController extends Controller
             Log::error('Visitor pass create page error: '.$e->getMessage(), ['exception' => $e]);
 
             return redirect()->back()->with([
-                'message' => 'Something went wrong.',
+                'message' => 'Something went wrong. Please try again.',
                 'status' => 'error',
             ]);
         }
@@ -365,21 +364,21 @@ class VisitorPassController extends Controller
                 }
             }
 
-            Session::flash('message', 'Visitor Pass Created Successfully.');
-            Session::flash('status', 'success');
+            $redirect = $user->isGatekeeper()
+                ? redirect()->route('gatekeeper.visitor-logs.pending')
+                : redirect()->route('passes.index');
 
-            if ($user->isGatekeeper()) {
-                return redirect()->route('gatekeeper.visitor-logs.pending');
-            }
-
-            return redirect()->route('passes.index');
+            return $redirect->with([
+                'message' => 'Visitor Pass Created Successfully.',
+                'status' => 'success',
+            ]);
         } catch (Exception $e) {
             Log::error('Visitor pass store error: '.$e->getMessage(), ['exception' => $e]);
 
-            Session::flash('message', 'Something went wrong.');
-            Session::flash('status', 'error');
-
-            return redirect()->back()->withInput();
+            return redirect()->back()->withInput()->with([
+                'message' => 'Something went wrong. Please try again.',
+                'status' => 'error',
+            ]);
         }
     }
 
@@ -399,7 +398,7 @@ class VisitorPassController extends Controller
             Log::error('Visitor pass show page error: '.$e->getMessage(), ['exception' => $e]);
 
             return redirect()->back()->with([
-                'message' => 'Something went wrong.',
+                'message' => 'Something went wrong. Please try again.',
                 'status' => 'error',
             ]);
         }
@@ -415,7 +414,7 @@ class VisitorPassController extends Controller
             Log::error('Visitor pass edit page error: '.$e->getMessage(), ['exception' => $e]);
 
             return redirect()->back()->with([
-                'message' => 'Something went wrong.',
+                'message' => 'Something went wrong. Please try again.',
                 'status' => 'error',
             ]);
         }
@@ -455,32 +454,25 @@ class VisitorPassController extends Controller
                 $visitorLog->save();
             });
 
-            Session::flash('message', 'Visitor Pass updated successfully.');
-            Session::flash('status', 'success');
-
             ActivityLogger::log('update', $visitorLog, "Visitor Pass for {$visitorLog->visitor->name} was updated.");
 
             if ($oldFlatId !== (int) $visitorLog->flat_id && in_array($visitorLog->status, [VisitorStatus::PENDING_APPROVAL->value, VisitorStatus::APPROVED->value, VisitorStatus::REJECTED->value])) {
-                // Delete notifications for the old flat
+
                 Notification::whereJsonContains('data->visitor_log_id', $visitorLog->id)->delete();
 
-                // Reset the status to pending_approval and clear approver (since it was wrong flat)
                 $visitorLog->update([
                     'status' => VisitorStatus::PENDING_APPROVAL->value,
                     'approved_by' => null,
                 ]);
 
-                // Broadcast recall to old flat
                 try {
                     event(new VisitorApprovalRecalled($visitorLog, $oldFlatId));
                 } catch (Exception $e) {
                     Log::error('Failed to broadcast VisitorApprovalRecalled on update: '.$e->getMessage());
                 }
 
-                // Log the correction in ActivityLog
                 ActivityLogger::log('update', $visitorLog, "Visitor Pass flat corrected from Flat ID {$oldFlatId} to Flat ID {$visitorLog->flat_id}. Status reset to pending_approval.");
 
-                // Notify all members of the new flat
                 $residents = User::whereHas('resident', function ($q) use ($visitorLog) {
                     $q->where('flat_id', $visitorLog->flat_id);
                 })->get();
@@ -493,7 +485,6 @@ class VisitorPassController extends Controller
                     }
                 }
 
-                // Broadcast request to new flat
                 try {
                     event(new VisitorApprovalRequested($visitorLog));
                 } catch (Exception $e) {
@@ -501,18 +492,21 @@ class VisitorPassController extends Controller
                 }
             }
 
-            if ($user->isGatekeeper()) {
-                return redirect()->route('gatekeeper.visitor-logs.pending');
-            }
+            $redirect = $user->isGatekeeper()
+                ? redirect()->route('gatekeeper.visitor-logs.pending')
+                : redirect()->route('passes.index');
 
-            return redirect()->route('passes.index');
+            return $redirect->with([
+                'message' => 'Visitor Pass updated successfully.',
+                'status' => 'success',
+            ]);
         } catch (Exception $e) {
             Log::error('Visitor pass update error: '.$e->getMessage(), ['exception' => $e]);
 
-            Session::flash('message', 'Something went wrong.');
-            Session::flash('status', 'error');
-
-            return redirect()->back()->withInput();
+            return redirect()->back()->withInput()->with([
+                'message' => 'Something went wrong. Please try again.',
+                'status' => 'error',
+            ]);
         }
     }
 
@@ -545,7 +539,7 @@ class VisitorPassController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Something went wrong.',
+                'message' => 'Something went wrong. Please try again.',
             ], 500);
         }
     }
@@ -565,7 +559,7 @@ class VisitorPassController extends Controller
             Log::error('Visitor pass report page error: '.$e->getMessage(), ['exception' => $e]);
 
             return redirect()->back()->with([
-                'message' => 'Something went wrong.',
+                'message' => 'Something went wrong. Please try again.',
                 'status' => 'error',
             ]);
         }
@@ -684,7 +678,7 @@ class VisitorPassController extends Controller
             Log::error('Visitor pass report export error: '.$e->getMessage(), ['exception' => $e]);
 
             return back()->with([
-                'message' => 'Something went wrong.',
+                'message' => 'Something went wrong. Please try again.',
                 'status' => 'error',
             ]);
         }
@@ -777,7 +771,7 @@ class VisitorPassController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Something went wrong while deleting the visitor pass.',
+                'message' => 'Something went wrong while deleting the visitor pass. Please try again.',
             ], 500);
         }
     }
@@ -803,7 +797,7 @@ class VisitorPassController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Something went wrong while restoring the visitor pass.',
+                'message' => 'Something went wrong while restoring the visitor pass. Please try again.',
             ], 500);
         }
     }
@@ -836,10 +830,8 @@ class VisitorPassController extends Controller
 
         ActivityLogger::log('approve', $visitorLog, "Visitor Pass for {$visitorLog->visitor->name} was approved.");
 
-        // Delete existing notifications for this visitor log
         Notification::whereJsonContains('data->visitor_log_id', $visitorLog->id)->delete();
 
-        // Send notifications to all members of the flat
         $residents = User::whereHas('resident', function ($q) use ($visitorLog) {
             $q->where('flat_id', $visitorLog->flat_id);
         })->get();
@@ -892,10 +884,8 @@ class VisitorPassController extends Controller
 
         ActivityLogger::log('reject', $visitorLog, "Visitor Pass for {$visitorLog->visitor->name} was rejected.");
 
-        // Delete existing notifications for this visitor log
         Notification::whereJsonContains('data->visitor_log_id', $visitorLog->id)->delete();
 
-        // Send notifications to all members of the flat
         $residents = User::whereHas('resident', function ($q) use ($visitorLog) {
             $q->where('flat_id', $visitorLog->flat_id);
         })->get();

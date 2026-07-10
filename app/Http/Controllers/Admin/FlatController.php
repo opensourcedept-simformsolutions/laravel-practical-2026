@@ -12,7 +12,6 @@ use App\Services\ActivityLogger;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Session;
 use Yajra\DataTables\Facades\DataTables;
 
 class FlatController extends Controller
@@ -151,7 +150,7 @@ class FlatController extends Controller
             }
 
             return redirect()->back()->with([
-                'message' => 'Something went wrong.',
+                'message' => 'Something went wrong. Please try again.',
                 'status' => 'error',
             ]);
         }
@@ -169,7 +168,7 @@ class FlatController extends Controller
             Log::error('Flat show page error: '.$e->getMessage(), ['exception' => $e]);
 
             return redirect()->back()->with([
-                'message' => 'Something went wrong.',
+                'message' => 'Something went wrong. Please try again.',
                 'status' => 'error',
             ]);
         }
@@ -194,7 +193,7 @@ class FlatController extends Controller
             Log::error('Flat create page error: '.$e->getMessage(), ['exception' => $e]);
 
             return redirect()->back()->with([
-                'message' => 'Something went wrong.',
+                'message' => 'Something went wrong. Please try again.',
                 'status' => 'error',
             ]);
         }
@@ -222,17 +221,17 @@ class FlatController extends Controller
 
             ActivityLogger::log('create', $flat, "Flat {$flat->wing}-{$flat->flat_number} was created.");
 
-            Session::flash('message', 'Flat Created Successfully.');
-            Session::flash('status', 'success');
-
-            return redirect()->route('flats.index');
+            return redirect()->route('flats.index')->with([
+                'message' => 'Flat Created Successfully.',
+                'status' => 'success',
+            ]);
         } catch (Exception $e) {
             Log::error('Flat store error: '.$e->getMessage(), ['exception' => $e]);
 
-            Session::flash('message', 'Something went wrong.');
-            Session::flash('status', 'error');
-
-            return redirect()->back()->withInput();
+            return redirect()->back()->withInput()->with([
+                'message' => 'Something went wrong. Please try again.',
+                'status' => 'error',
+            ]);
         }
     }
 
@@ -252,7 +251,7 @@ class FlatController extends Controller
             Log::error('Flat edit page error: '.$e->getMessage(), ['exception' => $e]);
 
             return redirect()->back()->with([
-                'message' => 'Something went wrong.',
+                'message' => 'Something went wrong. Please try again.',
                 'status' => 'error',
             ]);
         }
@@ -270,18 +269,18 @@ class FlatController extends Controller
 
             $flat->update($data);
             ActivityLogger::log('update', $flat, "Flat {$flat->wing}-{$flat->flat_number} was updated.");
-            Session::flash('message', 'Flat updated successfully.');
-            Session::flash('status', 'success');
 
-            return redirect()->route('flats.index')
-                ->with('success', 'Flat updated successfully');
+            return redirect()->route('flats.index')->with([
+                'message' => 'Flat updated successfully.',
+                'status' => 'success',
+            ]);
         } catch (Exception $e) {
             Log::error('Flat update error: '.$e->getMessage(), ['exception' => $e]);
 
-            Session::flash('message', 'Something went wrong.');
-            Session::flash('status', 'error');
-
-            return redirect()->back()->withInput();
+            return redirect()->back()->withInput()->with([
+                'message' => 'Something went wrong. Please try again.',
+                'status' => 'error',
+            ]);
         }
     }
 
@@ -302,7 +301,7 @@ class FlatController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Something went wrong.',
+                'message' => 'Something went wrong. Please try again.',
             ], 500);
         }
     }

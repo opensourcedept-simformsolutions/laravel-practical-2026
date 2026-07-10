@@ -8,15 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class ActivityLogger
 {
-    /**
-     * Log an activity to the database.
-     */
     public static function log(string $action, ?Model $subject = null, ?string $description = null, array $properties = []): ActivityLog
     {
         $user = auth()->user();
         $userId = $user ? $user->id : null;
 
-        // Determine society_id
         $societyId = null;
         if ($user && ! $user->isSuperAdmin()) {
             $societyId = $user->society_id;

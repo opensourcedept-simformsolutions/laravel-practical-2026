@@ -13,7 +13,7 @@ class WingSeeder extends Seeder
         $societies = Society::all();
 
         if ($societies->count() >= 2) {
-            // Society 1
+
             Wing::create([
                 'society_id' => $societies[0]->id,
                 'name' => 'A',
@@ -27,7 +27,6 @@ class WingSeeder extends Seeder
                 'flats_per_floor' => 3,
             ]);
 
-            // Society 2
             Wing::create([
                 'society_id' => $societies[1]->id,
                 'name' => 'A',

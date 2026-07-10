@@ -19,7 +19,6 @@ class VisitorLogSeeder extends Seeder
         if ($visitors->count() >= 7 && $residents->count() > 0) {
             $gk = $gatekeepers->first();
 
-            // 1. Expired pass
             $res = $residents[0];
             VisitorLog::create([
                 'visitor_id' => $visitors[0]->id,
@@ -30,7 +29,6 @@ class VisitorLogSeeder extends Seeder
                 'status' => 'expired',
             ]);
 
-            // 2. Pending pass
             $res = $residents[min(1, $residents->count() - 1)];
             VisitorLog::create([
                 'visitor_id' => $visitors[1]->id,
@@ -41,7 +39,6 @@ class VisitorLogSeeder extends Seeder
                 'status' => 'pending',
             ]);
 
-            // 3. Pending approval pass
             $res = $residents[min(2, $residents->count() - 1)];
             VisitorLog::create([
                 'visitor_id' => $visitors[2]->id,
@@ -53,7 +50,6 @@ class VisitorLogSeeder extends Seeder
                 'status' => 'pending_approval',
             ]);
 
-            // 4. Entered pass
             $res = $residents[min(3, $residents->count() - 1)];
             VisitorLog::create([
                 'visitor_id' => $visitors[3]->id,
@@ -66,7 +62,6 @@ class VisitorLogSeeder extends Seeder
                 'status' => 'entered',
             ]);
 
-            // 5. Exited pass
             $res = $residents[min(4, $residents->count() - 1)];
             VisitorLog::create([
                 'visitor_id' => $visitors[4]->id,
@@ -80,7 +75,6 @@ class VisitorLogSeeder extends Seeder
                 'status' => 'exited',
             ]);
 
-            // 6. Cancelled pass
             $res = $residents[min(5, $residents->count() - 1)];
             VisitorLog::create([
                 'visitor_id' => $visitors[5]->id,
@@ -91,7 +85,6 @@ class VisitorLogSeeder extends Seeder
                 'status' => 'cancelled',
             ]);
 
-            // 7. Rejected pass
             $res = $residents[min(6, $residents->count() - 1)];
             VisitorLog::create([
                 'visitor_id' => $visitors[6]->id,

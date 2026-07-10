@@ -19,7 +19,6 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Throwable;
@@ -167,7 +166,7 @@ class ResidentController extends Controller
             Log::error('Resident listing error: '.$e->getMessage());
 
             return back()->with([
-                'message' => 'Something went wrong.',
+                'message' => 'Something went wrong. Please try again.',
                 'status' => 'error',
             ]);
         }
@@ -180,7 +179,6 @@ class ResidentController extends Controller
         try {
             $resident->load(['user', 'flat.wingRelation', 'flat.society']);
 
-            // Get other residents in the same flat (co-residents)
             $coResidents = Resident::where('flat_id', $resident->flat_id)
                 ->where('id', '!=', $resident->id)
                 ->with('user')
@@ -191,7 +189,7 @@ class ResidentController extends Controller
             Log::error('Resident show page error: '.$e->getMessage(), ['exception' => $e]);
 
             return redirect()->back()->with([
-                'message' => 'Something went wrong.',
+                'message' => 'Something went wrong. Please try again.',
                 'status' => 'error',
             ]);
         }
@@ -217,7 +215,7 @@ class ResidentController extends Controller
             Log::error('Resident create page error: '.$e->getMessage(), ['exception' => $e]);
 
             return redirect()->back()->with([
-                'message' => 'Something went wrong.',
+                'message' => 'Something went wrong. Please try again.',
                 'status' => 'error',
             ]);
         }
@@ -281,18 +279,18 @@ class ResidentController extends Controller
                 }
             });
 
-            Session::flash('message', 'Resident created successfully.');
-            Session::flash('status', 'success');
-
-            return redirect()->route('residents.index');
+            return redirect()->route('residents.index')->with([
+                'message' => 'Resident created successfully.',
+                'status' => 'success',
+            ]);
         } catch (Throwable $e) {
 
             Log::error($e->getMessage());
 
-            Session::flash('message', 'Unable to create resident.'.$e->getMessage());
-            Session::flash('status', 'error');
-
-            return back()->withInput();
+            return back()->withInput()->with([
+                'message' => 'Unable to create resident.'.$e->getMessage(),
+                'status' => 'error',
+            ]);
         }
     }
 
@@ -317,7 +315,7 @@ class ResidentController extends Controller
             Log::error('Resident edit page error: '.$e->getMessage(), ['exception' => $e]);
 
             return redirect()->back()->with([
-                'message' => 'Something went wrong.',
+                'message' => 'Something went wrong. Please try again.',
                 'status' => 'error',
             ]);
         }
@@ -352,20 +350,20 @@ class ResidentController extends Controller
                 ]);
             });
 
-            Session::flash('message', 'Resident updated successfully.');
-            Session::flash('status', 'success');
-
             ActivityLogger::log('update', $resident, "Resident {$resident->user->name} details were updated.");
 
-            return redirect()->route('residents.index');
+            return redirect()->route('residents.index')->with([
+                'message' => 'Resident updated successfully.',
+                'status' => 'success',
+            ]);
         } catch (Throwable $e) {
 
             Log::error($e->getMessage());
 
-            Session::flash('message', 'Unable to update resident.');
-            Session::flash('status', 'error');
-
-            return back()->withInput();
+            return back()->withInput()->with([
+                'message' => 'Unable to update resident. Please try again.',
+                'status' => 'error',
+            ]);
         }
     }
 
@@ -399,7 +397,7 @@ class ResidentController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Something went wrong.',
+                'message' => 'Something went wrong. Please try again.',
             ], 500);
         }
     }
@@ -716,7 +714,6 @@ class ResidentController extends Controller
             return back()->with(['message' => 'Cannot import file with validation errors. Please fix errors first.', 'status' => 'error']);
         }
 
-        // Dispatch background job
         ProcessBulkImport::dispatch(
             $bulkImport->id,
             $request->society_id,
@@ -725,10 +722,10 @@ class ResidentController extends Controller
 
         $bulkImport->update(['status' => 'processing']);
 
-        Session::flash('message', 'Resident bulk import has been queued and will process in the background. You will receive a system notification once complete.');
-        Session::flash('status', 'success');
-
-        return redirect()->route('residents.index');
+        return redirect()->route('residents.index')->with([
+            'message' => 'Resident bulk import has been queued and will process in the background. You will receive a system notification once complete.',
+            'status' => 'success',
+        ]);
     }
 
     public function downloadErrorReport($importId)
