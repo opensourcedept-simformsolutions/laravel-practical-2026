@@ -1,0 +1,107 @@
+@extends('layouts.app')
+
+@section('title', 'Exited Visitors')
+
+@section('content')
+
+  <div class="card shadow-sm border-0 rounded-3">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <span class="fw-semibold">Exited Visitor List</span>
+
+      <a href="{{ route('gatekeeper.visitor-logs.pending') }}" class="btn btn-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>
+        Back
+      </a>
+    </div>
+
+    <div class="card-body">
+
+      <div class="table-responsive">
+        <table id="exitedVisitorsTable" class="table table-hover table-striped align-middle w-100">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Visitor</th>
+              <th>Phone</th>
+              <th>Flat</th>
+              <th>Purpose</th>
+              <th>Entry Date</th>
+              <th>Entry Time</th>
+              <th>Exit Date</th>
+              <th>Exit Time</th>
+              <th>Photo</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+@endsection
+
+@push('scripts')
+  <script>
+    $(function() {
+
+      $('#exitedVisitorsTable').DataTable({
+        processing: true,
+        serverSide: true,
+        responsive: true,
+
+        ajax: "{{ route('gatekeeper.visitor-logs.exited') }}",
+
+        columns: [{
+            data: 'DT_RowIndex',
+            name: 'DT_RowIndex',
+            orderable: false,
+            searchable: false
+          },
+          {
+            data: 'visitor_name',
+            name: 'visitors.name'
+          },
+          {
+            data: 'phone',
+            name: 'visitors.phone'
+          },
+          {
+            data: 'flat_details',
+            name: 'flat_details'
+          },
+          {
+            data: 'purpose',
+            name: 'purpose'
+          },
+          {
+            data: 'entry_date',
+            name: 'entry_time',
+            orderable: false
+          },
+          {
+            data: 'entry_time',
+            name: 'entry_time',
+            orderable: false
+          },
+          {
+            data: 'exit_date',
+            name: 'exit_time',
+            orderable: false
+          },
+          {
+            data: 'exit_time',
+            name: 'exit_time',
+            orderable: false
+          },
+          {
+            data: 'photo_path',
+            name: 'photo_path',
+            searchable: false,
+            orderable: false
+          }
+        ]
+      });
+    });
+  </script>
+@endpush

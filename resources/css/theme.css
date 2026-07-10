@@ -1,0 +1,25 @@
+:root {
+    --primary: #3b82f6;
+    --primary-hover: #2563eb;
+    --primary-dark: #1e40af;
+
+    --sidebar-bg: #1e293b;
+    --sidebar-hover: #334155;
+    --sidebar-active: #3b82f6;
+
+    --body-bg: #ebecee;
+    --card-bg: #ffffff;
+
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --text-light: #cbd5e1;
+
+    --border-color: #e2e8f0;
+    --border-light: #f1f5f9;
+}
+
+body {
+    background: var(--body-bg);
+    color: var(--text-primary);
+    font-family: Inter, "Segoe UI", sans-serif;
+}
