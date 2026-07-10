@@ -318,15 +318,11 @@ class ResidentController extends Controller
             DB::transaction(function () use ($resident) {
 
                 $user = $resident->user;
-                $this->authorize('create', resident::class);
+                $this->authorize('delete', resident::class);
 
                 ActivityLogger::log('delete', $resident, "Resident {$resident->user->name} was removed.");
 
                 $resident->delete();
-
-                if ($user) {
-                    $user->delete();
-                }
             });
 
             return response()->json([

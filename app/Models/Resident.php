@@ -35,4 +35,23 @@ class Resident extends Model
     {
         return $this->hasOneThrough(Society::class, User::class);
     }
+
+    protected static function booted()
+    {
+        static::deleting(function (Resident $resident) {
+
+            if ($resident->user) {
+                $resident->user->delete();
+            }
+
+        });
+
+        static::restored(function (Resident $resident) {
+
+            $resident->user()
+                ->withTrashed()
+                ->restore();
+
+        });
+    }
 }

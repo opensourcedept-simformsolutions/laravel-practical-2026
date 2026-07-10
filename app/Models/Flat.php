@@ -40,8 +40,20 @@ class Flat extends Model
 
     protected static function booted()
     {
-        static::deleting(function ($flat) {
-            $flat->residents()->delete();
+        static::deleting(function (Flat $flat) {
+
+            $flat->residents->each->delete();
+
+        });
+
+        static::restored(function (Flat $flat) {
+
+            $flat->residents()
+                ->onlyTrashed()
+                ->get()
+                ->each
+                ->restore();
+
         });
     }
 
