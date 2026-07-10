@@ -20,9 +20,13 @@
                                 <select id="status-filter" class="form-select">
                                     <option value="">All Statuses</option>
                                     <option value="pending">Pending</option>
+                                    <option value="pending_approval">Pending Approval</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="rejected">Rejected</option>
+                                    <option value="cancelled">Cancelled</option>
                                     <option value="entered">Entered</option>
                                     <option value="exited">Exited</option>
-                                    <option value="cancelled">Cancelled</option>
+                                    <option value="expired">Expired</option>
                                 </select>
                             </div>
 

@@ -218,6 +218,16 @@
     });
 
     $(document).ready(function() {
+      if ($.fn.dataTable) {
+        $.extend(true, $.fn.dataTable.defaults, {
+          language: {
+            search: "",
+            searchPlaceholder: "Search...",
+            lengthMenu: "Show _MENU_ entries"
+          }
+        });
+      }
+
       if ($.fn.select2) {
         $.fn.select2.defaults.set("theme", "bootstrap-5");
         $.fn.select2.defaults.set("width", "100%");

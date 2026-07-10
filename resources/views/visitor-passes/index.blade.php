@@ -50,6 +50,7 @@
                                     <option value="cancelled">Cancelled</option>
                                     <option value="entered">Entered</option>
                                     <option value="exited">Exited</option>
+                                    <option value="expired">Expired</option>
                                 </select>
                             </div>
 

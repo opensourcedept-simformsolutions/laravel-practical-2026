@@ -77,21 +77,22 @@
                         @if($coResidents->count() > 0)
                             <div class="list-group list-group-flush">
                                 @foreach($coResidents as $co)
-                                    <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center">
+                                    <div class="list-group-item px-0 py-3 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3">
                                         <div class="d-flex align-items-center">
-                                            <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                                            <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 48px; height: 48px;">
                                                 <span class="fw-bold">{{ strtoupper(substr($co->user->name ?? '-', 0, 1)) }}</span>
                                             </div>
                                             <div>
                                                 <h6 class="mb-1 fw-bold text-dark">{{ $co->user->name ?? '-' }}</h6>
                                                 <p class="mb-0 text-secondary small">
                                                     <i class="bi bi-envelope me-1"></i>{{ $co->user->email ?? '-' }}
-                                                    <span class="mx-1">&bull;</span>
+                                                    <span class="mx-1 d-none d-sm-inline">&bull;</span>
+                                                    <br class="d-inline d-sm-none" />
                                                     <i class="bi bi-telephone me-1"></i>{{ $co->user->phone ?? '-' }}
                                                 </p>
                                             </div>
                                         </div>
-                                        <div class="d-flex align-items-center gap-2">
+                                        <div class="d-flex align-items-center gap-2 ms-5 ms-sm-0">
                                             @if($co->resident_type === 'owner')
                                                 <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1.5 rounded-pill small">Owner</span>
                                             @else

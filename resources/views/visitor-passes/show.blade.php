@@ -41,7 +41,7 @@
             <div class="card-body p-4 p-md-5 bg-white">
                 <div class="row g-4">
                     <!-- Left: Details Column -->
-                    <div class="col-md-7 border-end-md pe-md-4">
+                    <div class="col-md-7 pe-md-4">
                         <h5 class="fw-bold text-dark mb-4 pb-2 border-bottom">
                             <i class="bi bi-person-badge-fill text-primary me-2"></i>Visitor Information
                         </h5>
@@ -109,7 +109,7 @@
                     </div>
 
                     <!-- Right: Photo/QR Column -->
-                    <div class="col-md-5 ps-md-4 text-center d-flex flex-column align-items-center justify-content-center">
+                    <div class="col-md-5 ps-md-4 text-center d-flex flex-column align-items-center justify-content-center order-first order-md-last ticket-divider">
                         <!-- Visitor Image/Avatar -->
                         <div class="mb-4">
                             @if ($visitorLog->photo_path)
