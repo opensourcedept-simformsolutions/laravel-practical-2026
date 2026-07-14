@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\VisitorLog;
 use App\Services\ActivityLogger;
 use Carbon\Carbon;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -260,32 +261,28 @@ class VisitorLogController extends Controller
                 ], 422);
             }
 
+            $uploaded = Cloudinary::uploadApi()->upload(
+                $request->file('photo')->getRealPath(),
+                [
+                    'folder' => 'visitor_photos',
+                ]
+            );
+
+            $visitorLog->photo_path = $uploaded['secure_url'];
             $visitorLog->entry_time = now();
             $visitorLog->gatekeeper_id = auth()->id();
             $visitorLog->status = 'entered';
-            $visitorLog->photo_path = $request->file('photo')->store('visitor_photos', 'public');
             $visitorLog->save();
 
             ActivityLogger::log('mark_entry', $visitorLog, "Visitor {$visitorLog->visitor->name} entered flat ".($visitorLog->flat?->wing ?? '-').'-'.($visitorLog->flat?->flat_number ?? '-').'.');
 
-            Log::info('VisitorEntered event dispatching', [
-                'visitor_log_id' => $visitorLog->id,
-            ]);
-
-            event(
-                new VisitorEntered($visitorLog)
-            );
-
-            Log::info('VisitorEntered event dispatched', [
-                'visitor_log_id' => $visitorLog->id,
-            ]);
+            event(new VisitorEntered($visitorLog));
 
             return response()->json([
                 'success' => true,
                 'message' => 'Visitor Entry Marked Successfully!',
             ]);
         } catch (Exception $e) {
-
             Log::error('Visitor Entry Error: '.$e->getMessage(), [
                 'visitor_log_id' => $visitorLog->id,
                 'exception' => $e,
@@ -293,7 +290,7 @@ class VisitorLogController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Something Went Wrong While Mark Entry',
+                'message' => 'Something Went Wrong While Marking Entry: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -400,8 +397,14 @@ class VisitorLogController extends Controller
                             return '-';
                         }
 
+                        // Check if the path is a Cloudinary URL or local path
+                        $photoUrl = str_starts_with($row->photo_path, 'http')
+                            ? $row->photo_path
+                            : asset('storage/'.$row->photo_path);
+
                         return '
-                            <a href="'.asset('storage/'.$row->photo_path).'"
+-                            <a href="'.asset('storage/'.$row->photo_path).'"
++                            <a href="'.$photoUrl.'"
                             target="_blank"
                             class="btn btn-info btn-sm"
                             title="View Photo">

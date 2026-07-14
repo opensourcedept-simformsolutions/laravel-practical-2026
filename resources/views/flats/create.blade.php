@@ -68,6 +68,7 @@
 
             <div class="card-footer bg-white border-top py-3 d-flex justify-content-end gap-2">
                 <a href="{{ route('flats.index') }}" class="btn btn-light">
+                <a href="{{ route('flats.index') }}" class="btn btn-light">
                     Cancel
                 </a>
                 <button type="submit" class="btn btn-primary">

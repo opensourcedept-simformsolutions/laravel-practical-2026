@@ -48,7 +48,6 @@ class FlatController extends Controller
 
                 return DataTables::of($query)
                     ->addIndexColumn()
-
                     ->addColumn('society', function ($row) {
                         return $row->society_name ?? '-';
                     })
