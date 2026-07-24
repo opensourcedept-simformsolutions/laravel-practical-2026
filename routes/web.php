@@ -2,8 +2,12 @@
 
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AuthAuditController;
+use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\FlatController;
 use App\Http\Controllers\Admin\ImpersonationController;
+use App\Http\Controllers\Admin\PermissionController;
+use App\Http\Controllers\Admin\RolePermissionController;
+use App\Http\Controllers\Admin\SystemPermissionController;
 use App\Http\Controllers\Admin\ResidentController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Common\DashboardController;
@@ -15,7 +19,9 @@ use App\Http\Controllers\Gatekeeper\VisitorLogController;
 use App\Http\Controllers\SuperAdmin\SocietyController;
 use App\Http\Controllers\SuperAdmin\WingController;
 use App\Http\Controllers\VisitorPass\VisitorPassController;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -25,6 +31,89 @@ Route::get('/', function () {
     }
 
     return redirect()->route('dashboard');
+});
+
+
+Route::get('/pivot', function () {
+    $user = User::find(1);
+
+
+    // $user->roles()->attach([3], [
+    //     'status' => 'inactive'
+    // ]);
+
+    // $user->roles()->attach(3);
+
+    $user->roles()
+        ->newPivotStatement()
+        ->where('user_id', $user->id)
+        ->where('role_id', 3)
+        ->where('status', 'inactive')
+        ->delete();
+
+
+    // $user->roles()->updateExistingPivot(1, [
+    //     'status' => 'inactive'
+    // ]);
+
+    // $user->roles()
+    //     ->get()
+    //     ->where('name', 'Admin');
+
+
+
+
+    dump($user);
+    return;
+});
+
+Route::get('/test', function () {
+
+    // $users = Society::with([
+    //     'wings.flats.residents.user'
+    // ])->get();
+
+    $users = User::with([
+        'role',
+        'resident',
+        // 'resident.society1',
+        // 'residentwithflat'
+    ])
+        // ->leftJoin('societies', 'flat.societyid', '=', 'societies.id')
+        ->get();
+
+    $users = User::whereHas('resident.flat', function ($q) {
+        $q->where('flatnumber', '101');
+        $q->where('societyid', '1');
+    })->get();
+
+    $users = User::select('societyid', DB::raw('count(societyid) as total'))
+        ->groupBy('societyid')
+        ->having('total', '>', 2)
+        ->skip(1)
+        ->take(1)
+        ->get();
+
+    $users = DB::select('SELECT users.*, societies.name as sname
+        FROM users
+        JOIN complaints
+        ON complaints.userid = users.id
+        JOIN societies
+        ON societies.id = users.societyid
+        GROUP BY users.id
+        HAVING COUNT(complaints.id) >= 1');
+
+    $users1 = User::withCount('complaints')
+        ->having('complaints_count', '>=', 1)
+        ->get();
+
+    dump($users1);
+
+    $users2 = User::has('complaints', '>=', 10)->get();
+
+    dump($users2);
+
+    return;
 });
 
 Route::middleware('auth')->group(function () {
@@ -51,12 +140,51 @@ Route::middleware('auth')->group(function () {
                 Route::delete('/{id}', 'destroy')->name('destroy');
             });
 
-        Route::middleware(['role:admin'])
+        Route::middleware(['role:super_admin,admin'])
             ->group(function () {
 
                 Route::prefix('admin')
                     ->name('admin.')
                     ->group(function () {
+
+                        Route::controller(PermissionController::class)
+                            ->prefix('permissions')
+                            ->name('permissions.')
+                            ->group(function () {
+                                Route::get('/', 'index')->name('index');
+                                Route::get('{user}/edit', 'edit')->name('edit');
+                                Route::put('{user}', 'update')->name('update');
+                                Route::delete('{user}/reset', 'reset')->name('reset');
+                            });
+
+                        Route::controller(RolePermissionController::class)
+                            ->prefix('role-permissions')
+                            ->name('role-permissions.')
+                            ->middleware('role:super_admin')
+                            ->group(function () {
+                                Route::get('/', 'index')->name('index');
+                                Route::get('{role}/edit', 'edit')->name('edit');
+                                Route::put('{role}', 'update')->name('update');
+                            });
+
+                        Route::middleware('role:super_admin')->group(function () {
+                            Route::get('api-keys', [\App\Http\Controllers\Admin\ApiKeyWebController::class, 'index'])->name('api-keys.index');
+
+                            Route::resource('system-permissions', SystemPermissionController::class)->parameters([
+                                'system-permissions' => 'permission',
+                            ]);
+
+                            Route::controller(BackupController::class)
+                                ->prefix('backups')
+                                ->name('backups.')
+                                ->group(function () {
+                                    Route::get('/', 'index')->name('index');
+                                    Route::post('/', 'store')->name('store');
+                                    Route::get('{backup}/download', 'download')->name('download');
+                                    Route::post('{backup}/restore', 'restore')->name('restore');
+                                    Route::delete('{backup}', 'destroy')->name('destroy');
+                                });
+                        });
 
                         Route::resource('users', UserController::class)->except('show');
 
@@ -84,7 +212,6 @@ Route::middleware('auth')->group(function () {
                                 Route::get('/', 'index')->name('index');
                                 Route::get('data', 'data')->name('data');
                             });
-
                     });
 
                 Route::controller(FlatController::class)
@@ -180,7 +307,7 @@ Route::middleware('auth')->group(function () {
         Route::controller(SocietyController::class)
             ->prefix('societies')
             ->name('societies.')
-            ->middleware('role:super_admin')
+            ->middleware('permission:societies.view')
             ->group(function () {
 
                 Route::get('/', 'index')->name('index');
@@ -282,4 +409,4 @@ Route::middleware('auth')->group(function () {
     });
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

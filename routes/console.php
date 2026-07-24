@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('app:expire-visitor-passes')->dailyAt('00:00');
+Schedule::command('api-keys:clean --days=30')->daily();

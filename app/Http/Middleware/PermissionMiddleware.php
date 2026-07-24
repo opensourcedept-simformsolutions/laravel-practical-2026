@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class PermissionMiddleware
+{
+    public function handle(Request $request, Closure $next, string $permission): Response
+    {
+        if (! auth()->check()) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated.',
+                ], 401);
+            }
+            return redirect()->route('login');
+        }
+
+        $user = auth()->user();
+
+        if ($user->hasPermission($permission)) {
+            return $next($request);
+        }
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to perform this action.',
+            ], 403);
+        }
+
+        // Avoid infinite redirect loops if previous URL is current URL
+        if (url()->previous() === url()->current()) {
+            abort(403, 'You do not have permission to perform this action.');
+        }
+
+        return redirect()->back()->with([
+            'message' => 'You do not have permission to perform this action.',
+            'status' => 'error',
+        ]);
+    }
+}

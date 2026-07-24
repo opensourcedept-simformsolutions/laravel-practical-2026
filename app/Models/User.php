@@ -31,9 +31,20 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(Role::class);
     }
 
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'permission_user')
+                    ->withPivot('is_granted');
+    }
+
     public function resident()
     {
         return $this->hasOne(Resident::class);
+    }
+
+    public function apiKeys()
+    {
+        return $this->hasMany(ApiKey::class);
     }
 
     public function complaints()
@@ -44,6 +55,16 @@ class User extends Authenticatable implements MustVerifyEmail
     public function visitorLogs()
     {
         return $this->hasMany(VisitorLog::class, 'gatekeeper_id');
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class, 'user_id')->latest();
+    }
+
+    public function unreadNotifications()
+    {
+        return $this->hasMany(Notification::class, 'user_id')->whereNull('read_at')->latest();
     }
 
     protected function casts(): array
@@ -79,9 +100,126 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->role?->name === 'gatekeeper';
     }
 
-    public function notifications()
+    public function hasPermission($permission): bool
     {
-        return $this->hasMany(Notification::class)->latest();
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        $slug = strtolower($permission instanceof Permission ? $permission->slug : (string) $permission);
+
+        if (! $this->relationLoaded('permissions')) {
+            $this->load('permissions');
+        }
+
+        $direct = $this->permissions->firstWhere('slug', $slug);
+        if ($direct !== null) {
+            return (bool) $direct->pivot->is_granted;
+        }
+
+        if ($this->role) {
+            if (! $this->role->relationLoaded('permissions')) {
+                $this->role->load('permissions');
+            }
+            return $this->role->permissions->contains('slug', $slug);
+        }
+
+        return false;
+    }
+
+    public function hasAnyPermission(array $permissions): bool
+    {
+        foreach ($permissions as $permission) {
+            if ($this->hasPermission($permission)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function hasAllPermissions(array $permissions): bool
+    {
+        foreach ($permissions as $permission) {
+            if (! $this->hasPermission($permission)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function getAllPermissions()
+    {
+        if ($this->isSuperAdmin()) {
+            return Permission::all();
+        }
+
+        if (! $this->relationLoaded('permissions')) {
+            $this->load('permissions');
+        }
+
+        $rolePermissions = collect();
+        if ($this->role) {
+            if (! $this->role->relationLoaded('permissions')) {
+                $this->role->load('permissions');
+            }
+            $rolePermissions = $this->role->permissions;
+        }
+
+        $directGrants = $this->permissions->filter(fn ($p) => $p->pivot->is_granted);
+        $directRevocations = $this->permissions->filter(fn ($p) => ! $p->pivot->is_granted)->pluck('id')->toArray();
+
+        return $rolePermissions
+            ->reject(fn ($p) => in_array($p->id, $directRevocations))
+            ->merge($directGrants)
+            ->unique('id');
+    }
+
+    public function givePermissionTo(...$permissions): static
+    {
+        $resolved = collect($permissions)->flatten()->map(function ($permission) {
+            if (is_string($permission)) {
+                return Permission::where('slug', strtolower(trim($permission)))->firstOrFail();
+            }
+            return $permission;
+        });
+
+        $syncData = [];
+        foreach ($resolved as $perm) {
+            $syncData[$perm->id] = ['is_granted' => true];
+        }
+
+        if (! empty($syncData)) {
+            $this->permissions()->syncWithoutDetaching($syncData);
+        }
+
+        $this->load('permissions');
+
+        return $this;
+    }
+
+    public function revokePermissionTo(...$permissions): static
+    {
+        $resolved = collect($permissions)->flatten()->map(function ($permission) {
+            if (is_string($permission)) {
+                return Permission::where('slug', strtolower(trim($permission)))->firstOrFail();
+            }
+            return $permission;
+        });
+
+        $syncData = [];
+        foreach ($resolved as $perm) {
+            $syncData[$perm->id] = ['is_granted' => false];
+        }
+
+        if (! empty($syncData)) {
+            $this->permissions()->syncWithoutDetaching($syncData);
+        }
+
+        $this->load('permissions');
+
+        return $this;
     }
 
     public static $cascading = false;
@@ -125,10 +263,5 @@ class User extends Authenticatable implements MustVerifyEmail
                 static::$cascading = false;
             }
         });
-    }
-
-    public function unreadNotifications()
-    {
-        return $this->hasMany(Notification::class)->whereNull('read_at')->latest();
     }
 }

@@ -29,6 +29,14 @@ class AppServiceProvider extends ServiceProvider
             if ($user->isSuperAdmin()) {
                 return true;
             }
+
+            if (method_exists($user, 'hasPermission') && $user->hasPermission($ability)) {
+                return true;
+            }
+        });
+
+        Gate::define('is-super-admin', function ($user) {
+            return $user->isSuperAdmin();
         });
 
         Gate::define('is-admin', function ($user) {

@@ -43,6 +43,8 @@ class DemoDataSeeder extends Seeder
             'gatekeeper' => Role::create(['name' => 'gatekeeper']),
         ];
 
+        $this->call(PermissionSeeder::class);
+
         $superAdmin = User::create([
             'name' => 'Super Admin',
             'email' => 'superadmin@example.com',
