@@ -77,4 +77,18 @@ class User extends Authenticatable
     {
         return $this->role?->name === 'gatekeeper';
     }
+
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class)
+            ->withPivot(
+                'assigned_by',
+                'status',
+                'assigned_at'
+            )
+            ->withTimestamps();
+    }
 }
+User::with(['role' => function($query) {
+    $query->where('name', 'admin');
+}])->get();

@@ -1,9 +1,7 @@
 <?php
 
-use App\Providers\AppServiceProvider;
-use Yajra\DataTables\DataTablesServiceProvider;
-
 return [
-    AppServiceProvider::class,
-    DataTablesServiceProvider::class,
+    App\Providers\AppServiceProvider::class,
+    App\Providers\TelescopeServiceProvider::class,
+    Yajra\DataTables\DataTablesServiceProvider::class,
 ];

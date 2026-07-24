@@ -6,12 +6,14 @@ use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\ResidentController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Common\DashboardController;
+use App\Http\Controllers\Common\PaymentController;
 use App\Http\Controllers\Common\ProfileController;
 use App\Http\Controllers\Complaint\ComplaintController;
 use App\Http\Controllers\Delivery\DeliveryController;
 use App\Http\Controllers\Gatekeeper\VisitorLogController;
 use App\Http\Controllers\SuperAdmin\SocietyController;
 use App\Http\Controllers\VisitorPass\VisitorPassController;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -46,7 +48,7 @@ Route::middleware('auth')->group(function () {
                     Route::resource('users', UserController::class)
                         ->except(['show']);
                     Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
-                    Route::get('activity-logs/data', [ActivityLogController::class, 'data'])->name('activity-logs.data'); 
+                    Route::get('activity-logs/data', [ActivityLogController::class, 'data'])->name('activity-logs.data');
                 });
 
             Route::resource('flats', FlatController::class)->except('show');
@@ -189,6 +191,25 @@ Route::middleware('auth')->group(function () {
             Route::post('leave', 'stop')->name('stop');
             Route::post('{user}', 'start')->name('start');
         });
+
 });
+
+Route::controller(PaymentController::class)
+    ->prefix('payments')
+    ->name('payments.')
+    ->group(function () {
+        Route::get('/', 'showForm')->name('form');
+        Route::post('/', 'pay')->name('pay');
+        Route::post('/callback', 'callback')->name('callback');
+        Route::post('/webhook', 'webhook')->name('webhook');
+    });
+
+// Route::get('/test', function () {
+//     $user = User::withCount(['complaints'])
+//         ->groupBy('user.id')
+//         ->having('comlaints.id', '>', '1')
+//         ->get();
+//     dd($user);
+// });
 
 require __DIR__.'/auth.php';

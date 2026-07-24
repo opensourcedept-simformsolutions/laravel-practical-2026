@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
             VisitorLogSeeder::class,
             DeliverySeeder::class,
             ComplaintSeeder::class,
+            PermissionSeeder::class,
+
         ]);
     }
 }

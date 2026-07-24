@@ -27,4 +27,12 @@ class Society extends Model
     {
         return $this->hasMany(Flat::class);
     }
+    
+    public function residents()
+    {
+        return $this->hasManyThrough(
+            Resident::class,
+            Flat::class
+        );
+    }
 }

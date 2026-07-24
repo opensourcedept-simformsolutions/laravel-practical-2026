@@ -77,7 +77,7 @@
     <script>
         table = $('#residentsTable').DataTable({
             processing: true,
-            serverSide: true,
+            serverSide: false,
             responsive: true,
 
             ajax: {

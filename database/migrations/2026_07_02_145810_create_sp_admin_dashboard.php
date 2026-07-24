@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -31,7 +32,7 @@ return new class extends Migration
                     SELECT COUNT(*)
                     FROM flats
                     WHERE society_id = p_society_id
-                ) AS flats,
+                )   AS flats,
 
                 (
                     SELECT COUNT(*)

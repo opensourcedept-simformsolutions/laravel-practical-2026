@@ -20,7 +20,7 @@ class VisitorLogController extends Controller
     {
         return view('visitor-passes.scan');
     }
-
+    
     public function findPass(Request $request)
     {
         try {

@@ -79,6 +79,14 @@
             <span class="sidebar-link-label">Complaints</span>
         </x-sidebar-link>
 
+        {{-- Payments --}}
+        @can('is-resident')
+            <x-sidebar-link :href="route('payments.form')" :active="request()->routeIs('payments.*')">
+                <i class="bi bi-credit-card"></i>
+                <span class="sidebar-link-label">Payments</span>
+            </x-sidebar-link>
+        @endcan
+
         {{-- Activity Logs --}}
         @canany(['is-admin', 'is-super-admin'])
             <x-sidebar-link :href="route('admin.activity-logs.index')" :active="request()->routeIs('admin.activity-logs.*')">

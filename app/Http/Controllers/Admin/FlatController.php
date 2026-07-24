@@ -147,7 +147,7 @@ class FlatController extends Controller
         }
     }
 
-    public function store(StoreFlatRequest $request)
+        public function store(StoreFlatRequest $request)
     {
         $this->authorize('create', Flat::class);
 
@@ -283,7 +283,9 @@ class FlatController extends Controller
             if (! $user->isSuperAdmin()) {
 
                 $query->where('flats.society_id', $user->society_id);
-            } elseif ($request->filled('society_id')) {
+            }
+            
+            elseif ($request->filled('society_id')) {
 
                 $query->where('flats.society_id', $request->society_id);
             }

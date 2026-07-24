@@ -36,7 +36,7 @@ class Flat extends Model
     public function society()
     {
         return $this->belongsTo(Society::class);
-    }
+}
 
     protected static function booted()
     {
